@@ -24,3 +24,134 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Markdown Editor Styles */
+.prose-editor .w-md-editor {
+  background-color: transparent;
+}
+
+.prose-editor .w-md-editor.w-md-editor-focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.prose-editor .w-md-editor-text-textarea,
+.prose-editor .w-md-editor-text {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.prose-editor .w-md-editor-text-textarea {
+  color: inherit !important;
+  background-color: transparent !important;
+}
+
+.dark .prose-editor .w-md-editor {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark .prose-editor .w-md-editor-text-textarea {
+  color: #f9fafb !important;
+  background-color: #374151 !important;
+}
+
+.dark .prose-editor .w-md-editor-preview {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+/* Responsive editor */
+@media (max-width: 768px) {
+  .prose-editor .w-md-editor {
+    height: 300px !important;
+  }
+}
+
+/* TinyMCE dropdown menu fix for fullscreen */
+.tox-tinymce-aux,
+.tox .tox-menu {
+  z-index: 99999 !important;
+}
+
+.tox-tinymce-aux {
+  position: fixed !important;
+}
+
+/* Comment-specific utilities */
+.comment-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.comment-content p {
+  margin-bottom: 0.75rem;
+}
+
+.comment-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Comment threading visual indicator */
+.comment-thread::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #e5e7eb, transparent);
+}
+
+.dark .comment-thread::before {
+  background: linear-gradient(to bottom, #4b5563, transparent);
+}
+
+/* Smooth transitions for comment interactions */
+.comment-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.comment-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dark .comment-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading states */
+.comment-loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Comment form enhancements */
+.comment-form-textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive comment layout */
+@media (max-width: 640px) {
+  .comment-nested {
+    margin-left: 1rem;
+  }
+
+  .comment-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
