@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import SignedImage from "@/components/common/SignedImage";
 import {
   ClockIcon,
   EyeIcon,
@@ -47,84 +48,6 @@ const featuredArticles = [
   },
 ];
 
-const latestArticles = [
-  {
-    id: 3,
-    title: "Legenda Danau Toba",
-    excerpt:
-      "Cerita rakyat tentang asal mula terbentuknya Danau Toba yang terkenal, kisah Samosir dan ikan mas yang berubah menjadi danau terbesar di Indonesia.",
-    author: "Maria Sari",
-    category: "Cerita Rakyat",
-    views: 432,
-    likes: 34,
-    comments: 8,
-    createdAt: "1 jam lalu",
-  },
-  {
-    id: 4,
-    title: "Tips Menulis Cerpen yang Menarik",
-    excerpt:
-      "Panduan lengkap untuk pemula yang ingin mulai menulis cerpen dengan teknik storytelling yang baik dan menarik pembaca.",
-    author: "Budi Santoso",
-    category: "Artikel",
-    views: 678,
-    likes: 45,
-    comments: 12,
-    createdAt: "3 jam lalu",
-  },
-  {
-    id: 5,
-    title: "Malam di Kota Tua",
-    excerpt:
-      "Sepenggal kisah tentang nostalgia dan kenangan masa lalu yang terpancar dari setiap sudut bangunan bersejarah di Jakarta.",
-    author: "Dewi Lestari",
-    category: "Cerpen",
-    views: 523,
-    likes: 41,
-    comments: 9,
-    createdAt: "5 jam lalu",
-  },
-];
-
-const categories = [
-  {
-    name: "Cerpen",
-    count: 234,
-    color: "bg-blue-500",
-    href: "/kategori/cerpen",
-  },
-  {
-    name: "Puisi",
-    count: 156,
-    color: "bg-purple-500",
-    href: "/kategori/puisi",
-  },
-  {
-    name: "Artikel",
-    count: 89,
-    color: "bg-green-500",
-    href: "/kategori/artikel",
-  },
-  {
-    name: "Cerita Rakyat",
-    count: 67,
-    color: "bg-yellow-500",
-    href: "/kategori/cerita-rakyat",
-  },
-  {
-    name: "Novel Berseri",
-    count: 45,
-    color: "bg-red-500",
-    href: "/kategori/novel-berseri",
-  },
-  {
-    name: "Lainnya",
-    count: 123,
-    color: "bg-gray-500",
-    href: "/kategori/lainnya",
-  },
-];
-
 export default function HomePage() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
@@ -134,9 +57,18 @@ export default function HomePage() {
     totalLikes: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [latestArticles, setLatestArticles] = useState<any[]>([]);
+  const [loadingLatest, setLoadingLatest] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   useEffect(() => {
     fetchStats();
+    fetchFeaturedArticles();
+    fetchLatestArticles();
+    fetchCategories();
   }, []);
 
   const fetchStats = async () => {
@@ -147,30 +79,38 @@ export default function HomePage() {
         .select("*", { count: "exact", head: true })
         .eq("published", true);
 
-      // Get total authors
+      // Get total authors (users who have published articles)
       const { count: authorsCount } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
-
-      // Get total views and likes
-      const { data: viewsData } = await supabase
         .from("articles")
-        .select("views, likes_count")
+        .select("author_id", { count: "exact", head: true })
         .eq("published", true);
 
-      const totals = viewsData?.reduce(
-        (acc, article) => ({
-          totalViews: acc.totalViews + (article.views || 0),
-          totalLikes: acc.totalLikes + (article.likes_count || 0),
-        }),
-        { totalViews: 0, totalLikes: 0 }
-      ) || { totalViews: 0, totalLikes: 0 };
+      // Get total views
+      const { data: viewsData } = await supabase
+        .from("articles")
+        .select("views")
+        .eq("published", true);
+
+      const totalViews =
+        viewsData?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
+
+      // Get total likes
+      const { data: likesData } = await supabase
+        .from("articles")
+        .select("likes_count")
+        .eq("published", true);
+
+      const totalLikes =
+        likesData?.reduce(
+          (sum, article) => sum + (article.likes_count || 0),
+          0
+        ) || 0;
 
       setStats({
-        totalArticles: articlesCount || 0,
         totalAuthors: authorsCount || 0,
-        totalViews: totals.totalViews,
-        totalLikes: totals.totalLikes,
+        totalArticles: articlesCount || 0,
+        totalViews: totalViews,
+        totalLikes: totalLikes,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -179,13 +119,189 @@ export default function HomePage() {
     }
   };
 
-  const scrollToContent = () => {
-    const element = document.getElementById("main-content");
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-      });
+  const fetchFeaturedArticles = async () => {
+    setLoadingFeatured(true);
+    try {
+      // Fetch featured content from featured_content table
+      const { data: featuredData, error: featuredError } = await supabase
+        .from("featured_content")
+        .select("content_id, priority")
+        .eq("content_type", "article")
+        .eq("active", true)
+        .order("priority", { ascending: false });
+
+      if (featuredError) {
+        console.error("Error fetching featured content:", featuredError);
+        return;
+      }
+
+      if (!featuredData || featuredData.length === 0) {
+        setFeaturedArticles([]);
+        return;
+      }
+
+      // Get the featured article IDs
+      const featuredIds = featuredData.map((f) => f.content_id);
+
+      // Fetch the actual articles
+      const { data: articles, error: articlesError } = await supabase
+        .from("articles")
+        .select(
+          `
+          id,
+          title,
+          excerpt,
+          cover_image,
+          category,
+          slug,
+          views,
+          likes_count,
+          comments_count,
+          created_at,
+          profiles:author_id (
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .in("id", featuredIds)
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+
+      if (articlesError) {
+        console.error("Error fetching featured articles:", articlesError);
+        return;
+      }
+
+      // Sort articles by the priority order from featured_content
+      const sortedArticles = featuredIds
+        .map((id) => articles?.find((article) => article.id === id))
+        .filter(Boolean);
+
+      setFeaturedArticles(sortedArticles || []);
+    } catch (error) {
+      console.error("Error in fetchFeaturedArticles:", error);
+    } finally {
+      setLoadingFeatured(false);
     }
+  };
+
+  const fetchLatestArticles = async () => {
+    setLoadingLatest(true);
+    try {
+      const { data: articles, error } = await supabase
+        .from("articles")
+        .select(
+          `
+          id,
+          title,
+          excerpt,
+          cover_image,
+          category,
+          slug,
+          views,
+          likes_count,
+          comments_count,
+          created_at,
+          profiles:author_id (
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error("Error fetching latest articles:", error);
+        return;
+      }
+
+      setLatestArticles(articles || []);
+    } catch (error) {
+      console.error("Error in fetchLatestArticles:", error);
+    } finally {
+      setLoadingLatest(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      // Get all published articles with their categories
+      const { data: articles, error } = await supabase
+        .from("articles")
+        .select("category")
+        .eq("published", true);
+
+      if (error) {
+        console.error("Error fetching categories:", error);
+        return;
+      }
+
+      // Count articles per category
+      const categoryCounts: { [key: string]: number } = {};
+      articles?.forEach((article) => {
+        categoryCounts[article.category] =
+          (categoryCounts[article.category] || 0) + 1;
+      });
+
+      // Create category objects with colors
+      const categoryColors: { [key: string]: string } = {
+        cerpen: "bg-blue-500",
+        puisi: "bg-purple-500",
+        artikel: "bg-green-500",
+        "cerita-rakyat": "bg-yellow-500",
+        "novel-berseri": "bg-red-500",
+        lainnya: "bg-gray-500",
+      };
+
+      const categoryList = Object.entries(categoryCounts).map(
+        ([name, count]) => ({
+          name: name.charAt(0).toUpperCase() + name.slice(1).replace("-", " "),
+          count,
+          color: categoryColors[name] || "bg-gray-500",
+          href: `/kategori/${name}`,
+        })
+      );
+
+      setCategories(categoryList);
+    } catch (error) {
+      console.error("Error in fetchCategories:", error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const scrollToContent = () => {
+    const element = document.getElementById("content");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const formatRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) return "Baru saja";
+    if (diffInHours < 24) return `${diffInHours} jam lalu`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} hari lalu`;
+
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks} minggu lalu`;
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} bulan lalu`;
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears} tahun lalu`;
   };
 
   return (
@@ -313,7 +429,7 @@ export default function HomePage() {
 
       {/* Main Content - Starts after scroll */}
       <div
-        id="main-content"
+        id="content"
         className="bg-gradient-to-br from-white via-blue-50 to-pink-50"
       >
         {/* Featured Articles Section */}
@@ -337,14 +453,16 @@ export default function HomePage() {
                   }`}
                 >
                   <div className="lg:flex">
-                    <div className="lg:w-1/2">
-                      <Image
-                        src={article.coverImage}
-                        alt={article.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-64 lg:h-full object-cover"
-                      />
+                    <div className="lg:w-1/2 flex items-stretch">
+                      <div className="w-full aspect-[16/5] rounded-2xl overflow-hidden flex items-stretch">
+                        <SignedImage
+                          src={article.cover_image}
+                          alt={article.title}
+                          width={600}
+                          height={200}
+                          className="w-full h-full object-cover rounded-2xl"
+                        />
+                      </div>
                     </div>
                     <div className="p-8 lg:w-1/2 flex flex-col justify-center">
                       <div className="flex items-center mb-4">
@@ -353,13 +471,13 @@ export default function HomePage() {
                         </span>
                         <span className="text-gray-700 text-sm ml-4 flex items-center">
                           <ClockIcon className="w-4 h-4 mr-1" />
-                          {article.createdAt}
+                          {formatRelativeTime(article.created_at)}
                         </span>
                       </div>
 
                       <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
                         <Link
-                          href={`/article/${article.id}`}
+                          href={`/article/${article.slug}`}
                           className="hover:text-blue-600 transition-colors"
                         >
                           {article.title}
@@ -367,17 +485,27 @@ export default function HomePage() {
                       </h3>
 
                       <p className="text-gray-800 mb-6 text-lg leading-relaxed">
-                        {article.excerpt}
+                        {article.excerpt.length > 250
+                          ? `${article.excerpt.slice(0, 250)}... `
+                          : article.excerpt}
+                        {article.excerpt.length > 250 && (
+                          <Link
+                            href={`/article/${article.slug}`}
+                            className="text-blue-600 hover:underline ml-1 text-base"
+                          >
+                            (baca selengkapnya)
+                          </Link>
+                        )}
                       </p>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                            {article.author.charAt(0)}
+                            {article.profiles?.full_name?.charAt(0) || "U"}
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">
-                              {article.author}
+                              {article.profiles?.full_name || "Anonymous"}
                             </div>
                             <div className="text-sm text-gray-700">Penulis</div>
                           </div>
@@ -422,61 +550,79 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-6">
-                  {latestArticles.map((article) => (
-                    <article
-                      key={article.id}
-                      className="bg-white/95 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
-                    >
-                      <div className="flex items-center mb-4">
-                        <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                          {article.category}
-                        </span>
-                        <span className="text-gray-700 text-sm ml-3 flex items-center">
-                          <ClockIcon className="w-4 h-4 mr-1" />
-                          {article.createdAt}
-                        </span>
-                      </div>
-
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">
-                        <Link
-                          href={`/article/${article.id}`}
-                          className="hover:text-blue-600 transition-colors"
-                        >
-                          {article.title}
-                        </Link>
-                      </h3>
-
-                      <p className="text-gray-800 mb-4 leading-relaxed">
-                        {article.excerpt}
+                  {loadingLatest ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">
+                        Memuat konten terbaru...
                       </p>
+                    </div>
+                  ) : latestArticles.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">
+                        Belum ada konten yang dipublikasikan.
+                      </p>
+                    </div>
+                  ) : (
+                    latestArticles.map((article) => (
+                      <article
+                        key={article.id}
+                        className="bg-white/95 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
+                      >
+                        <div className="flex items-center mb-4">
+                          <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {article.category.charAt(0).toUpperCase() +
+                              article.category.slice(1).replace("-", " ")}
+                          </span>
+                          <span className="text-gray-700 text-sm ml-3 flex items-center">
+                            <ClockIcon className="w-4 h-4 mr-1" />
+                            {formatRelativeTime(article.created_at)}
+                          </span>
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                            {article.author.charAt(0)}
+                        <h3 className="text-xl font-bold text-gray-900 mb-3">
+                          <Link
+                            href={`/article/${article.slug}`}
+                            className="hover:text-blue-600 transition-colors"
+                          >
+                            {article.title}
+                          </Link>
+                        </h3>
+
+                        <p className="text-gray-800 mb-4 leading-relaxed">
+                          {article.excerpt.length > 200
+                            ? `${article.excerpt.slice(0, 200)}...`
+                            : article.excerpt}
+                        </p>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                              {article.profiles?.full_name?.charAt(0) || "U"}
+                            </div>
+                            <span className="font-medium text-gray-900">
+                              {article.profiles?.full_name || "Anonymous"}
+                            </span>
                           </div>
-                          <span className="font-medium text-gray-900">
-                            {article.author}
-                          </span>
-                        </div>
 
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span className="flex items-center">
-                            <EyeIcon className="w-4 h-4 mr-1" />
-                            {article.views}
-                          </span>
-                          <span className="flex items-center">
-                            <HeartIcon className="w-4 h-4 mr-1" />
-                            {article.likes}
-                          </span>
-                          <span className="flex items-center">
-                            <ChatBubbleLeftIcon className="w-4 h-4 mr-1" />
-                            {article.comments}
-                          </span>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span className="flex items-center">
+                              <EyeIcon className="w-4 h-4 mr-1" />
+                              {article.views || 0}
+                            </span>
+                            <span className="flex items-center">
+                              <HeartIcon className="w-4 h-4 mr-1" />
+                              {article.likes_count || 0}
+                            </span>
+                            <span className="flex items-center">
+                              <ChatBubbleLeftIcon className="w-4 h-4 mr-1" />
+                              {article.comments_count || 0}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -488,25 +634,40 @@ export default function HomePage() {
                     📂 Kategori
                   </h3>
                   <div className="space-y-3">
-                    {categories.map((category) => (
-                      <Link
-                        key={category.name}
-                        href={category.href}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 group"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className={`w-3 h-3 rounded-full ${category.color} mr-3 group-hover:scale-110 transition-transform`}
-                          ></div>
-                          <span className="text-gray-800 font-medium group-hover:text-blue-600">
-                            {category.name}
+                    {loadingCategories ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="mt-2 text-gray-600 text-sm">
+                          Memuat kategori...
+                        </p>
+                      </div>
+                    ) : categories.length === 0 ? (
+                      <div className="text-center py-4">
+                        <p className="text-gray-600 text-sm">
+                          Belum ada kategori.
+                        </p>
+                      </div>
+                    ) : (
+                      categories.map((category) => (
+                        <Link
+                          key={category.name}
+                          href={category.href}
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 transition-all duration-200 group"
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className={`w-3 h-3 rounded-full ${category.color} mr-3 group-hover:scale-110 transition-transform`}
+                            ></div>
+                            <span className="text-gray-800 font-medium group-hover:text-blue-600">
+                              {category.name}
+                            </span>
+                          </div>
+                          <span className="text-gray-700 font-bold">
+                            {category.count}
                           </span>
-                        </div>
-                        <span className="text-gray-700 font-bold">
-                          {category.count}
-                        </span>
-                      </Link>
-                    ))}
+                        </Link>
+                      ))
+                    )}
                   </div>
                 </div>
                 {/* User Recommendations */}

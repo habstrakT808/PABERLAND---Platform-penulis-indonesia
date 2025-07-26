@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SignedImage from "@/components/common/SignedImage";
 import {
   ArrowLeftIcon,
   CalendarIcon,
@@ -683,11 +684,9 @@ export default function AuthorProfilePage() {
                         {/* Article Image */}
                         {article.cover_image && (
                           <div className="aspect-w-16 aspect-h-9">
-                            <Image
+                            <SignedImage
                               src={article.cover_image}
                               alt={article.title}
-                              width={400}
-                              height={225}
                               className="w-full h-48 object-cover"
                             />
                           </div>

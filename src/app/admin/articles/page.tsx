@@ -21,6 +21,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
+import SignedImage from "@/components/common/SignedImage";
 
 interface Article {
   id: string;
@@ -379,19 +380,13 @@ function AdminArticlesContent() {
                 <div className="flex items-start space-x-4">
                   {/* Article Image */}
                   <div className="flex-shrink-0">
-                    {article.cover_image ? (
-                      <Image
-                        src={article.cover_image}
-                        alt={article.title}
-                        width={80}
-                        height={80}
-                        className="w-20 h-20 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">
-                          {getCategoryEmoji(article.category)}
-                        </span>
+                    {article.cover_image && (
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden">
+                        <SignedImage
+                          src={article.cover_image}
+                          alt={article.title}
+                          className="object-cover w-full h-full absolute inset-0"
+                        />
                       </div>
                     )}
                   </div>

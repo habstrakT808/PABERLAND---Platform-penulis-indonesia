@@ -221,8 +221,22 @@ export const adminHelpers = {
       return { articles: [], totalCount: 0, totalPages: 0 };
     }
 
+    // Ambil daftar featured_content
+    const { data: featuredData, error: featuredError } = await supabase
+      .from('featured_content')
+      .select('content_id')
+      .eq('content_type', 'article')
+      .eq('active', true);
+    const featuredIds = (featuredData || []).map((f: any) => f.content_id);
+
+    // Tandai artikel featured
+    const articles = (data || []).map((article: any) => ({
+      ...article,
+      featured: featuredIds.includes(article.id),
+    }));
+
     return {
-      articles: data || [],
+      articles,
       totalCount: count || 0,
       totalPages: Math.ceil((count || 0) / limit)
     };

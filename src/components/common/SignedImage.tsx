@@ -9,6 +9,9 @@ interface SignedImageProps {
   className?: string;
   fallbackSrc?: string;
   onError?: () => void;
+  width?: number;
+  height?: number;
+  fit?: "cover" | "contain" | "inside" | "outside";
 }
 
 export default function SignedImage({
@@ -17,6 +20,9 @@ export default function SignedImage({
   className = "",
   fallbackSrc,
   onError,
+  width,
+  height,
+  fit = "cover",
 }: SignedImageProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,9 +64,18 @@ export default function SignedImage({
           .from("images")
           .getPublicUrl(src);
 
-        if (publicData?.publicUrl) {
-          console.log("SignedImage: Using public URL:", publicData.publicUrl);
-          setImageUrl(publicData.publicUrl);
+        let url = publicData?.publicUrl || null;
+        // Add transform query if needed
+        if (url && (width || height)) {
+          const params = new URLSearchParams();
+          if (width) params.append("width", width.toString());
+          if (height) params.append("height", height.toString());
+          if (fit) params.append("fit", fit);
+          url += (url.includes("?") ? "&" : "?") + params.toString();
+        }
+        if (url) {
+          console.log("SignedImage: Using public URL:", url);
+          setImageUrl(url);
           setIsLoading(false);
           return;
         }
@@ -68,9 +83,17 @@ export default function SignedImage({
         // Fallback to signed URL if public fails
         console.log("SignedImage: Trying signed URL for path:", src);
         const signedUrl = await getSignedImageUrl(src);
-        if (signedUrl) {
+        let finalUrl = signedUrl;
+        if (signedUrl && (width || height)) {
+          const params = new URLSearchParams();
+          if (width) params.append("width", width.toString());
+          if (height) params.append("height", height.toString());
+          if (fit) params.append("fit", fit);
+          finalUrl += (signedUrl.includes("?") ? "&" : "?") + params.toString();
+        }
+        if (finalUrl) {
           console.log("SignedImage: Got signed URL successfully");
-          setImageUrl(signedUrl);
+          setImageUrl(finalUrl);
         } else {
           console.error("SignedImage: Failed to get any URL for path:", src);
           setHasError(true);
@@ -85,7 +108,7 @@ export default function SignedImage({
     };
 
     loadImage();
-  }, [src]);
+  }, [src, width, height, fit]);
 
   if (isLoading) {
     return (

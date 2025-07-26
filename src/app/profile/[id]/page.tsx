@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SignedImage from "@/components/common/SignedImage";
 import {
   ArrowLeftIcon,
   CalendarIcon,
@@ -622,16 +623,12 @@ export default function PublicProfilePage() {
 
                         {/* Article Image */}
                         {article.cover_image && (
-                          <div className="mb-4">
-                            <Link href={`/article/${article.slug}`}>
-                              <Image
-                                src={article.cover_image}
-                                alt={article.title}
-                                width={400}
-                                height={200}
-                                className="w-full h-32 object-cover rounded-lg hover:opacity-90 transition-opacity"
-                              />
-                            </Link>
+                          <div className="aspect-w-16 aspect-h-9">
+                            <SignedImage
+                              src={article.cover_image}
+                              alt={article.title}
+                              className="w-full h-48 object-cover"
+                            />
                           </div>
                         )}
 
