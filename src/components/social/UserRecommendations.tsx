@@ -3,11 +3,10 @@
 
 import { useState, useEffect } from "react";
 import { UsersIcon, SparklesIcon } from "@heroicons/react/24/outline";
-import { followHelpers } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
-import FollowButton from "./FollowButton";
+import { supabase } from "@/lib/supabase";
 
 export default function UserRecommendations() {
   const { user } = useAuth();
@@ -24,10 +23,51 @@ export default function UserRecommendations() {
     if (!user) return;
 
     try {
-      const users = await followHelpers.getRecommendedUsers(user.id, 3);
-      setRecommendations(users);
+      // First try to get users with role column
+      let { data: users, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, role")
+        .neq("id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      // If error occurs (possibly role column doesn't exist), try without role
+      if (error) {
+        console.warn(
+          "Role column might not exist, trying without it:",
+          error.message
+        );
+        const fallbackQuery = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url")
+          .neq("id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (fallbackQuery.error) {
+          console.error("Error fetching recommendations:", fallbackQuery.error);
+          setRecommendations([]);
+        } else {
+          // Add default role for users
+          const usersWithDefaultRole =
+            fallbackQuery.data?.map((user) => ({
+              ...user,
+              role: "Penulis",
+            })) || [];
+          setRecommendations(usersWithDefaultRole);
+        }
+      } else {
+        // Add default role for users that don't have role set
+        const usersWithDefaultRole =
+          users?.map((user) => ({
+            ...user,
+            role: user.role || "Penulis",
+          })) || [];
+        setRecommendations(usersWithDefaultRole);
+      }
     } catch (error) {
       console.error("Error fetching recommendations:", error);
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }
@@ -35,16 +75,16 @@ export default function UserRecommendations() {
 
   if (!user || loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-1"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
                 </div>
               </div>
             ))}
@@ -59,21 +99,19 @@ export default function UserRecommendations() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+    <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-sm p-6">
       <div className="flex items-center space-x-2 mb-4">
         <SparklesIcon className="w-5 h-5 text-indigo-500" />
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-          Penulis Rekomendasi
-        </h3>
+        <h3 className="text-lg font-bold text-gray-900">Penulis Rekomendasi</h3>
       </div>
 
       <div className="space-y-4">
         {recommendations.map((user) => (
           <div
             key={user.id}
-            className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg hover:bg-blue-100 transition-colors"
           >
-            <Link href={`/profile/${user.id}`} className="flex-shrink-0">
+            <Link href={`/penulis/${user.id}`} className="flex-shrink-0">
               {user.avatar_url ? (
                 <Image
                   src={user.avatar_url}
@@ -91,31 +129,22 @@ export default function UserRecommendations() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/profile/${user.id}`}
-                className="font-medium text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
+                href={`/penulis/${user.id}`}
+                className="font-medium text-gray-900 hover:text-indigo-600 transition-colors block"
               >
                 {user.full_name}
               </Link>
-              <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                <span>{user.followersCount} pengikut</span>
-                <span>•</span>
-                <span>{user.articlesCount} artikel</span>
+              <div className="flex items-center space-x-2 text-xs text-gray-500">
+                <span>{user.role || "Penulis"}</span>
               </div>
             </div>
-
-            <FollowButton
-              targetUserId={user.id}
-              targetUserName={user.full_name}
-              size="sm"
-              showText={false}
-            />
           </div>
         ))}
       </div>
 
       <Link
         href="/penulis"
-        className="block text-center mt-4 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+        className="block text-center mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
       >
         Lihat semua penulis →
       </Link>

@@ -29,8 +29,8 @@ const categoryConfig = {
     description: "Cerita pendek yang menghibur dan menginspirasi",
     icon: BookOpenIcon,
     color: "from-blue-500 to-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    textColor: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-600",
     emoji: "📖",
   },
   puisi: {
@@ -38,8 +38,8 @@ const categoryConfig = {
     description: "Karya sastra penuh makna dan keindahan kata",
     icon: SparklesIcon,
     color: "from-purple-500 to-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    textColor: "text-purple-600 dark:text-purple-400",
+    bgColor: "bg-purple-50",
+    textColor: "text-purple-600",
     emoji: "🎭",
   },
   artikel: {
@@ -47,8 +47,8 @@ const categoryConfig = {
     description: "Tulisan informatif dan edukatif",
     icon: NewspaperIcon,
     color: "from-green-500 to-green-600",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-    textColor: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-50",
+    textColor: "text-green-600",
     emoji: "📰",
   },
   "cerita-rakyat": {
@@ -56,8 +56,8 @@ const categoryConfig = {
     description: "Warisan budaya dan kearifan lokal",
     icon: GlobeAltIcon,
     color: "from-yellow-500 to-yellow-600",
-    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-    textColor: "text-yellow-600 dark:text-yellow-400",
+    bgColor: "bg-yellow-50",
+    textColor: "text-yellow-600",
     emoji: "🏛️",
   },
   "novel-berseri": {
@@ -65,8 +65,8 @@ const categoryConfig = {
     description: "Cerita panjang yang diterbitkan berseri",
     icon: HeartIcon,
     color: "from-red-500 to-red-600",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-    textColor: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50",
+    textColor: "text-red-600",
     emoji: "📚",
   },
   lainnya: {
@@ -74,8 +74,8 @@ const categoryConfig = {
     description: "Karya kreatif dan eksperimental",
     icon: EllipsisHorizontalIcon,
     color: "from-gray-500 to-gray-600",
-    bgColor: "bg-gray-50 dark:bg-gray-900/20",
-    textColor: "text-gray-600 dark:text-gray-400",
+    bgColor: "bg-gray-50",
+    textColor: "text-gray-600",
     emoji: "✨",
   },
 };
@@ -115,7 +115,18 @@ export default function CategoryPage() {
   const router = useRouter();
   const category = params.category as string;
 
-  const [data, setData] = useState<CategoryPageData | null>(null);
+  const [data, setData] = useState<CategoryPageData>({
+    articles: [],
+    totalCount: 0,
+    totalPages: 0,
+    categoryStats: {
+      totalArticles: 0,
+      totalViews: 0,
+      totalLikes: 0,
+      totalComments: 0,
+      topAuthors: [],
+    },
+  });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<
@@ -137,6 +148,8 @@ export default function CategoryPage() {
   }, [category, currentPage, sortBy, searchQuery]);
 
   const fetchCategoryData = async () => {
+    if (!config) return;
+
     setLoading(true);
     try {
       await Promise.all([fetchArticles(), fetchCategoryStats()]);
@@ -149,96 +162,107 @@ export default function CategoryPage() {
   };
 
   const fetchArticles = async () => {
-    const limit = 12;
-    const from = (currentPage - 1) * limit;
-    const to = from + limit - 1;
+    try {
+      const limit = 12;
+      const from = (currentPage - 1) * limit;
+      const to = from + limit - 1;
 
-    let query = supabase
-      .from("articles")
-      .select(
-        `
-        id,
-        title,
-        excerpt,
-        cover_image,
-        category,
-        slug,
-        views,
-        likes_count,
-        comments_count,
-        created_at,
-        profiles:author_id (
+      let query = supabase
+        .from("articles")
+        .select(
+          `
           id,
-          full_name,
-          avatar_url
+          title,
+          excerpt,
+          cover_image,
+          category,
+          slug,
+          views,
+          likes_count,
+          comments_count,
+          created_at,
+          profiles:author_id (
+            id,
+            full_name,
+            avatar_url
+          )
+        `
         )
-      `
-      )
-      .eq("published", true)
-      .eq("category", category);
+        .eq("published", true)
+        .eq("category", category);
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      query = query.or(
-        `title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`
-      );
-    }
+      // Apply search filter
+      if (searchQuery.trim()) {
+        query = query.or(
+          `title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`
+        );
+      }
 
-    // Apply sorting
-    switch (sortBy) {
-      case "newest":
-        query = query.order("created_at", { ascending: false });
-        break;
-      case "oldest":
-        query = query.order("created_at", { ascending: true });
-        break;
-      case "popular":
-        query = query.order("views", { ascending: false });
-        break;
-      case "most_liked":
-        query = query.order("likes_count", { ascending: false });
-        break;
-    }
+      // Apply sorting
+      switch (sortBy) {
+        case "newest":
+          query = query.order("created_at", { ascending: false });
+          break;
+        case "oldest":
+          query = query.order("created_at", { ascending: true });
+          break;
+        case "popular":
+          query = query.order("views", { ascending: false });
+          break;
+        case "most_liked":
+          query = query.order("likes_count", { ascending: false });
+          break;
+      }
 
-    // Apply pagination
-    query = query.range(from, to);
+      // Apply pagination
+      query = query.range(from, to);
 
-    const { data: articles, error, count } = await query;
+      const { data: articles, error, count } = await query;
 
-    if (error) {
+      if (error) {
+        console.error("Error fetching articles:", error);
+        toast.error("Gagal memuat artikel");
+        return;
+      }
+
+      // Get total count for pagination
+      let countQuery = supabase
+        .from("articles")
+        .select("*", { count: "exact", head: true })
+        .eq("published", true)
+        .eq("category", category);
+
+      if (searchQuery.trim()) {
+        countQuery = countQuery.or(
+          `title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`
+        );
+      }
+
+      const { count: totalCount, error: countError } = await countQuery;
+
+      if (countError) {
+        console.error("Error fetching count:", countError);
+        return;
+      }
+
+      const processedArticles =
+        articles?.map((article: any) => ({
+          ...article,
+          profiles: Array.isArray(article.profiles)
+            ? article.profiles[0]
+            : article.profiles,
+        })) || [];
+
+      setData((prev) => ({
+        ...prev,
+        articles: processedArticles,
+        totalCount: totalCount || 0,
+        totalPages: Math.ceil((totalCount || 0) / limit),
+      }));
+    } catch (error) {
       console.error("Error fetching articles:", error);
-      return;
+      toast.error("Gagal memuat artikel");
     }
-
-    // Get total count for pagination
-    let countQuery = supabase
-      .from("articles")
-      .select("*", { count: "exact", head: true })
-      .eq("published", true)
-      .eq("category", category);
-
-    if (searchQuery.trim()) {
-      countQuery = countQuery.or(
-        `title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`
-      );
-    }
-
-    const { count: totalCount } = await countQuery;
-
-    const processedArticles =
-      articles?.map((article: any) => ({
-        ...article,
-        profiles: Array.isArray(article.profiles)
-          ? article.profiles[0]
-          : article.profiles,
-      })) || [];
-
-    setData((prev) => ({
-      ...prev!,
-      articles: processedArticles,
-      totalCount: totalCount || 0,
-      totalPages: Math.ceil((totalCount || 0) / limit),
-    }));
   };
 
   const fetchCategoryStats = async () => {
@@ -261,6 +285,7 @@ export default function CategoryPage() {
 
       if (statsError) {
         console.error("Error fetching category stats:", statsError);
+        toast.error("Gagal memuat statistik kategori");
         return;
       }
 
@@ -298,13 +323,14 @@ export default function CategoryPage() {
         .slice(0, 5);
 
       setData((prev) => ({
-        articles: prev?.articles || [],
-        totalCount: prev?.totalCount || 0,
-        totalPages: prev?.totalPages || 0,
+        articles: prev.articles,
+        totalCount: prev.totalCount,
+        totalPages: prev.totalPages,
         categoryStats: stats,
       }));
     } catch (error) {
       console.error("Error fetching category stats:", error);
+      toast.error("Gagal memuat statistik kategori");
     }
   };
 
@@ -333,18 +359,18 @@ export default function CategoryPage() {
 
   if (!config) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Kategori Tidak Ditemukan
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 mb-6">
             Kategori yang Anda cari tidak tersedia.
           </p>
           <Link
             href="/kategori"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Kembali ke Kategori
           </Link>
@@ -354,32 +380,24 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <Link
-            href="/"
-            className="hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
+        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+          <Link href="/" className="hover:text-blue-600">
             Beranda
           </Link>
           <span>/</span>
-          <Link
-            href="/kategori"
-            className="hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
+          <Link href="/kategori" className="hover:text-blue-600">
             Kategori
           </Link>
           <span>/</span>
-          <span className="text-gray-900 dark:text-white font-medium">
-            {config.name}
-          </span>
+          <span className="text-gray-900 font-medium">{config.name}</span>
         </nav>
 
         {/* Category Header */}
         <div
-          className={`${config.bgColor} rounded-xl p-8 mb-8 border border-gray-200 dark:border-gray-700`}
+          className={`${config.bgColor} rounded-xl p-8 mb-8 border border-blue-100`}
         >
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center space-x-4 mb-6 lg:mb-0">
@@ -392,16 +410,14 @@ export default function CategoryPage() {
                 <h1 className={`text-3xl font-bold ${config.textColor} mb-2`}>
                   {config.name}
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  {config.description}
-                </p>
+                <p className="text-gray-600 text-lg">{config.description}</p>
               </div>
             </div>
 
             {/* Back Button */}
             <Link
               href="/kategori"
-              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               <span>Kembali ke Kategori</span>
@@ -409,49 +425,39 @@ export default function CategoryPage() {
           </div>
 
           {/* Category Stats */}
-          {data?.categoryStats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
-                  {formatNumber(data.categoryStats.totalArticles)}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Artikel
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-blue-100">
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
+                {formatNumber(data.categoryStats.totalArticles)}
               </div>
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
-                  {formatNumber(data.categoryStats.totalViews)}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Views
-                </div>
-              </div>
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
-                  {formatNumber(data.categoryStats.totalLikes)}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Likes
-                </div>
-              </div>
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
-                  {formatNumber(data.categoryStats.totalComments)}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Komentar
-                </div>
-              </div>
+              <div className="text-sm text-gray-600">Konten</div>
             </div>
-          )}
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
+                {formatNumber(data.categoryStats.totalViews)}
+              </div>
+              <div className="text-sm text-gray-600">Views</div>
+            </div>
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
+                {formatNumber(data.categoryStats.totalLikes)}
+              </div>
+              <div className="text-sm text-gray-600">Likes</div>
+            </div>
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${config.textColor} mb-1`}>
+                {formatNumber(data.categoryStats.totalComments)}
+              </div>
+              <div className="text-sm text-gray-600">Komentar</div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
             {/* Search and Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+            <div className="bg-white/95 rounded-xl shadow-lg p-6 mb-8 border border-blue-100">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Search */}
                 <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
@@ -464,14 +470,14 @@ export default function CategoryPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={`Cari dalam ${config.name.toLowerCase()}...`}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </form>
 
                 {/* Sort Options */}
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
                     Urutkan:
                   </span>
                   <select
@@ -479,7 +485,7 @@ export default function CategoryPage() {
                     onChange={(e) =>
                       handleSortChange(e.target.value as typeof sortBy)
                     }
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="newest">Terbaru</option>
                     <option value="oldest">Terlama</option>
@@ -490,23 +496,21 @@ export default function CategoryPage() {
               </div>
 
               {/* Results Count */}
-              {data && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {searchQuery.trim() ? (
-                      <>
-                        Menampilkan {data.articles.length} dari{" "}
-                        {data.totalCount} artikel untuk "{searchQuery}"
-                      </>
-                    ) : (
-                      <>
-                        Menampilkan {data.articles.length} dari{" "}
-                        {data.totalCount} artikel
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
+              <div className="mt-4 pt-4 border-t border-blue-100">
+                <p className="text-sm text-gray-600">
+                  {searchQuery.trim() ? (
+                    <>
+                      Menampilkan {data.articles.length} dari {data.totalCount}{" "}
+                      konten untuk "{searchQuery}"
+                    </>
+                  ) : (
+                    <>
+                      Menampilkan {data.articles.length} dari {data.totalCount}{" "}
+                      konten
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
 
             {/* Articles Grid */}
@@ -514,24 +518,24 @@ export default function CategoryPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 dark:bg-gray-700 h-48 rounded-xl mb-4"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="bg-blue-100 h-48 rounded-xl mb-4"></div>
+                    <div className="h-4 bg-blue-100 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-blue-100 rounded w-1/2"></div>
                   </div>
                 ))}
               </div>
-            ) : data?.articles.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+            ) : data.articles.length === 0 ? (
+              <div className="bg-white/95 rounded-xl shadow-lg p-12 text-center border border-blue-100">
                 <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {searchQuery.trim()
                     ? "Tidak Ada Hasil Pencarian"
-                    : "Belum Ada Artikel"}
+                    : "Belum Ada Konten"}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-600 mb-6">
                   {searchQuery.trim()
-                    ? `Tidak ditemukan artikel yang cocok dengan "${searchQuery}" dalam kategori ${config.name}.`
-                    : `Belum ada artikel dalam kategori ${config.name}. Jadilah yang pertama untuk berkontribusi!`}
+                    ? `Tidak ditemukan konten yang cocok dengan "${searchQuery}" dalam kategori ${config.name}.`
+                    : `Belum ada konten dalam kategori ${config.name}. Jadilah yang pertama untuk berkontribusi!`}
                 </p>
                 {searchQuery.trim() ? (
                   <button
@@ -539,26 +543,26 @@ export default function CategoryPage() {
                       setSearchQuery("");
                       setCurrentPage(1);
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     Lihat Semua Artikel
                   </button>
                 ) : (
                   <Link
                     href="/write"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
                   >
-                    Tulis Artikel Pertama
+                    Tulis Konten Pertama
                   </Link>
                 )}
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  {data?.articles.map((article) => (
+                  {data.articles.map((article) => (
                     <article
                       key={article.id}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                      className="bg-white/95 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
                     >
                       {/* Article Image */}
                       {article.cover_image && (
@@ -581,7 +585,7 @@ export default function CategoryPage() {
                           >
                             {config.emoji} {config.name}
                           </span>
-                          <span className="text-gray-500 dark:text-gray-400 text-sm flex items-center">
+                          <span className="text-gray-500 text-sm flex items-center">
                             <ClockIcon className="w-4 h-4 mr-1" />
                             {articleHelpers.formatRelativeTime(
                               article.created_at
@@ -590,32 +594,32 @@ export default function CategoryPage() {
                         </div>
 
                         {/* Article Title */}
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                           <Link
                             href={`/article/${article.slug}`}
-                            className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            className="hover:text-blue-600 transition-colors"
                           >
                             {article.title}
                           </Link>
                         </h3>
 
                         {/* Article Excerpt */}
-                        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 leading-relaxed">
+                        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
                           {article.excerpt}
                         </p>
 
                         {/* Article Footer */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
                               {article.profiles?.full_name?.charAt(0) || "A"}
                             </div>
-                            <span className="font-medium text-gray-900 dark:text-white text-sm">
+                            <span className="font-medium text-gray-900 text-sm">
                               {article.profiles?.full_name || "Anonymous"}
                             </span>
                           </div>
 
-                          <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <span className="flex items-center">
                               <EyeIcon className="w-4 h-4 mr-1" />
                               {formatNumber(article.views)}
@@ -636,13 +640,13 @@ export default function CategoryPage() {
                 </div>
 
                 {/* Pagination */}
-                {data && data.totalPages > 1 && (
+                {data.totalPages > 1 && (
                   <div className="flex justify-center">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Sebelumnya
                       </button>
@@ -663,7 +667,7 @@ export default function CategoryPage() {
                               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                                 currentPage === pageNum
                                   ? `bg-gradient-to-r ${config.color} text-white`
-                                  : "text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  : "text-gray-500 bg-white border border-blue-200 hover:bg-blue-50"
                               }`}
                             >
                               {pageNum}
@@ -675,7 +679,7 @@ export default function CategoryPage() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === data.totalPages}
-                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Selanjutnya
                       </button>
@@ -690,61 +694,60 @@ export default function CategoryPage() {
           <div className="lg:col-span-1">
             <div className="space-y-6">
               {/* Top Authors in Category */}
-              {data?.categoryStats.topAuthors &&
-                data.categoryStats.topAuthors.length > 0 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                      👑 Penulis Teratas
-                    </h3>
-                    <div className="space-y-3">
-                      {data.categoryStats.topAuthors.map((author, index) => (
-                        <div
-                          key={author.author_name}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex items-center">
-                            <div
-                              className={`w-8 h-8 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white font-bold text-sm mr-3`}
-                            >
-                              {author.author_name.charAt(0)}
+              {data.categoryStats.topAuthors.length > 0 && (
+                <div className="bg-white/95 rounded-xl shadow-lg p-6 border border-blue-100">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    👑 Penulis Teratas
+                  </h3>
+                  <div className="space-y-3">
+                    {data.categoryStats.topAuthors.map((author, index) => (
+                      <div
+                        key={author.author_name}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className={`w-8 h-8 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white font-bold text-sm mr-3`}
+                          >
+                            {author.author_name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 text-sm">
+                              {author.author_name}
                             </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white text-sm">
-                                {author.author_name}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {author.article_count} artikel
-                              </div>
+                            <div className="text-xs text-gray-500">
+                              {author.article_count} konten
                             </div>
                           </div>
-                          <div
-                            className={`text-lg ${
-                              index === 0
-                                ? "🥇"
-                                : index === 1
-                                ? "🥈"
-                                : index === 2
-                                ? "🥉"
-                                : "🏅"
-                            }`}
-                          >
-                            {index === 0
+                        </div>
+                        <div
+                          className={`text-lg ${
+                            index === 0
                               ? "🥇"
                               : index === 1
                               ? "🥈"
                               : index === 2
                               ? "🥉"
-                              : "🏅"}
-                          </div>
+                              : "🏅"
+                          }`}
+                        >
+                          {index === 0
+                            ? "🥇"
+                            : index === 1
+                            ? "🥈"
+                            : index === 2
+                            ? "🥉"
+                            : "🏅"}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
               {/* Other Categories */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <div className="bg-white/95 rounded-xl shadow-lg p-6 border border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
                   📂 Kategori Lainnya
                 </h3>
                 <div className="space-y-2">
@@ -754,18 +757,18 @@ export default function CategoryPage() {
                       <Link
                         key={key}
                         href={`/kategori/${key}`}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 transition-colors group"
                       >
                         <div className="flex items-center">
                           <span className="text-lg mr-3">
                             {otherConfig.emoji}
                           </span>
-                          <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                          <span className="text-gray-700 font-medium group-hover:text-blue-600">
                             {otherConfig.name}
                           </span>
                         </div>
                         <svg
-                          className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"
+                          className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"

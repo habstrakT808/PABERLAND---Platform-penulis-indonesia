@@ -1,7 +1,15 @@
-import Link from "next/link";
-import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+"use client";
 
-export default function ArticleNotFound() {
+import Link from "next/link";
+import { HomeIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
@@ -23,30 +31,30 @@ export default function ArticleNotFound() {
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Konten Tidak Ditemukan
+            Terjadi Kesalahan
           </h1>
 
           <p className="text-gray-600 mb-8">
-            Maaf, konten yang Anda cari tidak ditemukan atau mungkin telah
-            dihapus. Silakan periksa kembali URL atau cari konten lain.
+            Maaf, terjadi kesalahan yang tidak terduga. Silakan coba lagi atau
+            kembali ke beranda.
           </p>
         </div>
 
         <div className="space-y-4">
+          <button
+            onClick={reset}
+            className="inline-flex items-center justify-center space-x-2 w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <ArrowPathIcon className="w-5 h-5" />
+            <span>Coba Lagi</span>
+          </button>
+
           <Link
             href="/"
-            className="inline-flex items-center justify-center space-x-2 w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center space-x-2 w-full px-6 py-3 border border-blue-200 text-gray-700 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <HomeIcon className="w-5 h-5" />
             <span>Kembali ke Beranda</span>
-          </Link>
-
-          <Link
-            href="/kategori"
-            className="inline-flex items-center justify-center space-x-2 w-full px-6 py-3 border border-blue-200 text-gray-700 rounded-lg hover:bg-blue-50 transition-colors"
-          >
-            <MagnifyingGlassIcon className="w-5 h-5" />
-            <span>Jelajahi Kategori</span>
           </Link>
         </div>
 

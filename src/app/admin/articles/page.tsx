@@ -71,7 +71,7 @@ function AdminArticlesContent() {
     { value: "all", label: "Semua Kategori", emoji: "📚" },
     { value: "cerpen", label: "Cerpen", emoji: "📖" },
     { value: "puisi", label: "Puisi", emoji: "🎭" },
-    { value: "artikel", label: "Artikel", emoji: "📰" },
+    { value: "artikel", label: "Konten", emoji: "📰" },
     { value: "cerita-rakyat", label: "Cerita Rakyat", emoji: "🏛️" },
     { value: "novel-berseri", label: "Novel Berseri", emoji: "📚" },
     { value: "lainnya", label: "Lainnya", emoji: "✨" },
@@ -110,7 +110,7 @@ function AdminArticlesContent() {
       setTotalCount(result.totalCount);
     } catch (error) {
       console.error("Error fetching articles:", error);
-      toast.error("Gagal memuat data artikel");
+      toast.error("Gagal memuat data konten");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -141,7 +141,7 @@ function AdminArticlesContent() {
     if (!currentUser) return;
 
     if (
-      !confirm(`Apakah Anda yakin ingin menghapus artikel "${articleTitle}"?`)
+      !confirm(`Apakah Anda yakin ingin menghapus konten "${articleTitle}"?`)
     ) {
       return;
     }
@@ -155,10 +155,10 @@ function AdminArticlesContent() {
       );
 
       if (result.success) {
-        toast.success(`Artikel "${articleTitle}" berhasil dihapus!`);
+        toast.success(`Konten "${articleTitle}" berhasil dihapus!`);
         fetchArticles(true);
       } else {
-        toast.error(result.error || "Gagal menghapus artikel");
+        toast.error(result.error || "Gagal menghapus konten");
       }
     } catch (error) {
       toast.error("Terjadi kesalahan sistem");
@@ -194,7 +194,7 @@ function AdminArticlesContent() {
         setFeaturedArticles(newFeatured);
 
         toast.success(
-          `Artikel "${articleTitle}" berhasil ${
+          `Konten "${articleTitle}" berhasil ${
             featured ? "diunfeature" : "di-feature"
           }!`
         );
@@ -233,15 +233,18 @@ function AdminArticlesContent() {
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-8"></div>
+          <div className="h-8 bg-blue-100 rounded w-1/3 mb-8"></div>
           <div className="space-y-4">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl">
+              <div
+                key={i}
+                className="bg-white/95 p-6 rounded-xl border border-blue-100"
+              >
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="w-16 h-16 bg-blue-100 rounded-lg"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="h-4 bg-blue-100 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-blue-100 rounded w-1/2"></div>
                   </div>
                 </div>
               </div>
@@ -258,18 +261,18 @@ function AdminArticlesContent() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              📚 Manajemen Artikel
+            <h1 className="text-3xl font-bold text-gray-900">
+              📚 Manajemen Konten
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Kelola semua artikel di platform PaberLand
+            <p className="text-gray-700 mt-1">
+              Kelola semua konten di platform PaberLand
             </p>
           </div>
 
           <button
             onClick={() => fetchArticles(true)}
             disabled={refreshing}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon
               className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
@@ -280,7 +283,7 @@ function AdminArticlesContent() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/95 rounded-xl shadow-sm p-6 mb-8 border border-blue-100">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md">
@@ -292,8 +295,8 @@ function AdminArticlesContent() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari judul artikel..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Cari judul konten..."
+                className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </form>
@@ -306,7 +309,7 @@ function AdminArticlesContent() {
                 setCategory(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {categories.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -322,7 +325,7 @@ function AdminArticlesContent() {
                 setStatus(e.target.value as "all" | "published" | "draft");
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Semua Status</option>
               <option value="published">Published</option>
@@ -334,8 +337,8 @@ function AdminArticlesContent() {
 
       {/* Articles List */}
       {articles.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-gray-200 dark:border-gray-700">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+        <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
             <svg
               className="w-8 h-8 text-gray-400"
               fill="none"
@@ -350,13 +353,13 @@ function AdminArticlesContent() {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Tidak Ada Artikel
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Tidak Ada Konten
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {search || category !== "all" || status !== "all"
-              ? "Tidak ditemukan artikel yang sesuai dengan filter."
-              : "Belum ada artikel yang dipublikasikan."}
+              ? "Tidak ditemukan konten yang sesuai dengan filter."
+              : "Belum ada konten yang dipublikasikan."}
           </p>
         </div>
       ) : (
@@ -367,10 +370,10 @@ function AdminArticlesContent() {
             return (
               <div
                 key={article.id}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border transition-all duration-300 hover:shadow-lg ${
+                className={`bg-white/95 rounded-xl shadow-sm p-6 border transition-all duration-300 hover:shadow-lg ${
                   isFeatured
-                    ? "border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/10"
-                    : "border-gray-200 dark:border-gray-700"
+                    ? "border-yellow-200 bg-yellow-50"
+                    : "border-blue-100"
                 }`}
               >
                 <div className="flex items-start space-x-4">
@@ -385,7 +388,7 @@ function AdminArticlesContent() {
                         className="w-20 h-20 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                      <div className="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
                         <span className="text-2xl">
                           {getCategoryEmoji(article.category)}
                         </span>
@@ -401,7 +404,7 @@ function AdminArticlesContent() {
                         <div className="flex items-center space-x-3 mb-2">
                           <Link
                             href={`/article/${article.slug}`}
-                            className="text-lg font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors line-clamp-1"
+                            className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors line-clamp-1"
                           >
                             {article.title}
                           </Link>
@@ -409,21 +412,21 @@ function AdminArticlesContent() {
                           {isFeatured && (
                             <StarSolid
                               className="w-5 h-5 text-yellow-500"
-                              title="Featured Article"
+                              title="Featured Konten"
                             />
                           )}
 
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${
                               article.published
-                                ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-blue-100 text-gray-800"
                             }`}
                           >
                             {article.published ? "Published" : "Draft"}
                           </span>
 
-                          <span className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-full text-xs font-medium">
+                          <span className="bg-blue-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
                             {getCategoryEmoji(article.category)}{" "}
                             {article.category.charAt(0).toUpperCase() +
                               article.category.slice(1).replace("-", " ")}
@@ -441,25 +444,25 @@ function AdminArticlesContent() {
                               className="w-6 h-6 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                               {article.profiles.full_name.charAt(0)}
                             </div>
                           )}
                           <Link
-                            href={`/profile/${article.profiles.id}`}
-                            className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            href={`/penulis/${article.profiles.id}`}
+                            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                           >
                             {article.profiles.full_name}
                           </Link>
                         </div>
 
                         {/* Excerpt */}
-                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
+                        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                           {article.excerpt}
                         </p>
 
                         {/* Stats & Meta */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">
                             <EyeIcon className="w-4 h-4 mr-1" />
                             {formatNumber(article.views)}
@@ -487,27 +490,27 @@ function AdminArticlesContent() {
                               showArticleMenu === article.id ? null : article.id
                             )
                           }
-                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
                           disabled={actionLoading === article.id}
                         >
                           {actionLoading === article.id ? (
                             <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
-                            <EllipsisVerticalIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                            <EllipsisVerticalIcon className="w-5 h-5 text-gray-500" />
                           )}
                         </button>
 
                         {/* Action Menu */}
                         {showArticleMenu === article.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                          <div className="absolute right-0 mt-2 w-48 bg-white/95 rounded-lg shadow-lg border border-blue-100 z-10">
                             <div className="py-1">
                               <Link
                                 href={`/article/${article.slug}`}
-                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                                 onClick={() => setShowArticleMenu(null)}
                               >
                                 <EyeIcon className="w-4 h-4 inline mr-2" />
-                                Lihat Artikel
+                                Lihat Konten
                               </Link>
 
                               <button
@@ -518,29 +521,29 @@ function AdminArticlesContent() {
                                     isFeatured
                                   )
                                 }
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                               >
                                 <StarIcon className="w-4 h-4 inline mr-2" />
-                                {isFeatured ? "Unfeature" : "Feature"} Artikel
+                                {isFeatured ? "Unfeature" : "Feature"} Konten
                               </button>
 
-                              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                              <div className="border-t border-blue-100 my-1"></div>
 
                               <button
                                 onClick={() =>
                                   handleDeleteArticle(article.id, article.title)
                                 }
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-blue-50 transition-colors"
                               >
                                 <TrashIcon className="w-4 h-4 inline mr-2" />
-                                Hapus Artikel
+                                Hapus Konten
                               </button>
 
-                              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                              <div className="border-t border-blue-100 my-1"></div>
 
                               <button
                                 onClick={() => setShowArticleMenu(null)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-blue-50 transition-colors"
                               >
                                 Tutup
                               </button>
@@ -564,7 +567,7 @@ function AdminArticlesContent() {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Sebelumnya
             </button>
@@ -579,8 +582,8 @@ function AdminArticlesContent() {
                   onClick={() => setCurrentPage(pageNum)}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                     currentPage === pageNum
-                      ? "bg-indigo-600 text-white"
-                      : "text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-500 bg-white border border-blue-200 hover:bg-blue-50"
                   }`}
                 >
                   {pageNum}
@@ -593,7 +596,7 @@ function AdminArticlesContent() {
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Selanjutnya
             </button>
@@ -602,13 +605,8 @@ function AdminArticlesContent() {
       )}
 
       {/* Results Info */}
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Menampilkan {articles.length} dari {totalCount} artikel
-          {search && ` untuk pencarian "${search}"`}
-          {category !== "all" && ` dalam kategori ${category}`}
-          {status !== "all" && ` dengan status ${status}`}
-        </p>
+      <div className="text-center text-sm text-gray-600 mt-4">
+        Menampilkan {articles.length} dari {totalCount} konten
       </div>
     </div>
   );

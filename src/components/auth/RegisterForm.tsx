@@ -15,12 +15,22 @@ export default function RegisterForm() {
     phone: "",
     password: "",
     confirmPassword: "",
+    role: "Penulis", // Default role
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const roles = [
+    { value: "Penulis", label: "Penulis" },
+    { value: "Ilustrator", label: "Ilustrator" },
+    { value: "Kreator Buku", label: "Kreator Buku" },
+    { value: "Pekerja Buku", label: "Pekerja Buku" },
+  ];
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -35,7 +45,8 @@ export default function RegisterForm() {
       !formData.fullName ||
       !formData.email ||
       !formData.password ||
-      !formData.phone
+      !formData.phone ||
+      !formData.role
     ) {
       toast.error("Semua field harus diisi!");
       return;
@@ -61,6 +72,7 @@ export default function RegisterForm() {
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
+            role: formData.role,
           },
         },
       });
@@ -71,6 +83,18 @@ export default function RegisterForm() {
       }
 
       if (data.user) {
+        // Create profile with role
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: data.user.id,
+          full_name: formData.fullName,
+          phone: formData.phone,
+          role: formData.role,
+        });
+
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
+        }
+
         toast.success(
           "Pendaftaran berhasil! Silakan cek email untuk verifikasi."
         );
@@ -84,12 +108,12 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
             <svg
-              className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+              className="h-6 w-6 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -102,10 +126,10 @@ export default function RegisterForm() {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             Bergabung dengan PaberLand
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-gray-700">
             Mulai perjalanan menulis Anda bersama komunitas penulis Indonesia
           </p>
         </div>
@@ -116,7 +140,7 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-800 mb-1"
               >
                 Nama Lengkap
               </label>
@@ -127,7 +151,7 @@ export default function RegisterForm() {
                 required
                 value={formData.fullName}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                className="appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
                 placeholder="Masukkan nama lengkap Anda"
               />
             </div>
@@ -136,7 +160,7 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-800 mb-1"
               >
                 Email
               </label>
@@ -147,7 +171,7 @@ export default function RegisterForm() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                className="appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
                 placeholder="contoh@email.com"
               />
             </div>
@@ -156,7 +180,7 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-800 mb-1"
               >
                 Nomor HP
               </label>
@@ -167,16 +191,40 @@ export default function RegisterForm() {
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                className="appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
                 placeholder="08123456789"
               />
+            </div>
+
+            {/* Role */}
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-800 mb-1"
+              >
+                Pilih Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                required
+                value={formData.role}
+                onChange={handleChange}
+                className="appearance-none relative block w-full px-3 py-2 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
+              >
+                {roles.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Password */}
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-800 mb-1"
               >
                 Password
               </label>
@@ -188,7 +236,7 @@ export default function RegisterForm() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
                   placeholder="Minimal 6 karakter"
                 />
                 <button
@@ -209,7 +257,7 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-800 mb-1"
               >
                 Konfirmasi Password
               </label>
@@ -221,7 +269,7 @@ export default function RegisterForm() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-800"
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-blue-200 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-white"
                   placeholder="Ulangi password Anda"
                 />
                 <button
@@ -243,7 +291,7 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <div className="flex items-center">
@@ -276,11 +324,11 @@ export default function RegisterForm() {
           </div>
 
           <div className="text-center">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-700">
               Sudah punya akun?{" "}
               <Link
                 href="/auth/login"
-                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                className="font-medium text-blue-600 hover:text-blue-500"
               >
                 Masuk di sini
               </Link>

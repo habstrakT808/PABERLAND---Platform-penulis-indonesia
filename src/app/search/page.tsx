@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import SignedImage from "@/components/common/SignedImage";
 import {
   MagnifyingGlassIcon,
   EyeIcon,
@@ -159,10 +160,10 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-white/95 rounded-xl shadow-sm p-6 mb-8 border border-blue-100">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Search Form */}
             <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
@@ -174,15 +175,15 @@ export default function SearchPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari artikel, penulis..."
-                  className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Cari konten, penulis..."
+                  className="block w-full pl-10 pr-12 py-3 border border-blue-200 rounded-lg leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <button
                   type="submit"
                   disabled={loading}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
-                  <div className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white p-2 rounded-md transition-colors">
+                  <div className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white p-2 rounded-md transition-colors">
                     <MagnifyingGlassIcon className="h-4 w-4" />
                   </div>
                 </button>
@@ -192,7 +193,7 @@ export default function SearchPage() {
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 lg:hidden"
+              className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 lg:hidden"
             >
               <AdjustmentsHorizontalIcon className="w-5 h-5" />
               <span>Filter</span>
@@ -204,7 +205,7 @@ export default function SearchPage() {
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               {/* Search Type */}
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                <span className="text-sm font-medium text-gray-800 whitespace-nowrap">
                   Cari dalam:
                 </span>
                 <div className="flex space-x-2">
@@ -218,8 +219,8 @@ export default function SearchPage() {
                       onClick={() => handleTypeChange(type.value)}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                         searchType === type.value
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          ? "bg-blue-600 text-white"
+                          : "bg-blue-50 text-gray-700 hover:bg-blue-100"
                       }`}
                     >
                       {type.label}
@@ -231,13 +232,13 @@ export default function SearchPage() {
               {/* Category Filter */}
               {(searchType === "all" || searchType === "articles") && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <span className="text-sm font-medium text-gray-800 whitespace-nowrap">
                     Kategori:
                   </span>
                   <select
                     value={selectedCategory}
                     onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-3 py-1 border border-blue-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map((cat) => (
                       <option key={cat.value} value={cat.value}>
@@ -258,7 +259,7 @@ export default function SearchPage() {
                       performSearch(searchQuery, "all", "all", 1);
                     }
                   }}
-                  className="flex items-center space-x-1 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                  className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700"
                 >
                   <XMarkIcon className="w-4 h-4" />
                   <span>Reset Filter</span>
@@ -271,17 +272,17 @@ export default function SearchPage() {
         {/* Search Results */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Mencari...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-700">Mencari...</p>
           </div>
         ) : results ? (
           <div className="space-y-8">
             {/* Results Summary */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
                 Hasil Pencarian untuk "{results.query}"
               </h2>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
                 {results.totalArticles > 0 && (
                   <span>📚 {results.totalArticles} artikel</span>
                 )}
@@ -298,8 +299,8 @@ export default function SearchPage() {
 
             {/* Authors Results */}
             {results.authors.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+              <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                   <UserIcon className="w-5 h-5 mr-2" />
                   Penulis ({results.authors.length})
                 </h3>
@@ -308,17 +309,17 @@ export default function SearchPage() {
                     <Link
                       key={author.id}
                       href={`/penulis/${author.id}`}
-                      className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
+                      className="flex items-center space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
-                      <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                         {author.full_name?.charAt(0) || "U"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 dark:text-white truncate">
+                        <div className="font-medium text-gray-900 truncate">
                           {author.full_name}
                         </div>
                         {author.bio && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          <div className="text-sm text-gray-600 truncate">
                             {author.bio}
                           </div>
                         )}
@@ -331,25 +332,23 @@ export default function SearchPage() {
 
             {/* Articles Results */}
             {results.articles.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+              <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                   📚 Artikel ({results.totalArticles})
                 </h3>
                 <div className="space-y-6">
                   {results.articles.map((article) => (
                     <article
                       key={article.id}
-                      className="border-b border-gray-200 dark:border-gray-700 last:border-b-0 pb-6 last:pb-0"
+                      className="border-b border-blue-100 last:border-b-0 pb-6 last:pb-0"
                     >
                       <div className="flex flex-col lg:flex-row lg:space-x-6">
                         {/* Article Image */}
                         {article.cover_image && (
                           <div className="lg:w-48 mb-4 lg:mb-0">
-                            <Image
+                            <SignedImage
                               src={article.cover_image}
                               alt={article.title}
-                              width={200}
-                              height={120}
                               className="w-full lg:w-48 h-32 object-cover rounded-lg"
                             />
                           </div>
@@ -358,10 +357,10 @@ export default function SearchPage() {
                         {/* Article Content */}
                         <div className="flex-1">
                           <div className="flex items-center mb-2">
-                            <span className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm font-medium">
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                               {article.category}
                             </span>
-                            <span className="text-gray-500 dark:text-gray-400 text-sm ml-3 flex items-center">
+                            <span className="text-gray-600 text-sm ml-3 flex items-center">
                               <ClockIcon className="w-4 h-4 mr-1" />
                               {articleHelpers.formatRelativeTime(
                                 article.created_at
@@ -369,30 +368,30 @@ export default function SearchPage() {
                             </span>
                           </div>
 
-                          <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                          <h4 className="text-xl font-bold text-gray-900 mb-2">
                             <Link
                               href={`/article/${article.slug}`}
-                              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                              className="hover:text-blue-600 transition-colors"
                             >
                               {article.title}
                             </Link>
                           </h4>
 
-                          <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                          <p className="text-gray-700 mb-4 leading-relaxed">
                             {article.excerpt}
                           </p>
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
                                 {article.profiles?.full_name?.charAt(0) || "U"}
                               </div>
-                              <span className="font-medium text-gray-900 dark:text-white">
+                              <span className="font-medium text-gray-900">
                                 {article.profiles?.full_name || "Anonymous"}
                               </span>
                             </div>
 
-                            <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center space-x-4 text-sm text-gray-600">
                               <span className="flex items-center">
                                 <EyeIcon className="w-4 h-4 mr-1" />
                                 {article.views}
@@ -420,7 +419,7 @@ export default function SearchPage() {
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Sebelumnya
                       </button>
@@ -440,8 +439,8 @@ export default function SearchPage() {
                               onClick={() => handlePageChange(pageNum)}
                               className={`px-3 py-2 text-sm font-medium rounded-md ${
                                 currentPage === pageNum
-                                  ? "bg-indigo-600 text-white"
-                                  : "text-gray-500 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                                  ? "bg-blue-600 text-white"
+                                  : "text-gray-500 bg-white border border-blue-200 hover:bg-blue-50"
                               }`}
                             >
                               {pageNum}
@@ -453,7 +452,7 @@ export default function SearchPage() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === results.totalPages}
-                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-md hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Selanjutnya
                       </button>
@@ -465,15 +464,15 @@ export default function SearchPage() {
 
             {/* No Results */}
             {results.articles.length === 0 && results.authors.length === 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+              <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Tidak ada hasil ditemukan
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-700 mb-6">
                   Coba gunakan kata kunci yang berbeda atau periksa ejaan Anda.
                 </p>
-                <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="space-y-2 text-sm text-gray-600">
                   <p>💡 Tips pencarian:</p>
                   <ul className="space-y-1">
                     <li>• Gunakan kata kunci yang lebih umum</li>
@@ -487,13 +486,13 @@ export default function SearchPage() {
           </div>
         ) : (
           searchQuery && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+            <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 Mulai Pencarian Anda
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Masukkan kata kunci di atas untuk mencari artikel dan penulis.
+              <p className="text-gray-700">
+                Masukkan kata kunci di atas untuk mencari konten dan penulis.
               </p>
             </div>
           )

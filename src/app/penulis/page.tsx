@@ -24,6 +24,7 @@ interface AuthorProfile {
   full_name: string;
   bio: string | null;
   avatar_url: string | null;
+  role: string;
   created_at: string;
   // Computed stats
   article_count: number;
@@ -88,7 +89,7 @@ export default function AuthorsPage() {
     // First, get all profiles with basic info
     let profilesQuery = supabase
       .from("profiles")
-      .select("id, full_name, bio, avatar_url, created_at");
+      .select("id, full_name, bio, avatar_url, role, created_at");
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -314,64 +315,56 @@ export default function AuthorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            👥 Direktori Penulis
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Direktori Penulis
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-800 max-w-2xl mx-auto">
             Temukan dan kenali para penulis berbakat di komunitas PaberLand
           </p>
         </div>
 
         {/* Platform Stats */}
         {data?.platformStats && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-sm p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <ChartBarIcon className="w-6 h-6 mr-2" />
               Statistik Komunitas
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalAuthors)}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Penulis
-                </div>
+                <div className="text-sm text-gray-700">Total Penulis</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalArticles)}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Artikel
-                </div>
+                <div className="text-sm text-gray-700">Total Artikel</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalViews)}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Views
-                </div>
+                <div className="text-sm text-gray-700">Total Views</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalLikes)}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Total Likes
-                </div>
+                <div className="text-sm text-gray-700">Total Likes</div>
               </div>
             </div>
 
             {/* Top Categories */}
             {data.platformStats.topCategories.length > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <div className="border-t border-blue-100 pt-4">
+                <h3 className="text-sm font-medium text-gray-800 mb-3">
                   Kategori Populer:
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -379,7 +372,7 @@ export default function AuthorsPage() {
                     <Link
                       key={cat.category}
                       href={`/kategori/${cat.category}`}
-                      className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1 rounded-full text-sm font-medium transition-colors"
+                      className="flex items-center space-x-1 bg-white/80 hover:bg-blue-100 text-gray-800 hover:text-blue-600 px-3 py-1 rounded-full text-sm font-medium transition-colors"
                     >
                       <span>{getCategoryEmoji(cat.category)}</span>
                       <span className="capitalize">
@@ -398,7 +391,7 @@ export default function AuthorsPage() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             {/* Search and Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+            <div className="bg-white/90 rounded-xl shadow-sm p-6 mb-8 border border-blue-100">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Search */}
                 <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
@@ -411,14 +404,14 @@ export default function AuthorsPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Cari penulis..."
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </form>
 
                 {/* Sort Options */}
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <span className="text-sm font-medium text-gray-800 whitespace-nowrap">
                     Urutkan:
                   </span>
                   <select
@@ -426,7 +419,7 @@ export default function AuthorsPage() {
                     onChange={(e) =>
                       handleSortChange(e.target.value as typeof sortBy)
                     }
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="most_articles">Paling Produktif</option>
                     <option value="most_popular">Paling Populer</option>
@@ -439,8 +432,8 @@ export default function AuthorsPage() {
 
               {/* Results Count */}
               {data && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="mt-4 pt-4 border-t border-blue-100">
+                  <p className="text-sm text-gray-700">
                     {searchQuery.trim() ? (
                       <>
                         Menampilkan {data.authors.length} dari {data.totalCount}{" "}
@@ -462,29 +455,29 @@ export default function AuthorsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6">
+                    <div className="bg-white/95 rounded-xl p-6 border border-blue-100">
                       <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
                         <div className="flex-1">
-                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                         </div>
                       </div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                      <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : data?.authors.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+              <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
                 <div className="text-6xl mb-4">👤</div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {searchQuery.trim()
                     ? "Penulis Tidak Ditemukan"
                     : "Belum Ada Penulis"}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-700 mb-6">
                   {searchQuery.trim()
                     ? `Tidak ditemukan penulis yang cocok dengan "${searchQuery}".`
                     : "Belum ada penulis yang terdaftar di platform ini."}
@@ -495,14 +488,14 @@ export default function AuthorsPage() {
                       setSearchQuery("");
                       setCurrentPage(1);
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     Lihat Semua Penulis
                   </button>
                 ) : (
                   <Link
                     href="/auth/register"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
                   >
                     Bergabung Sebagai Penulis
                   </Link>
@@ -514,7 +507,7 @@ export default function AuthorsPage() {
                   {data?.authors.map((author) => (
                     <div
                       key={author.id}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                      className="bg-white/95 rounded-xl shadow-sm p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
                     >
                       {/* Author Header */}
                       <div className="flex items-center space-x-4 mb-4">
@@ -533,27 +526,32 @@ export default function AuthorsPage() {
                             </div>
                           )}
                           {/* Online indicator (you can implement real online status) */}
-                          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                          <h3 className="text-lg font-bold text-gray-900 truncate">
                             <Link
                               href={`/penulis/${author.id}`}
-                              className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                              className="hover:text-blue-600 transition-colors"
                             >
                               {author.full_name}
                             </Link>
                           </h3>
-                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center text-sm text-gray-600 mb-1">
                             <CalendarIcon className="w-4 h-4 mr-1" />
                             Bergabung {formatDate(author.created_at)}
+                          </div>
+                          <div className="flex items-center">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {author.role || "Penulis"}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Author Bio */}
                       {author.bio && (
-                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">
+                        <p className="text-gray-800 text-sm mb-4 line-clamp-2 leading-relaxed">
                           {author.bio}
                         </p>
                       )}
@@ -561,34 +559,30 @@ export default function AuthorsPage() {
                       {/* Author Stats */}
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="text-center">
-                          <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                          <div className="text-xl font-bold text-blue-600">
                             {author.article_count}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Artikel
-                          </div>
+                          <div className="text-xs text-gray-600">Artikel</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                          <div className="text-xl font-bold text-blue-600">
                             {formatNumber(author.total_views)}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Views
-                          </div>
+                          <div className="text-xs text-gray-600">Views</div>
                         </div>
                       </div>
 
                       {/* Categories */}
                       {author.categories.length > 0 && (
                         <div className="mb-4">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          <div className="text-xs text-gray-600 mb-2">
                             Menulis tentang:
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {author.categories.slice(0, 3).map((category) => (
                               <span
                                 key={category}
-                                className="inline-flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs"
+                                className="inline-flex items-center space-x-1 bg-blue-50 text-gray-800 px-2 py-1 rounded text-xs"
                               >
                                 <span>{getCategoryEmoji(category)}</span>
                                 <span className="capitalize">
@@ -597,7 +591,7 @@ export default function AuthorsPage() {
                               </span>
                             ))}
                             {author.categories.length > 3 && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-gray-600">
                                 +{author.categories.length - 3} lainnya
                               </span>
                             )}
@@ -607,14 +601,14 @@ export default function AuthorsPage() {
 
                       {/* Latest Article */}
                       {author.latest_article && (
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        <div className="border-t border-blue-100 pt-4">
+                          <div className="text-xs text-gray-600 mb-1">
                             Artikel Terbaru:
                           </div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate mb-1">
+                          <div className="text-sm font-medium text-gray-900 truncate mb-1">
                             {author.latest_article.title}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-gray-600">
                             {formatDate(author.latest_article.created_at)}
                           </div>
                         </div>
@@ -624,7 +618,7 @@ export default function AuthorsPage() {
                       <div className="mt-4">
                         <Link
                           href={`/penulis/${author.id}`}
-                          className="w-full bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"
+                          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"
                         >
                           <UserGroupIcon className="w-4 h-4" />
                           <span>Lihat Profil</span>
@@ -641,7 +635,7 @@ export default function AuthorsPage() {
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Sebelumnya
                       </button>
@@ -661,8 +655,8 @@ export default function AuthorsPage() {
                               onClick={() => handlePageChange(pageNum)}
                               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                                 currentPage === pageNum
-                                  ? "bg-indigo-600 text-white"
-                                  : "text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  ? "bg-blue-600 text-white"
+                                  : "text-gray-500 bg-white border border-blue-200 hover:bg-blue-50"
                               }`}
                             >
                               {pageNum}
@@ -674,7 +668,7 @@ export default function AuthorsPage() {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === data.totalPages}
-                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Selanjutnya
                       </button>
@@ -689,42 +683,38 @@ export default function AuthorsPage() {
           <div className="lg:col-span-1">
             <div className="space-y-6">
               {/* Join Community CTA */}
-              <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl p-6 text-white text-center">
+              <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl p-6 text-gray-900 text-center">
                 <div className="text-3xl mb-3">✍️</div>
                 <h3 className="text-lg font-bold mb-2">
                   Bergabung dengan Komunitas
                 </h3>
-                <p className="text-white/90 mb-4 text-sm leading-relaxed">
+                <p className="text-gray-800 mb-4 text-sm leading-relaxed">
                   Jadilah bagian dari komunitas penulis Indonesia dan bagikan
                   karya terbaikmu.
                 </p>
                 <Link
                   href="/auth/register"
-                  className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block backdrop-blur-sm"
+                  className="bg-white text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors inline-block"
                 >
                   🚀 Daftar Sekarang
                 </Link>
               </div>
 
               {/* Quick Stats */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
                   📊 Statistik Cepat
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Penulis Aktif
-                    </span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-gray-700">Penulis Aktif</span>
+                    <span className="font-bold text-blue-600">
                       {data?.totalCount || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Rata-rata Artikel
-                    </span>
-                    <span className="font-bold text-green-600 dark:text-green-400">
+                    <span className="text-gray-700">Rata-rata Artikel</span>
+                    <span className="font-bold text-blue-600">
                       {data?.totalCount
                         ? Math.round(
                             (data.platformStats?.totalArticles || 0) /
@@ -734,10 +724,8 @@ export default function AuthorsPage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Total Interaksi
-                    </span>
-                    <span className="font-bold text-red-600 dark:text-red-400">
+                    <span className="text-gray-700">Total Interaksi</span>
+                    <span className="font-bold text-blue-600">
                       {formatNumber(
                         (data?.platformStats?.totalViews || 0) +
                           (data?.platformStats?.totalLikes || 0)
@@ -748,8 +736,8 @@ export default function AuthorsPage() {
               </div>
 
               {/* Browse by Category */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
                   📂 Jelajahi Kategori
                 </h3>
                 <div className="space-y-2">
@@ -771,16 +759,16 @@ export default function AuthorsPage() {
                     <Link
                       key={category.key}
                       href={`/kategori/${category.key}`}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 transition-colors group"
                     >
                       <div className="flex items-center">
                         <span className="text-lg mr-3">{category.emoji}</span>
-                        <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                        <span className="text-gray-800 font-medium group-hover:text-blue-600">
                           {category.name}
                         </span>
                       </div>
                       <svg
-                        className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"
+                        className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

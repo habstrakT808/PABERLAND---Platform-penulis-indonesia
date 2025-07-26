@@ -66,10 +66,10 @@ function AdminDashboardContent() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900">
               🛡️ Admin Dashboard
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-700 mt-1">
               Selamat datang, {user?.user_metadata?.full_name || "Admin"}!
               Kelola platform PaberLand.
             </p>
@@ -78,7 +78,7 @@ function AdminDashboardContent() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon
               className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
@@ -95,23 +95,23 @@ function AdminDashboardContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         {/* Quick Actions */}
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
             🚀 Aksi Cepat
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link
               href="/admin/users"
-              className="block bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+              className="block bg-white/95 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-blue-100"
             >
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <UsersIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <UsersIcon className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Kelola Users
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-gray-600 text-sm">
                     {stats.totalUsers} total users
                   </p>
                 </div>
@@ -120,18 +120,18 @@ function AdminDashboardContent() {
 
             <Link
               href="/admin/articles"
-              className="block bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+              className="block bg-white/95 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-blue-100"
             >
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <DocumentTextIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <DocumentTextIcon className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Kelola Artikel
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Kelola Konten
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    {stats.totalArticles} total artikel
+                  <p className="text-gray-600 text-sm">
+                    {stats.totalArticles} total konten
                   </p>
                 </div>
               </div>
@@ -139,17 +139,17 @@ function AdminDashboardContent() {
 
             <Link
               href="/admin/reports"
-              className="block bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+              className="block bg-white/95 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-blue-100"
             >
               <div className="flex items-center">
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                  <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div className="p-3 bg-red-100 rounded-lg">
+                  <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Laporan Konten
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-gray-600 text-sm">
                     {stats.pendingReports} pending reports
                   </p>
                 </div>
@@ -158,17 +158,17 @@ function AdminDashboardContent() {
 
             <Link
               href="/admin/analytics"
-              className="block bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700"
+              className="block bg-white/95 p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-blue-100"
             >
               <div className="flex items-center">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <ChartBarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <ChartBarIcon className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Analytics
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-gray-600 text-sm">
                     Lihat statistik detail
                   </p>
                 </div>
@@ -179,25 +179,25 @@ function AdminDashboardContent() {
 
         {/* Alerts & Notifications */}
         <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
             🔔 Alerts & Status
           </h2>
           <div className="space-y-4">
             {/* Pending Reports Alert */}
             {stats.pendingReports > 0 && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <ExclamationTriangleIcon className="w-5 h-5 text-red-600 mt-0.5" />
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    <h3 className="text-sm font-medium text-red-800">
                       Laporan Pending
                     </h3>
-                    <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                    <p className="text-sm text-red-700 mt-1">
                       Ada {stats.pendingReports} laporan yang perlu ditinjau.
                     </p>
                     <Link
                       href="/admin/reports"
-                      className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 mt-2 inline-block"
+                      className="text-sm font-medium text-red-600 hover:text-red-700 mt-2 inline-block"
                     >
                       Tinjau Sekarang →
                     </Link>
@@ -207,14 +207,14 @@ function AdminDashboardContent() {
             )}
 
             {/* System Status */}
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
+                  <h3 className="text-sm font-medium text-green-800">
                     System Status
                   </h3>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  <p className="text-sm text-green-700 mt-1">
                     Semua sistem berjalan normal
                   </p>
                 </div>
@@ -222,44 +222,38 @@ function AdminDashboardContent() {
             </div>
 
             {/* Activity Summary */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">
                 Aktivitas Hari Ini
               </h3>
-              <div className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
+              <div className="space-y-1 text-sm text-blue-700">
                 <p>• {stats.newUsersToday} user baru mendaftar</p>
-                <p>• {stats.newArticlesToday} artikel baru dipublikasikan</p>
+                <p>• {stats.newArticlesToday} konten baru dipublikasikan</p>
                 <p>• {stats.featuredContent} konten sedang di-featured</p>
               </div>
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
                 📊 Quick Stats
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Total Users:
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="text-gray-600">Total Users:</span>
+                  <span className="font-medium text-gray-900">
                     {stats.totalUsers.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Total Artikel:
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="text-gray-600">Total Konten:</span>
+                  <span className="font-medium text-gray-900">
                     {stats.totalArticles.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Total Komentar:
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="text-gray-600">Total Komentar:</span>
+                  <span className="font-medium text-gray-900">
                     {stats.totalComments.toLocaleString()}
                   </span>
                 </div>
@@ -270,14 +264,14 @@ function AdminDashboardContent() {
       </div>
 
       {/* Recent Activity Preview */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            📈 Platform Overview
+          <h2 className="text-xl font-bold text-gray-900">
+            �� Platform Overview
           </h2>
           <Link
             href="/admin/analytics"
-            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             Lihat Detail →
           </Link>
@@ -285,36 +279,30 @@ function AdminDashboardContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
+            <div className="text-3xl font-bold text-blue-600 mb-2">
               {(
                 (stats.newUsersToday / Math.max(stats.totalUsers, 1)) *
                 100
               ).toFixed(1)}
               %
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Growth Rate Hari Ini
-            </p>
+            <p className="text-sm text-gray-600">Growth Rate Hari Ini</p>
           </div>
 
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+            <div className="text-3xl font-bold text-blue-600 mb-2">
               {Math.round(
                 (stats.totalComments / Math.max(stats.totalArticles, 1)) * 10
               ) / 10}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Avg Comments per Article
-            </p>
+            <p className="text-sm text-gray-600">Avg Comments per Konten</p>
           </div>
 
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+            <div className="text-3xl font-bold text-blue-600 mb-2">
               {stats.pendingReports === 0 ? "✅" : "⚠️"}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Moderation Status
-            </p>
+            <p className="text-sm text-gray-600">Moderation Status</p>
           </div>
         </div>
       </div>

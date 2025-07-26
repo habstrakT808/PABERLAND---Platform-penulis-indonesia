@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 flex">
       <AdminSidebar pendingReports={stats?.pendingReports || 0} />
 
       <div className="flex-1 flex flex-col overflow-hidden">

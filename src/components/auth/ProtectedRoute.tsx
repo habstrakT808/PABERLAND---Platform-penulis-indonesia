@@ -23,7 +23,7 @@ export default function ProtectedRoute({
       if (requireAuth && !user) {
         router.push(redirectTo);
       } else if (!requireAuth && user) {
-        router.push("/dashboard");
+        router.push("/");
       }
     }
   }, [user, loading, requireAuth, redirectTo, router]);

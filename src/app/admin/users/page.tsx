@@ -175,15 +175,18 @@ function AdminUsersContent() {
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-8"></div>
+          <div className="h-8 bg-blue-100 rounded w-1/3 mb-8"></div>
           <div className="space-y-4">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl">
+              <div
+                key={i}
+                className="bg-white/95 p-6 rounded-xl border border-blue-100"
+              >
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    <div className="h-4 bg-blue-100 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-blue-100 rounded w-1/2"></div>
                   </div>
                 </div>
               </div>
@@ -200,10 +203,10 @@ function AdminUsersContent() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900">
               👥 Manajemen Users
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-700 mt-1">
               Kelola semua users platform PaberLand
             </p>
           </div>
@@ -211,7 +214,7 @@ function AdminUsersContent() {
           <button
             onClick={() => fetchUsers(true)}
             disabled={refreshing}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon
               className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
@@ -222,7 +225,7 @@ function AdminUsersContent() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/95 rounded-xl shadow-sm p-6 mb-8 border border-blue-100">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md">
@@ -235,21 +238,21 @@ function AdminUsersContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari nama atau nomor HP..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </form>
 
           {/* Filter Tabs */}
-          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <div className="flex items-center space-x-1 bg-blue-100 rounded-lg p-1">
             {(["all", "admin", "regular"] as const).map((filterOption) => (
               <button
                 key={filterOption}
                 onClick={() => handleFilterChange(filterOption)}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   filter === filterOption
-                    ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 {filterOption === "all" && `Semua (${getFilterCounts().all})`}
@@ -265,14 +268,14 @@ function AdminUsersContent() {
 
       {/* Users List */}
       {users.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-gray-200 dark:border-gray-700">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+        <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
             <UserPlusIcon className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             Tidak Ada Users
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {search || filter !== "all"
               ? "Tidak ditemukan users yang sesuai dengan filter."
               : "Belum ada users yang terdaftar."}
@@ -283,7 +286,7 @@ function AdminUsersContent() {
           {users.map((user) => (
             <div
               key={user.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+              className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -298,13 +301,13 @@ function AdminUsersContent() {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                         {getUserInitial(user.full_name)}
                       </div>
                     )}
 
                     {user.is_admin && (
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white">
                         <ShieldCheckIcon className="w-3 h-3 text-white" />
                       </div>
                     )}
@@ -313,12 +316,12 @@ function AdminUsersContent() {
                   {/* User Info */}
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-bold text-gray-900">
                         {user.full_name}
                       </h3>
 
                       {user.is_admin && (
-                        <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs font-medium">
+                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                           {user.admin_role === "super_admin"
                             ? "Super Admin"
                             : "Admin"}
@@ -326,7 +329,7 @@ function AdminUsersContent() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-gray-600">
                       <span>📧 {user.id}</span>
                       {user.phone && <span>📱 {user.phone}</span>}
                       <span>📅 Bergabung {formatDate(user.created_at)}</span>
@@ -338,7 +341,7 @@ function AdminUsersContent() {
                     </div>
 
                     {user.bio && (
-                      <p className="text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">
+                      <p className="text-gray-600 mt-2 line-clamp-2">
                         {user.bio}
                       </p>
                     )}
@@ -351,26 +354,26 @@ function AdminUsersContent() {
                     onClick={() =>
                       setShowUserMenu(showUserMenu === user.id ? null : user.id)
                     }
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
                     disabled={actionLoading === user.id}
                   >
                     {actionLoading === user.id ? (
                       <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
-                      <EllipsisVerticalIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <EllipsisVerticalIcon className="w-5 h-5 text-gray-500" />
                     )}
                   </button>
 
                   {/* Action Menu */}
                   {showUserMenu === user.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                    <div className="absolute right-0 mt-2 w-48 bg-white/95 rounded-lg shadow-lg border border-blue-100 z-10">
                       <div className="py-1">
                         {!user.is_admin && (
                           <button
                             onClick={() =>
                               handlePromoteToAdmin(user.id, user.full_name)
                             }
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                           >
                             <ShieldCheckIcon className="w-4 h-4 inline mr-2" />
                             Jadikan Admin
@@ -381,17 +384,17 @@ function AdminUsersContent() {
                           onClick={() =>
                             handleSuspendUser(user.id, user.full_name, true)
                           }
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-blue-50 transition-colors"
                         >
                           <NoSymbolIcon className="w-4 h-4 inline mr-2" />
                           Suspend User
                         </button>
 
-                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                        <div className="border-t border-blue-100 my-1"></div>
 
                         <button
                           onClick={() => setShowUserMenu(null)}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-blue-50 transition-colors"
                         >
                           Tutup
                         </button>
@@ -412,7 +415,7 @@ function AdminUsersContent() {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Sebelumnya
             </button>
@@ -427,8 +430,8 @@ function AdminUsersContent() {
                   onClick={() => setCurrentPage(pageNum)}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                     currentPage === pageNum
-                      ? "bg-indigo-600 text-white"
-                      : "text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-500 bg-white border border-blue-200 hover:bg-blue-50"
                   }`}
                 >
                   {pageNum}
@@ -441,7 +444,7 @@ function AdminUsersContent() {
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Selanjutnya
             </button>
@@ -451,7 +454,7 @@ function AdminUsersContent() {
 
       {/* Results Info */}
       <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600">
           Menampilkan {users.length} dari {totalCount} users
           {search && ` untuk pencarian "${search}"`}
           {filter !== "all" && ` dengan filter ${filter}`}

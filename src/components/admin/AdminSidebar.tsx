@@ -30,7 +30,7 @@ const navigation = [
     icon: UsersIcon,
   },
   {
-    name: "Manajemen Artikel",
+    name: "Manajemen Konten",
     href: "/admin/articles",
     icon: DocumentTextIcon,
   },
@@ -81,36 +81,32 @@ export default function AdminSidebar({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+      className={`bg-white/95 shadow-sm border-r border-blue-100 transition-all duration-300 ${
         collapsed ? "w-16" : "w-64"
       }`}
     >
       {/* Sidebar Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-blue-100">
         {!collapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Admin Panel
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                PaberLand Management
-              </p>
+              <h2 className="text-lg font-bold text-gray-900">Admin Panel</h2>
+              <p className="text-xs text-gray-600">PaberLand Management</p>
             </div>
           </div>
         )}
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
         >
           {collapsed ? (
-            <ChevronRightIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <ChevronRightIcon className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronLeftIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            <ChevronLeftIcon className="w-4 h-4 text-gray-500" />
           )}
         </button>
       </div>
@@ -128,8 +124,8 @@ export default function AdminSidebar({
                   href={item.href}
                   className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-700 hover:bg-blue-50"
                   }`}
                   title={collapsed ? item.name : undefined}
                 >

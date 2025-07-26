@@ -17,10 +17,10 @@ interface ArticleFiltersProps {
 }
 
 const categories = [
-  { value: "all", label: "🔍 Semua Kategori" },
+  { value: "all", label: "📂 Semua Kategori" },
   { value: "cerpen", label: "📖 Cerpen" },
   { value: "puisi", label: "🎭 Puisi" },
-  { value: "artikel", label: "📰 Artikel" },
+  { value: "artikel", label: "📰 Konten" },
   { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
   { value: "novel-berseri", label: "📚 Novel Berseri" },
   { value: "lainnya", label: "✨ Lainnya" },
@@ -60,49 +60,35 @@ export default function ArticleFilters({
     currentSearch || currentCategory !== "all" || currentStatus !== "all";
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="flex-1">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Cari artikel berdasarkan judul..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchInput("");
-                  onSearchChange("");
-                }}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-              </button>
-            )}
-          </div>
-        </form>
+    <div className="bg-white/95 rounded-lg shadow-lg p-6 border border-blue-100 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Search */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Cari Konten
+          </label>
+          <input
+            type="text"
+            value={currentSearch}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Cari konten berdasarkan judul..."
+            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
+          />
+        </div>
 
         {/* Filter Toggle Button */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`inline-flex items-center px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
             showFilters || hasActiveFilters
-              ? "border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400"
-              : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+              ? "border-blue-300 bg-blue-50 text-blue-700"
+              : "border-blue-200 bg-white text-gray-700 hover:bg-blue-50"
           }`}
         >
           <FunnelIcon className="w-5 h-5 mr-2" />
           Filter
           {hasActiveFilters && (
-            <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-indigo-600 rounded-full">
+            <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">
               {
                 [
                   currentSearch,
@@ -118,7 +104,7 @@ export default function ArticleFilters({
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-red-300 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
           >
             <XMarkIcon className="w-5 h-5 mr-2" />
             Clear
@@ -128,17 +114,17 @@ export default function ArticleFilters({
 
       {/* Expanded Filters */}
       {showFilters && (
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-6 pt-6 border-t border-blue-100">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-800 mb-2">
                 Kategori
               </label>
               <select
                 value={currentCategory}
                 onChange={(e) => onCategoryChange(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="block w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               >
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
@@ -150,7 +136,7 @@ export default function ArticleFilters({
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-800 mb-2">
                 Status
               </label>
               <select
@@ -160,7 +146,7 @@ export default function ArticleFilters({
                     e.target.value as "all" | "published" | "draft"
                   )
                 }
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="block w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               >
                 {statuses.map((status) => (
                   <option key={status.value} value={status.value}>
@@ -177,11 +163,11 @@ export default function ArticleFilters({
       {hasActiveFilters && (
         <div className="mt-4 flex flex-wrap gap-2">
           {currentSearch && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
               Search: "{currentSearch}"
               <button
                 onClick={() => onSearchChange("")}
-                className="ml-2 hover:text-blue-600 dark:hover:text-blue-300"
+                className="ml-2 hover:text-blue-600"
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>
@@ -189,11 +175,11 @@ export default function ArticleFilters({
           )}
 
           {currentCategory !== "all" && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
               {categories.find((c) => c.value === currentCategory)?.label}
               <button
                 onClick={() => onCategoryChange("all")}
-                className="ml-2 hover:text-green-600 dark:hover:text-green-300"
+                className="ml-2 hover:text-blue-600"
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>
@@ -201,11 +187,11 @@ export default function ArticleFilters({
           )}
 
           {currentStatus !== "all" && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
               {statuses.find((s) => s.value === currentStatus)?.label}
               <button
                 onClick={() => onStatusChange("all")}
-                className="ml-2 hover:text-purple-600 dark:hover:text-purple-300"
+                className="ml-2 hover:text-blue-600"
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>

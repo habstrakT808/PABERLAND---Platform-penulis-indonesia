@@ -72,13 +72,11 @@ export default function CommentForm({
 
   if (!user) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Anda harus login untuk berkomentar
-        </p>
+      <div className="bg-blue-50 rounded-lg p-4 text-center border border-blue-100">
+        <p className="text-gray-700 mb-4">Anda harus login untuk berkomentar</p>
         <a
           href="/auth/login"
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Login untuk Berkomentar
         </a>
@@ -95,13 +93,13 @@ export default function CommentForm({
           placeholder={placeholder}
           autoFocus={autoFocus}
           rows={parentId ? 3 : 4}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+          className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500 resize-none"
           disabled={isSubmitting}
         />
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-sm text-gray-600">
           {content.length}/1000 karakter
         </div>
 
@@ -111,7 +109,7 @@ export default function CommentForm({
               type="button"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 border border-blue-200"
             >
               <XMarkIcon className="w-4 h-4 mr-2 inline" />
               Batal
@@ -121,7 +119,7 @@ export default function CommentForm({
           <button
             type="submit"
             disabled={!content.trim() || isSubmitting || content.length > 1000}
-            className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>

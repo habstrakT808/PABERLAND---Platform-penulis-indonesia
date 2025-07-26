@@ -11,70 +11,86 @@ import {
 
 interface ArticleStatsCardsProps {
   stats: {
-    totalArticles: number;
-    publishedArticles: number;
-    draftArticles: number;
-    totalViews: number;
-    totalLikes: number;
-    totalComments: number;
+    totalArticles?: number;
+    publishedArticles?: number;
+    draftArticles?: number;
+    totalViews?: number;
+    totalLikes?: number;
+    totalComments?: number;
   };
 }
 
 export default function ArticleStatsCards({ stats }: ArticleStatsCardsProps) {
+  // Destructure stats with default values to prevent undefined errors
+  const {
+    totalArticles = 0,
+    publishedArticles = 0,
+    draftArticles = 0,
+    totalViews = 0,
+    totalLikes = 0,
+    totalComments = 0,
+  } = stats;
+
+  // Helper function to safely format numbers
+  const formatNumber = (value: number | undefined | null): string => {
+    if (value === undefined || value === null) return "0";
+    return value.toLocaleString();
+  };
+
   const cards = [
     {
-      title: "Total Artikel",
-      value: stats.totalArticles,
+      title: "Total Konten",
+      value: totalArticles,
       icon: DocumentTextIcon,
-      color: "indigo",
-      bgColor: "bg-indigo-500",
-      lightBg: "bg-indigo-50 dark:bg-indigo-900/20",
-      textColor: "text-indigo-600 dark:text-indigo-400",
+      color: "blue",
+      bgColor: "bg-blue-500",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
     {
       title: "Dipublikasikan",
-      value: stats.publishedArticles,
+      value: publishedArticles,
       icon: CheckCircleIcon,
-      color: "green",
-      bgColor: "bg-green-500",
-      lightBg: "bg-green-50 dark:bg-green-900/20",
-      textColor: "text-green-600 dark:text-green-400",
+      color: "blue",
+      bgColor: "bg-blue-500",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
     {
       title: "Draft",
-      value: stats.draftArticles,
+      value: draftArticles,
       icon: DocumentIcon,
-      color: "yellow",
-      bgColor: "bg-yellow-500",
-      lightBg: "bg-yellow-50 dark:bg-yellow-900/20",
-      textColor: "text-yellow-600 dark:text-yellow-400",
+      color: "blue",
+      bgColor: "bg-blue-500",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
     {
       title: "Total Views",
-      value: stats.totalViews.toLocaleString(),
+      value: formatNumber(totalViews),
       icon: EyeIcon,
       color: "blue",
       bgColor: "bg-blue-500",
-      lightBg: "bg-blue-50 dark:bg-blue-900/20",
-      textColor: "text-blue-600 dark:text-blue-400",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
     {
       title: "Total Likes",
-      value: stats.totalLikes.toLocaleString(),
+      value: formatNumber(totalLikes),
       icon: HeartIcon,
-      color: "red",
-      bgColor: "bg-red-500",
-      lightBg: "bg-red-50 dark:bg-red-900/20",
-      textColor: "text-red-600 dark:text-red-400",
+      color: "blue",
+      bgColor: "bg-blue-500",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
     {
       title: "Total Komentar",
-      value: stats.totalComments.toLocaleString(),
+      value: formatNumber(totalComments),
       icon: ChatBubbleLeftIcon,
-      color: "purple",
-      bgColor: "bg-purple-500",
-      lightBg: "bg-purple-50 dark:bg-purple-900/20",
-      textColor: "text-purple-600 dark:text-purple-400",
+      color: "blue",
+      bgColor: "bg-blue-500",
+      lightBg: "bg-blue-50",
+      textColor: "text-blue-600",
     },
   ];
 
@@ -83,16 +99,14 @@ export default function ArticleStatsCards({ stats }: ArticleStatsCardsProps) {
       {cards.map((card) => (
         <div
           key={card.title}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+          className="bg-white/95 rounded-lg shadow-lg p-6 border border-blue-100"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              <p className="text-sm font-medium text-gray-700 mb-1">
                 {card.title}
               </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {card.value}
-              </p>
+              <p className="text-3xl font-bold text-gray-900">{card.value}</p>
             </div>
             <div className={`p-3 rounded-lg ${card.lightBg}`}>
               <card.icon className={`w-8 h-8 ${card.textColor}`} />
@@ -101,27 +115,25 @@ export default function ArticleStatsCards({ stats }: ArticleStatsCardsProps) {
 
           {/* Progress bar for published vs draft */}
           {(card.title === "Dipublikasikan" || card.title === "Draft") &&
-            stats.totalArticles > 0 && (
+            totalArticles > 0 && (
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <div className="flex justify-between text-xs text-gray-600 mb-1">
                   <span>Progress</span>
                   <span>
                     {Math.round(
-                      (parseInt(card.value.toString()) / stats.totalArticles) *
-                        100
+                      (parseInt(card.value.toString()) / totalArticles) * 100
                     )}
                     %
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-blue-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${card.bgColor} transition-all duration-300`}
                     style={{
-                      width: `${
-                        (parseInt(card.value.toString()) /
-                          stats.totalArticles) *
+                      width: `${Math.min(
+                        (parseInt(card.value.toString()) / totalArticles) * 100,
                         100
-                      }%`,
+                      )}%`,
                     }}
                   ></div>
                 </div>

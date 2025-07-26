@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-export default function ArticleNotFound() {
+export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
@@ -23,12 +23,12 @@ export default function ArticleNotFound() {
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Konten Tidak Ditemukan
+            Halaman Tidak Ditemukan
           </h1>
 
           <p className="text-gray-600 mb-8">
-            Maaf, konten yang Anda cari tidak ditemukan atau mungkin telah
-            dihapus. Silakan periksa kembali URL atau cari konten lain.
+            Maaf, halaman yang Anda cari tidak ditemukan. Silakan periksa
+            kembali URL atau kembali ke beranda.
           </p>
         </div>
 

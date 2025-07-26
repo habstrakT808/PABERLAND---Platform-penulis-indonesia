@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -8,10 +9,11 @@ import {
   HeartIcon,
   ChatBubbleLeftIcon,
   ChevronDownIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import ActivityFeed from "@/components/social/ActivityFeed";
 import UserRecommendations from "@/components/social/UserRecommendations";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 // Dummy data dengan gambar real dari Unsplash
 const featuredArticles = [
@@ -99,19 +101,19 @@ const categories = [
   },
   {
     name: "Artikel",
-    count: 445,
+    count: 89,
     color: "bg-green-500",
     href: "/kategori/artikel",
   },
   {
     name: "Cerita Rakyat",
-    count: 89,
+    count: 67,
     color: "bg-yellow-500",
     href: "/kategori/cerita-rakyat",
   },
   {
     name: "Novel Berseri",
-    count: 67,
+    count: 45,
     color: "bg-red-500",
     href: "/kategori/novel-berseri",
   },
@@ -125,6 +127,58 @@ const categories = [
 
 export default function HomePage() {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalAuthors: 0,
+    totalArticles: 0,
+    totalViews: 0,
+    totalLikes: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      // Get total articles
+      const { count: articlesCount } = await supabase
+        .from("articles")
+        .select("*", { count: "exact", head: true })
+        .eq("published", true);
+
+      // Get total authors
+      const { count: authorsCount } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      // Get total views and likes
+      const { data: viewsData } = await supabase
+        .from("articles")
+        .select("views, likes_count")
+        .eq("published", true);
+
+      const totals = viewsData?.reduce(
+        (acc, article) => ({
+          totalViews: acc.totalViews + (article.views || 0),
+          totalLikes: acc.totalLikes + (article.likes_count || 0),
+        }),
+        { totalViews: 0, totalLikes: 0 }
+      ) || { totalViews: 0, totalLikes: 0 };
+
+      setStats({
+        totalArticles: articlesCount || 0,
+        totalAuthors: authorsCount || 0,
+        totalViews: totals.totalViews,
+        totalLikes: totals.totalLikes,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const scrollToContent = () => {
     const element = document.getElementById("main-content");
     if (element) {
@@ -135,23 +189,23 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       {/* Compact Hero Section - Tidak Full Screen */}
-      <section className="relative h-[92vh] flex flex-col justify-between items-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white pb-2">
+      <section className="relative h-[92vh] flex flex-col justify-between items-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 text-gray-900 pb-2 shadow-md">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-purple-900/30 to-pink-900/30"></div>
+        <div className="absolute inset-0 bg-white/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/40 via-pink-200/40 to-blue-200/40"></div>
 
         {/* Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-16">
           <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-gray-900">
               Selamat Datang di{" "}
               <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                 PaberLand
               </span>
             </h1>
-            <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-100">
+            <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-800">
               Platform komunitas penulis Indonesia untuk berbagi karya sastra,
               cerpen, puisi, dan artikel. Mari bersama membangun literasi
               Indonesia.
@@ -162,7 +216,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
               href="/write"
-              className="group bg-white text-indigo-600 px-8 py-3 rounded-lg font-bold text-base hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="group bg-white text-blue-700 px-8 py-3 rounded-lg font-bold text-base hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               <span className="flex items-center justify-center">
                 ✍️ Mulai Menulis
@@ -181,58 +235,62 @@ export default function HomePage() {
                 </svg>
               </span>
             </Link>
-            <Link
-              href="/auth/register"
-              className="group border-2 border-white text-white px-8 py-3 rounded-lg font-bold text-base hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              <span className="flex items-center justify-center">
-                🚀 Bergabung Sekarang
-                <svg
-                  className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </Link>
+            {!user && (
+              <Link
+                href="/auth/register"
+                className="group border-2 border-blue-500 text-blue-700 px-8 py-3 rounded-lg font-bold text-base hover:bg-blue-50 hover:text-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <span className="flex items-center justify-center">
+                  🚀 Bergabung Sekarang
+                  <svg
+                    className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Stats Preview - Lebih Compact */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-yellow-300 mb-1">
-                500+
+            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+                {loading ? "..." : stats.totalAuthors}
               </div>
-              <div className="text-white/90 text-xs md:text-sm">
+              <div className="text-gray-900 text-xs md:text-sm font-semibold">
                 Penulis Aktif
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-green-300 mb-1">
-                1,200+
+            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+                {loading ? "..." : stats.totalArticles}
               </div>
-              <div className="text-white/90 text-xs md:text-sm">
+              <div className="text-gray-900 text-xs md:text-sm font-semibold">
                 Karya Terpublikasi
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-blue-300 mb-1">
-                15K+
+            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+                {loading ? "..." : stats.totalViews}
               </div>
-              <div className="text-white/90 text-xs md:text-sm">Pembaca</div>
+              <div className="text-gray-900 text-xs md:text-sm font-semibold">
+                Pembaca
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-2xl md:text-3xl font-bold text-pink-300 mb-1">
-                50K+
+            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+                {loading ? "..." : stats.totalLikes}
               </div>
-              <div className="text-white/90 text-xs md:text-sm">
+              <div className="text-gray-900 text-xs md:text-sm font-semibold">
                 Total Views
               </div>
             </div>
@@ -243,24 +301,29 @@ export default function HomePage() {
         <div className="relative z-10 mb-8">
           <button
             onClick={scrollToContent}
-            className="flex flex-col items-center text-white/80 hover:text-white transition-colors group"
+            className="flex flex-col items-center text-blue-700 hover:text-blue-900 font-bold transition-colors group"
           >
-            <span className="text-xs mb-1 font-medium">Jelajahi Konten</span>
-            <ChevronDownIcon className="w-6 h-6 animate-bounce group-hover:scale-110 transition-transform" />
+            <span className="text-sm mb-1 font-bold uppercase tracking-wide">
+              Jelajahi Konten
+            </span>
+            <ChevronDownIcon className="w-6 h-6 animate-bounce group-hover:scale-110 transition-transform text-blue-500" />
           </button>
         </div>
       </section>
 
       {/* Main Content - Starts after scroll */}
-      <div id="main-content" className="bg-gray-50 dark:bg-gray-900">
+      <div
+        id="main-content"
+        className="bg-gradient-to-br from-white via-blue-50 to-pink-50"
+      >
         {/* Featured Articles Section */}
-        <section className="py-16 bg-white dark:bg-gray-800">
+        <section className="py-16 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl mx-2 md:mx-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                🌟 Artikel Pilihan
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                🌟 Konten Pilihan
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-800 max-w-2xl mx-auto">
                 Karya-karya terbaik dari komunitas penulis PaberLand
               </p>
             </div>
@@ -269,7 +332,7 @@ export default function HomePage() {
               {featuredArticles.map((article, index) => (
                 <article
                   key={article.id}
-                  className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
+                  className={`bg-white/95 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-100 ${
                     index % 2 === 1 ? "lg:flex-row-reverse" : ""
                   }`}
                 >
@@ -288,22 +351,22 @@ export default function HomePage() {
                         <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-full text-sm font-bold">
                           {article.category}
                         </span>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm ml-4 flex items-center">
+                        <span className="text-gray-700 text-sm ml-4 flex items-center">
                           <ClockIcon className="w-4 h-4 mr-1" />
                           {article.createdAt}
                         </span>
                       </div>
 
-                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
                         <Link
                           href={`/article/${article.id}`}
-                          className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          className="hover:text-blue-600 transition-colors"
                         >
                           {article.title}
                         </Link>
                       </h3>
 
-                      <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg leading-relaxed">
+                      <p className="text-gray-800 mb-6 text-lg leading-relaxed">
                         {article.excerpt}
                       </p>
 
@@ -313,17 +376,15 @@ export default function HomePage() {
                             {article.author.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">
+                            <div className="font-semibold text-gray-900">
                               {article.author}
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Penulis
-                            </div>
+                            <div className="text-sm text-gray-700">Penulis</div>
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-6 text-gray-500 dark:text-gray-400">
-                          <span className="flex items-center hover:text-indigo-600 transition-colors">
+                        <div className="flex items-center space-x-6 text-gray-500">
+                          <span className="flex items-center hover:text-blue-600 transition-colors">
                             <EyeIcon className="w-5 h-5 mr-1" />
                             {article.views}
                           </span>
@@ -346,16 +407,16 @@ export default function HomePage() {
         </section>
 
         {/* Latest Articles & Sidebar */}
-        <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <section className="py-16 bg-blue-50/60 rounded-3xl shadow-lg mx-2 md:mx-0 mt-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* Latest Articles */}
               <div className="lg:col-span-2">
                 <div className="text-center lg:text-left mb-12">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    📚 Artikel Terbaru
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    📚 Konten Terbaru
                   </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                  <p className="text-lg text-gray-800">
                     Karya-karya segar dari para penulis
                   </p>
                 </div>
@@ -364,28 +425,28 @@ export default function HomePage() {
                   {latestArticles.map((article) => (
                     <article
                       key={article.id}
-                      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                      className="bg-white/95 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
                     >
                       <div className="flex items-center mb-4">
-                        <span className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm font-medium">
+                        <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
                           {article.category}
                         </span>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm ml-3 flex items-center">
+                        <span className="text-gray-700 text-sm ml-3 flex items-center">
                           <ClockIcon className="w-4 h-4 mr-1" />
                           {article.createdAt}
                         </span>
                       </div>
 
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">
                         <Link
                           href={`/article/${article.id}`}
-                          className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          className="hover:text-blue-600 transition-colors"
                         >
                           {article.title}
                         </Link>
                       </h3>
 
-                      <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                      <p className="text-gray-800 mb-4 leading-relaxed">
                         {article.excerpt}
                       </p>
 
@@ -394,12 +455,12 @@ export default function HomePage() {
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
                             {article.author.charAt(0)}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white">
+                          <span className="font-medium text-gray-900">
                             {article.author}
                           </span>
                         </div>
 
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">
                             <EyeIcon className="w-4 h-4 mr-1" />
                             {article.views}
@@ -417,21 +478,13 @@ export default function HomePage() {
                     </article>
                   ))}
                 </div>
-                {/* Activity Feed for Logged In Users */}
-                {user && (
-                  <section className="mb-16">
-                    <div className="max-w-4xl mx-auto">
-                      <ActivityFeed />
-                    </div>
-                  </section>
-                )}
               </div>
 
               {/* Sidebar */}
               <div className="lg:col-span-1 space-y-8">
                 {/* Categories */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <div className="bg-white/90 rounded-xl shadow-lg p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
                     📂 Kategori
                   </h3>
                   <div className="space-y-3">
@@ -445,11 +498,11 @@ export default function HomePage() {
                           <div
                             className={`w-3 h-3 rounded-full ${category.color} mr-3 group-hover:scale-110 transition-transform`}
                           ></div>
-                          <span className="text-gray-700 dark:text-gray-300 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                          <span className="text-gray-800 font-medium group-hover:text-blue-600">
                             {category.name}
                           </span>
                         </div>
-                        <span className="text-gray-500 dark:text-gray-400 font-bold">
+                        <span className="text-gray-700 font-bold">
                           {category.count}
                         </span>
                       </Link>
@@ -457,20 +510,20 @@ export default function HomePage() {
                   </div>
                 </div>
                 {/* User Recommendations */}
-                <UserRecommendations />
+                {user && <UserRecommendations />}
                 {/* Call to Action */}
-                <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl shadow-lg p-6 text-white text-center">
+                <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-lg p-6 text-gray-900 text-center">
                   <div className="text-3xl mb-3">✨</div>
                   <h3 className="text-xl font-bold mb-2">
                     Mulai Menulis Hari Ini!
                   </h3>
-                  <p className="text-indigo-100 mb-4 leading-relaxed text-sm">
+                  <p className="text-gray-800 mb-4 leading-relaxed text-sm">
                     Bagikan karya terbaikmu dengan komunitas penulis Indonesia
                     dan raih apresiasi dari ribuan pembaca.
                   </p>
                   <Link
                     href="/write"
-                    className="bg-white text-indigo-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg inline-block"
+                    className="bg-white text-blue-700 px-6 py-2 rounded-lg font-bold hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 shadow-lg inline-block"
                   >
                     🚀 Tulis Sekarang
                   </Link>

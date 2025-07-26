@@ -60,9 +60,9 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-        <ShareIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+    <div className="bg-white/95 rounded-lg shadow-lg p-6 border border-blue-100">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <ShareIcon className="w-5 h-5 mr-2 text-blue-600" />
         Bagikan Artikel
       </h3>
 
@@ -73,7 +73,7 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
           typeof navigator.share === "function" && (
             <button
               onClick={handleNativeShare}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <ShareIcon className="w-5 h-5" />
               <span>Bagikan</span>
@@ -136,8 +136,8 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
           onClick={handleCopyLink}
           className={`w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed rounded-lg transition-all ${
             copied
-              ? "border-green-300 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-900/20 dark:text-green-400"
-              : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+              ? "border-green-300 bg-green-50 text-green-700"
+              : "border-blue-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50"
           }`}
         >
           {copied ? (

@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase, articleManagement } from "@/lib/supabase";
+import {
+  supabase,
+  articleManagement,
+  uploadImageToStorage,
+} from "@/lib/supabase";
+import SignedImage from "@/components/common/SignedImage";
 import toast from "react-hot-toast";
 import {
   PhotoIcon,
@@ -61,6 +66,8 @@ export default function WriteArticleForm({
   const [isLoading, setIsLoading] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string>("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -111,8 +118,12 @@ export default function WriteArticleForm({
       .trim();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Ubah handleSubmit agar menerima parameter published
+  const handleSubmit = async (
+    e: React.FormEvent | null,
+    published: boolean
+  ) => {
+    if (e) e.preventDefault();
 
     if (!formData.title || !formData.content || !formData.category) {
       toast.error("Judul, konten, dan kategori harus diisi!");
@@ -140,7 +151,7 @@ export default function WriteArticleForm({
             excerpt: formData.excerpt || formData.content.slice(0, 200) + "...",
             category: formData.category,
             cover_image: formData.coverImage || null,
-            published: formData.published,
+            published: published,
             scheduled_at: formData.scheduledAt || null,
             slug: generateSlug(formData.title),
             updated_at: now,
@@ -148,15 +159,15 @@ export default function WriteArticleForm({
         );
 
         if (result.success) {
-          if (formData.published) {
-            toast.success("🎉 Artikel berhasil diperbarui dan dipublikasikan!");
+          if (published) {
+            toast.success("🎉 Konten berhasil diperbarui dan dipublikasikan!");
             router.push(`/article/${result.data.slug}`);
           } else {
-            toast.success("📝 Artikel berhasil diperbarui sebagai draft!");
+            toast.success("📝 Konten berhasil diperbarui sebagai draft!");
             router.push("/my-articles");
           }
         } else {
-          toast.error("Gagal memperbarui artikel: " + result.error);
+          toast.error("Gagal memperbarui konten: " + result.error);
         }
       } else {
         // Create new article (existing code)
@@ -181,7 +192,7 @@ export default function WriteArticleForm({
           category: formData.category,
           cover_image: formData.coverImage || null,
           author_id: user.id,
-          published: formData.published,
+          published: published,
           scheduled_at: formData.scheduledAt || null,
           slug: slug,
           created_at: now,
@@ -196,34 +207,56 @@ export default function WriteArticleForm({
 
         if (error) {
           console.error("Error creating article:", error);
-          toast.error("Gagal menyimpan artikel: " + error.message);
+          toast.error("Gagal menyimpan konten: " + error.message);
           return;
         }
 
-        if (formData.published) {
-          toast.success("🎉 Artikel berhasil dipublikasikan!");
+        if (published) {
+          toast.success("🎉 Konten berhasil dipublikasikan!");
           router.push(`/article/${data.slug}`);
         } else {
-          toast.success("📝 Artikel berhasil disimpan sebagai draft!");
-          router.push("/dashboard");
+          toast.success("📝 Konten berhasil disimpan sebagai draft!");
+          router.push("/");
         }
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Terjadi kesalahan saat menyimpan artikel");
+      toast.error("Terjadi kesalahan saat menyimpan konten");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handler baru untuk onSubmit form
+  const onFormSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    handleSubmit(e, formData.published);
+  };
+
+  // Ubah handleSaveDraft dan handlePublish
   const handleSaveDraft = () => {
-    setFormData({ ...formData, published: false });
-    handleSubmit(new Event("submit") as any);
+    handleSubmit(null, false);
   };
 
   const handlePublish = () => {
-    setFormData({ ...formData, published: true });
-    handleSubmit(new Event("submit") as any);
+    handleSubmit(null, true);
+  };
+
+  const handleCoverImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverImageFile(file);
+    setCoverImagePreview(URL.createObjectURL(file));
+    setIsLoading(true);
+    const url = await uploadImageToStorage(file, "article-covers");
+    setIsLoading(false);
+    if (url) {
+      setFormData({ ...formData, coverImage: url });
+      toast.success("Cover image berhasil diupload!");
+    } else {
+      toast.error("Gagal upload cover image");
+    }
   };
 
   const getReadingTime = () => {
@@ -231,22 +264,22 @@ export default function WriteArticleForm({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <div className="bg-white/95 rounded-lg shadow-lg border border-blue-100">
+      <form onSubmit={onFormSubmit} className="p-6 space-y-6">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-blue-100">
           <div className="flex items-center space-x-4">
             <button
               type="button"
               onClick={() => setPreviewMode(!previewMode)}
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <EyeIcon className="w-4 h-4" />
               <span>{previewMode ? "Edit" : "Preview"}</span>
             </button>
 
             {/* Word Count Display */}
-            <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
               <div className="flex items-center space-x-1">
                 <DocumentTextIcon className="w-4 h-4" />
                 <span>{wordCount} kata</span>
@@ -260,7 +293,7 @@ export default function WriteArticleForm({
               type="button"
               onClick={handleSaveDraft}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
             >
               💾 Simpan Draft
             </button>
@@ -268,7 +301,7 @@ export default function WriteArticleForm({
               type="button"
               onClick={handlePublish}
               disabled={isLoading}
-              className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {isLoading ? "⏳ Menyimpan..." : "🚀 Publikasikan"}
             </button>
@@ -283,9 +316,9 @@ export default function WriteArticleForm({
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-gray-800 mb-2"
               >
-                Judul Artikel
+                Judul Konten
               </label>
               <input
                 type="text"
@@ -293,21 +326,21 @@ export default function WriteArticleForm({
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Masukkan judul artikel yang menarik..."
-                className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Masukkan judul konten yang menarik..."
+                className="w-full px-4 py-3 text-lg border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
               />
             </div>
 
             {/* Content Editor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Konten Artikel
+              <label className="block text-sm font-medium text-gray-800 mb-2">
+                Konten
               </label>
 
               {previewMode ? (
-                <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-6 bg-white dark:bg-gray-700 min-h-[500px]">
+                <div className="border border-blue-200 rounded-lg p-6 bg-white min-h-[500px]">
                   <div
-                    className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300"
+                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700"
                     dangerouslySetInnerHTML={{ __html: formData.content }}
                   />
                 </div>
@@ -317,11 +350,11 @@ export default function WriteArticleForm({
                   onChange={handleContentChange}
                   height={500}
                   disabled={isLoading}
-                  placeholder="Mulai menulis artikel Anda di sini... Atau klik '📝 Template' di toolbar untuk menggunakan template siap pakai!"
+                  placeholder="Mulai menulis konten Anda di sini... Atau klik '📝 Template' di toolbar untuk menggunakan template siap pakai!"
                 />
               )}
 
-              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+              <div className="mt-2 text-xs text-gray-600 space-y-1">
                 <p>
                   💡 <strong>Tips:</strong> Klik "📝 Template" di toolbar untuk
                   template siap pakai
@@ -341,11 +374,11 @@ export default function WriteArticleForm({
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Writing Progress */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">
                 📈 Progress Menulis
               </h3>
-              <div className="space-y-2 text-xs text-blue-700 dark:text-blue-300">
+              <div className="space-y-2 text-xs text-blue-700">
                 <div className="flex justify-between">
                   <span>Kata:</span>
                   <span className="font-semibold">{wordCount}</span>
@@ -371,7 +404,7 @@ export default function WriteArticleForm({
                       {Math.min(100, Math.round((wordCount / 500) * 100))}%
                     </span>
                   </div>
-                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                  <div className="w-full bg-blue-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{
@@ -387,7 +420,7 @@ export default function WriteArticleForm({
             <div>
               <label
                 htmlFor="category"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-gray-800 mb-2"
               >
                 Kategori
               </label>
@@ -396,7 +429,7 @@ export default function WriteArticleForm({
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               >
                 {categories.map((cat) => (
                   <option key={cat.value} value={cat.value}>
@@ -410,32 +443,31 @@ export default function WriteArticleForm({
             <div>
               <label
                 htmlFor="coverImage"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-gray-800 mb-2"
               >
-                Gambar Cover (URL)
+                Gambar Cover
               </label>
-              <div className="relative">
-                <input
-                  type="url"
-                  id="coverImage"
-                  name="coverImage"
-                  value={formData.coverImage}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                />
-                <PhotoIcon className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
-              </div>
-              {formData.coverImage && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverImageChange}
+                className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
+              />
+              {(coverImagePreview || formData.coverImage) && (
                 <div className="mt-2">
-                  <img
-                    src={formData.coverImage}
-                    alt="Cover preview"
-                    className="w-full h-32 object-cover rounded-lg shadow-md"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  {coverImagePreview ? (
+                    <img
+                      src={coverImagePreview}
+                      alt="Cover preview"
+                      className="w-full h-32 object-cover rounded-lg shadow-md"
+                    />
+                  ) : formData.coverImage ? (
+                    <SignedImage
+                      src={formData.coverImage}
+                      alt="Cover preview"
+                      className="w-full h-32 object-cover rounded-lg shadow-md"
+                    />
+                  ) : null}
                 </div>
               )}
             </div>
@@ -444,10 +476,10 @@ export default function WriteArticleForm({
             <div>
               <label
                 htmlFor="excerpt"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-gray-800 mb-2"
               >
                 Ringkasan{" "}
-                <span className="text-xs text-gray-500">(Auto-generated)</span>
+                <span className="text-xs text-gray-600">(Auto-generated)</span>
               </label>
               <textarea
                 id="excerpt"
@@ -456,7 +488,7 @@ export default function WriteArticleForm({
                 onChange={handleChange}
                 rows={3}
                 placeholder="Ringkasan akan dibuat otomatis dari konten..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -464,7 +496,7 @@ export default function WriteArticleForm({
             <div>
               <label
                 htmlFor="scheduledAt"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-gray-800 mb-2"
               >
                 Jadwal Publikasi (Opsional)
               </label>
@@ -475,21 +507,21 @@ export default function WriteArticleForm({
                   name="scheduledAt"
                   value={formData.scheduledAt}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 pl-10 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                 />
                 <ClockIcon className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-gray-600">
                 Kosongkan untuk publikasi langsung
               </p>
             </div>
 
             {/* TinyMCE Features Guide */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-              <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
+            {/* <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+              <h3 className="text-sm font-semibold text-green-900 mb-2">
                 🚀 Fitur Editor
               </h3>
-              <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
+              <ul className="text-xs text-green-700 space-y-1">
                 <li>• 📝 Template siap pakai untuk berbagai jenis tulisan</li>
                 <li>• 🖼️ Drag & drop gambar langsung ke editor</li>
                 <li>• 📊 Statistik tulisan real-time</li>
@@ -498,7 +530,7 @@ export default function WriteArticleForm({
                 <li>• 📋 Copy-paste dari Word/Google Docs</li>
                 <li>• 🎨 Rich formatting & styling</li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
       </form>

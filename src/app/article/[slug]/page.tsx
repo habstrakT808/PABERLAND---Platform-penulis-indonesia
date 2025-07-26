@@ -13,6 +13,8 @@ import RelatedArticles from "@/components/article/RelatedArticles";
 import SocialShare from "@/components/article/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection"; // �� Import baru
 import ArticleLikeSection from "@/components/article/ArticleLikeSection";
+import { commentHelpers } from "@/lib/supabase";
+import SignedImage from "@/components/common/SignedImage";
 
 interface ArticlePageProps {
   params: {
@@ -87,27 +89,53 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  // Increment view count (fire and forget)
-  articleHelpers.incrementViews(article.id).catch(console.error);
+  // Increment view count with better error handling
+  try {
+    await articleHelpers.incrementViews(article.id);
+  } catch (error) {
+    console.error("Error incrementing views:", error);
+  }
 
-  // Fetch related data
-  const [relatedArticles, authorArticles] = await Promise.all([
-    articleHelpers.getRelatedArticles(article.id, article.category, 4),
-    articleHelpers.getAuthorArticles(article.author_id, article.id, 3),
-  ]);
+  // Fetch fresh article data to get updated views
+  const freshArticle = await articleHelpers.getArticle(params.slug);
+  const articleWithUpdatedViews = freshArticle || article;
 
-  const readingTime = articleHelpers.calculateReadingTime(article.content);
+  // Fetch related data and real-time comment count
+  const [relatedArticles, authorArticles, realTimeCommentCount] =
+    await Promise.all([
+      articleHelpers.getRelatedArticles(
+        articleWithUpdatedViews.id,
+        articleWithUpdatedViews.category,
+        4
+      ),
+      articleHelpers.getAuthorArticles(
+        articleWithUpdatedViews.author_id,
+        articleWithUpdatedViews.id,
+        3
+      ),
+      commentHelpers.getCommentCount(articleWithUpdatedViews.id),
+    ]);
+
+  const readingTime = articleHelpers.calculateReadingTime(
+    articleWithUpdatedViews.content
+  );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const articleUrl = `${baseUrl}/article/${article.slug}`;
+  const articleUrl = `${baseUrl}/article/${articleWithUpdatedViews.slug}`;
+
+  // Use real-time comment count instead of stored count
+  const updatedArticle = {
+    ...articleWithUpdatedViews,
+    comments_count: realTimeCommentCount,
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white/95 shadow-sm border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             href="/"
-            className="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors"
           >
             <ArrowLeftIcon className="w-5 h-5" />
             <span>Kembali ke beranda</span>
@@ -121,16 +149,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="lg:col-span-2 space-y-8">
             {" "}
             {/* 👈 Tambah space-y-8 */}
-            <article className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <article className="bg-white/95 rounded-lg shadow-lg overflow-hidden border border-blue-100">
               {/* Cover Image */}
               {article.cover_image && (
                 <div className="relative h-64 md:h-80 lg:h-96">
-                  <Image
+                  <SignedImage
                     src={article.cover_image}
                     alt={article.title}
-                    fill
-                    className="object-cover"
-                    priority
+                    className="object-cover w-full h-full"
+                    style={{
+                      objectFit: "cover",
+                      width: "100%",
+                      height: "100%",
+                      position: "absolute",
+                      inset: 0,
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                 </div>
@@ -139,49 +172,51 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {/* Article Header */}
               <div className="p-6 md:p-8">
                 <header className="mb-8">
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                     {article.title}
                   </h1>
 
                   {/* Article Metadata Section dengan Like System */}
                   <ArticleLikeSection
-                    articleId={article.id}
-                    views={article.views}
-                    likesCount={article.likes_count}
-                    commentsCount={article.comments_count}
-                    articleTitle={article.title}
+                    articleId={updatedArticle.id}
+                    views={updatedArticle.views}
+                    likesCount={updatedArticle.likes_count}
+                    commentsCount={updatedArticle.comments_count}
+                    articleTitle={updatedArticle.title}
                   />
                   {/* End Article Metadata Section */}
 
                   {/* Author Info */}
-                  {article.profiles && (
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mt-6">
+                  {updatedArticle.profiles && (
+                    <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg mt-6 border border-blue-100">
                       <div className="relative">
-                        {article.profiles.avatar_url ? (
+                        {updatedArticle.profiles.avatar_url ? (
                           <Image
-                            src={article.profiles.avatar_url}
-                            alt={article.profiles.full_name}
+                            src={updatedArticle.profiles.avatar_url}
+                            alt={updatedArticle.profiles.full_name}
                             width={48}
                             height={48}
                             className="rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                            {article.profiles.full_name.charAt(0).toUpperCase()}
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                            {updatedArticle.profiles.full_name
+                              .charAt(0)
+                              .toUpperCase()}
                           </div>
                         )}
                       </div>
                       <div>
                         <Link
-                          href={`/author/${article.profiles.id}`}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          href={`/penulis/${updatedArticle.profiles.id}`}
+                          className="font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                         >
-                          {article.profiles.full_name}
+                          {updatedArticle.profiles.full_name}
                         </Link>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-gray-600">
                           Dipublikasikan{" "}
                           {articleHelpers.formatRelativeTime(
-                            article.created_at
+                            updatedArticle.created_at
                           )}
                         </p>
                       </div>
@@ -192,18 +227,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 {/* Article Content */}
                 <div className="prose prose-lg max-w-none">
                   <ArticleContent
-                    content={article.content}
-                    articleId={article.id}
-                    articleTitle={article.title}
+                    content={updatedArticle.content}
+                    articleId={updatedArticle.id}
+                    articleTitle={updatedArticle.title}
                   />
                 </div>
 
                 {/* Article Footer */}
-                <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <footer className="mt-12 pt-8 border-t border-blue-100">
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-600">
                       Terakhir diperbarui:{" "}
-                      {articleHelpers.formatDate(article.updated_at)}
+                      {articleHelpers.formatDate(updatedArticle.updated_at)}
                     </div>
                   </div>
                 </footer>
@@ -211,8 +246,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </article>
             {/* Comments Section - 👈 TAMBAHAN BARU */}
             <CommentsSection
-              articleId={article.id}
-              initialCommentsCount={article.comments_count}
+              articleId={updatedArticle.id}
+              initialCommentsCount={updatedArticle.comments_count}
             />
           </div>
 
@@ -220,22 +255,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="lg:col-span-1 space-y-8">
             {/* Social Share */}
             <SocialShare
-              title={article.title}
+              title={updatedArticle.title}
               url={articleUrl}
-              excerpt={article.excerpt}
+              excerpt={updatedArticle.excerpt}
             />
 
             {/* Author Profile */}
-            {article.profiles && (
+            {updatedArticle.profiles && (
               <AuthorProfile
-                author={article.profiles}
+                author={{
+                  ...updatedArticle.profiles,
+                  role: updatedArticle.profiles.role || "Penulis",
+                }}
                 authorArticles={authorArticles}
               />
             )}
 
             {/* Related Articles */}
             {relatedArticles.length > 0 && (
-              <RelatedArticles articles={relatedArticles} />
+              <RelatedArticles
+                articles={relatedArticles}
+                currentCategory={updatedArticle.category}
+              />
             )}
           </div>
         </div>

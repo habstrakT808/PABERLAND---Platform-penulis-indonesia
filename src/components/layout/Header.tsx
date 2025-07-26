@@ -1,10 +1,10 @@
 // src/components/layout/Header.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   MagnifyingGlassIcon,
   Bars3Icon,
@@ -20,9 +20,11 @@ import { adminHelpers } from "@/lib/adminHelpers";
 export default function Header() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,6 +33,23 @@ export default function Header() {
   // Admin states
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminStats, setAdminStats] = useState({ pendingReports: 0 });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -182,7 +201,7 @@ export default function Header() {
   }, [user]);
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-50">
+    <header className="bg-gradient-to-br from-white via-blue-50 to-pink-50 shadow-md border-b border-blue-100 relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo Only - No Text */}
@@ -203,19 +222,31 @@ export default function Header() {
           <nav className="hidden md:flex space-x-8">
             <Link
               href="/"
-              className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium transition-colors"
+              className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                pathname === "/"
+                  ? "text-blue-600 bg-blue-50 border border-blue-200"
+                  : "text-gray-800 hover:text-blue-600 hover:bg-blue-50"
+              }`}
             >
               Beranda
             </Link>
             <Link
               href="/kategori"
-              className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium transition-colors"
+              className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                pathname.startsWith("/kategori")
+                  ? "text-blue-600 bg-blue-50 border border-blue-200"
+                  : "text-gray-800 hover:text-blue-600 hover:bg-blue-50"
+              }`}
             >
               Kategori
             </Link>
             <Link
               href="/penulis"
-              className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium transition-colors"
+              className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                pathname.startsWith("/penulis")
+                  ? "text-blue-600 bg-blue-50 border border-blue-200"
+                  : "text-gray-800 hover:text-blue-600 hover:bg-blue-50"
+              }`}
             >
               Penulis
             </Link>
@@ -237,43 +268,41 @@ export default function Header() {
                   setShowSearchSuggestions(true)
                 }
                 onBlur={handleSearchBlur}
-                placeholder="Cari artikel, penulis..."
-                className="block w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                placeholder="Cari konten, penulis..."
+                className="block w-full pl-10 pr-12 py-2 border border-blue-200 rounded-lg leading-5 bg-white text-gray-900 placeholder-black focus:outline-none focus:placeholder-black focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
               />
               <button
                 type="submit"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                <div className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md transition-colors">
-                  <MagnifyingGlassIcon className="h-4 w-4" />
+                <div className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-md transition-colors">
+                  <MagnifyingGlassIcon className="h-4 w-4 text-white" />
                 </div>
               </button>
             </form>
 
             {/* Search Suggestions Dropdown */}
             {showSearchSuggestions && searchQuery.trim().length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-blue-200 rounded-lg shadow-lg z-50">
                 <div className="py-2">
                   {getSearchSuggestions().map((suggestion, index) => (
                     <button
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-3 transition-colors"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center space-x-3 transition-colors"
                     >
                       <span className="text-lg">{suggestion.icon}</span>
-                      <span className="text-gray-900 dark:text-white">
-                        {suggestion.text}
-                      </span>
+                      <span className="text-gray-900">{suggestion.text}</span>
                     </button>
                   ))}
 
                   {/* Quick access to advanced search */}
-                  <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                  <div className="border-t border-blue-200 mt-2 pt-2">
                     <Link
                       href={`/search?q=${encodeURIComponent(
                         searchQuery.trim()
                       )}&type=all`}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-3 text-indigo-600 dark:text-indigo-400 transition-colors"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center space-x-3 text-blue-600 transition-colors"
                       onClick={() => {
                         setSearchQuery("");
                         setShowSearchSuggestions(false);
@@ -293,17 +322,7 @@ export default function Header() {
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Dark Mode Toggle */}
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-              title={isDarkMode ? "Mode Terang" : "Mode Gelap"}
-            >
-              {isDarkMode ? (
-                <SunIcon className="h-5 w-5" />
-              ) : (
-                <MoonIcon className="h-5 w-5" />
-              )}
-            </button>
+            {/* Remove dark mode toggle for a consistent light theme */}
 
             {/* User Menu or Auth Buttons */}
             {user ? (
@@ -312,7 +331,7 @@ export default function Header() {
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors"
                   >
                     <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {getUserInitial()}
@@ -325,68 +344,64 @@ export default function Header() {
 
                   {/* User Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-                      <Link
-                        href="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        📊 Dashboard
-                      </Link>
+                    <div
+                      ref={userMenuRef}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-blue-100"
+                    >
                       <Link
                         href={user ? `/profile/${user.id}` : "/profile"}
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         👤 Profil
                       </Link>
                       <Link
                         href="/write"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        ✍️ Tulis Artikel
+                        ✍️ Tulis Konten
                       </Link>
                       <Link
                         href="/my-articles"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-blue-50 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        📚 Artikel Saya
+                        📚 Konten Saya
                       </Link>
                       {/* Admin Menu Section */}
                       {isAdmin && (
                         <>
-                          <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                          <hr className="my-1 border-blue-100" />
                           <div className="px-4 py-2">
-                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
                               Admin Panel
                             </p>
                           </div>
                           <Link
                             href="/admin"
-                            className="block px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors font-medium"
+                            className="block px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             🛡️ Admin Dashboard
                           </Link>
                           <Link
                             href="/admin/users"
-                            className="block px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                            className="block px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             👥 Kelola Users
                           </Link>
                           <Link
                             href="/admin/articles"
-                            className="block px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                            className="block px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             📚 Kelola Artikel
                           </Link>
                           <Link
                             href="/admin/reports"
-                            className="flex items-center justify-between px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                            className="flex items-center justify-between px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
                             <span>🚨 Laporan</span>
@@ -400,10 +415,10 @@ export default function Header() {
                           </Link>
                         </>
                       )}
-                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                      <hr className="my-1 border-blue-100" />
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-blue-50 transition-colors"
                       >
                         🚪 Logout
                       </button>
@@ -415,13 +430,13 @@ export default function Header() {
               <>
                 <Link
                   href="/auth/login"
-                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 text-sm font-medium transition-colors"
+                  className="text-gray-800 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Daftar
                 </Link>
@@ -431,7 +446,7 @@ export default function Header() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-gray-500 dark:text-gray-400"
+              className="md:hidden p-2 text-gray-500"
             >
               {isMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" />
@@ -444,25 +459,37 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="md:hidden py-4 border-t border-blue-100">
             <div className="space-y-2">
               <Link
                 href="/"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className={`block px-3 py-2 transition-colors rounded-md ${
+                  pathname === "/"
+                    ? "text-blue-600 bg-blue-50 border border-blue-200"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Beranda
               </Link>
               <Link
                 href="/kategori"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className={`block px-3 py-2 transition-colors rounded-md ${
+                  pathname.startsWith("/kategori")
+                    ? "text-blue-600 bg-blue-50 border border-blue-200"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Kategori
               </Link>
               <Link
                 href="/penulis"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className={`block px-3 py-2 transition-colors rounded-md ${
+                  pathname.startsWith("/penulis")
+                    ? "text-blue-600 bg-blue-50 border border-blue-200"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Penulis
@@ -480,15 +507,15 @@ export default function Header() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari artikel, penulis..."
-                      className="block w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Cari konten, penulis..."
+                      className="block w-full pl-10 pr-12 py-2 border border-blue-200 rounded-lg leading-5 bg-white text-gray-800 placeholder-black focus:outline-none focus:placeholder-black focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                     />
                     <button
                       type="submit"
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <div className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md transition-colors">
-                        <MagnifyingGlassIcon className="h-4 w-4" />
+                      <div className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-md transition-colors">
+                        <MagnifyingGlassIcon className="h-4 w-4 text-white" />
                       </div>
                     </button>
                   </div>
@@ -498,47 +525,55 @@ export default function Header() {
               {/* Mobile User Menu */}
               {user && (
                 <>
-                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
-                  <Link
-                    href="/dashboard"
-                    className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    📊 Dashboard
-                  </Link>
+                  <hr className="my-2 border-blue-100" />
+
                   <Link
                     href={user ? `/profile/${user.id}` : "/profile"}
-                    className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     👤 Profil
                   </Link>
+                  <Link
+                    href="/write"
+                    className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    ✍️ Tulis Konten
+                  </Link>
+                  <Link
+                    href="/my-articles"
+                    className="block px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    📚 Konten Saya
+                  </Link>
                   {/* Mobile Admin Menu */}
                   {isAdmin && (
                     <>
-                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                      <hr className="my-2 border-blue-100" />
                       <div className="px-3 py-1">
-                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
                           Admin Panel
                         </p>
                       </div>
                       <Link
                         href="/admin"
-                        className="block px-3 py-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors font-medium"
+                        className="block px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors font-medium"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         🛡️ Admin Dashboard
                       </Link>
                       <Link
                         href="/admin/users"
-                        className="block px-3 py-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                        className="block px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         👥 Kelola Users
                       </Link>
                       <Link
                         href="/admin/articles"
-                        className="block px-3 py-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                        className="block px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         📚 Kelola Artikel
@@ -546,7 +581,7 @@ export default function Header() {
                       <div className="flex items-center justify-between px-3 py-2">
                         <Link
                           href="/admin/reports"
-                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           🚨 Laporan
@@ -564,7 +599,7 @@ export default function Header() {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-red-600 dark:text-red-400 transition-colors"
+                    className="block w-full text-left px-3 py-2 text-red-600 transition-colors"
                   >
                     🚪 Logout
                   </button>

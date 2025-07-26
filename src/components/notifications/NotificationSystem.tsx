@@ -238,7 +238,7 @@ export default function NotificationSystem() {
       {/* Notification Bell */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+        className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
       >
         {unreadCount > 0 ? (
           <BellSolid className="w-6 h-6" />
@@ -255,26 +255,24 @@ export default function NotificationSystem() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-blue-200 z-50">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              Notifikasi
-            </h3>
+          <div className="flex items-center justify-between p-4 border-b border-blue-100">
+            <h3 className="text-lg font-bold text-gray-900">Notifikasi</h3>
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Tandai Semua
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-1 hover:bg-blue-50 rounded-lg transition-colors"
               >
-                <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <XMarkIcon className="w-5 h-5 text-gray-500" />
               </button>
             </div>
           </div>
@@ -289,10 +287,10 @@ export default function NotificationSystem() {
                       key={i}
                       className="flex items-center space-x-3 animate-pulse"
                     >
-                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                      <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
                       <div className="flex-1">
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mt-1"></div>
+                        <div className="h-4 bg-blue-100 rounded w-3/4"></div>
+                        <div className="h-3 bg-blue-100 rounded w-1/2 mt-1"></div>
                       </div>
                     </div>
                   ))}
@@ -300,13 +298,11 @@ export default function NotificationSystem() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <BellIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  Belum ada notifikasi
-                </p>
+                <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-500">Belum ada notifikasi</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="divide-y divide-blue-100">
                 {notifications.map((notification) => (
                   <Link
                     key={notification.id}
@@ -317,10 +313,8 @@ export default function NotificationSystem() {
                       }
                       setIsOpen(false);
                     }}
-                    className={`block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                      !notification.read
-                        ? "bg-indigo-50 dark:bg-indigo-900/20"
-                        : ""
+                    className={`block p-4 hover:bg-blue-50 transition-colors ${
+                      !notification.read ? "bg-blue-50" : ""
                     }`}
                   >
                     <div className="flex items-start space-x-3">
@@ -335,7 +329,7 @@ export default function NotificationSystem() {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                             {notification.actor_profile.full_name.charAt(0)}
                           </div>
                         )}
@@ -344,17 +338,17 @@ export default function NotificationSystem() {
                       {/* Notification Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
-                          <p className="text-sm text-gray-900 dark:text-white">
+                          <p className="text-sm text-gray-900">
                             {getNotificationText(notification)}
                           </p>
                           <div className="flex items-center space-x-2 ml-2">
                             {getNotificationIcon(notification.type)}
                             {!notification.read && (
-                              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                             )}
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-gray-600 mt-1">
                           {formatTime(notification.created_at)}
                         </p>
                       </div>
@@ -367,11 +361,11 @@ export default function NotificationSystem() {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-center">
+            <div className="p-3 border-t border-blue-100 text-center">
               <Link
                 href="/notifications"
                 onClick={() => setIsOpen(false)}
-                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 Lihat Semua Notifikasi
               </Link>

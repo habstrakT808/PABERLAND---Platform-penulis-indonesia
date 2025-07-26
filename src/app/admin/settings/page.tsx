@@ -77,19 +77,19 @@ function AdminSettingsContent() {
   const renderSiteSettings = () => (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Nama Site
         </label>
         <input
           type="text"
           value={settings.siteName}
           onChange={(e) => handleSettingChange("siteName", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Deskripsi Site
         </label>
         <textarea
@@ -98,16 +98,14 @@ function AdminSettingsContent() {
             handleSettingChange("siteDescription", e.target.value)
           }
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <div className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+      <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div>
-          <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
-            Maintenance Mode
-          </h4>
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+          <h4 className="font-medium text-yellow-800">Maintenance Mode</h4>
+          <p className="text-sm text-yellow-700">
             Nonaktifkan akses public ke site
           </p>
         </div>
@@ -120,7 +118,7 @@ function AdminSettingsContent() {
             }
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-yellow-600"></div>
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
         </label>
       </div>
     </div>
@@ -129,14 +127,12 @@ function AdminSettingsContent() {
   const renderUserSettings = () => (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
+            <h4 className="font-medium text-gray-900">
               Allow User Registration
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Izinkan user baru mendaftar
-            </p>
+            <p className="text-sm text-gray-700">Izinkan user baru mendaftar</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -147,16 +143,16 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
+            <h4 className="font-medium text-gray-900">
               Require Email Verification
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-700">
               Wajibkan verifikasi email saat registrasi
             </p>
           </div>
@@ -172,16 +168,16 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
+            <h4 className="font-medium text-gray-900">
               Auto Approve New Users
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-700">
               Otomatis approve user baru tanpa review manual
             </p>
           </div>
@@ -194,7 +190,7 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
       </div>
@@ -204,13 +200,11 @@ function AdminSettingsContent() {
   const renderContentSettings = () => (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
-              Auto Approve Articles
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Otomatis publish artikel tanpa review manual
+            <h4 className="font-medium text-gray-900">Auto Approve Articles</h4>
+            <p className="text-sm text-gray-700">
+              Otomatis publish konten tanpa review manual
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -222,12 +216,12 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-900 mb-2">
             Maximum Article Length (characters)
           </label>
           <input
@@ -238,16 +232,16 @@ function AdminSettingsContent() {
             }
             min="1000"
             max="100000"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
+            <h4 className="font-medium text-gray-900">
               Allow Anonymous Comments
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-700">
               Izinkan komentar tanpa login
             </p>
           </div>
@@ -260,7 +254,7 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
       </div>
@@ -270,12 +264,10 @@ function AdminSettingsContent() {
   const renderNotificationSettings = () => (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
-              Email Notifications
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h4 className="font-medium text-gray-900">Email Notifications</h4>
+            <p className="text-sm text-gray-700">
               Kirim notifikasi via email ke users
             </p>
           </div>
@@ -288,16 +280,14 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
-              Admin Notifications
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h4 className="font-medium text-gray-900">Admin Notifications</h4>
+            <p className="text-sm text-gray-700">
               Notifikasi untuk aktivitas admin
             </p>
           </div>
@@ -310,16 +300,14 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
-              Report Notifications
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h4 className="font-medium text-gray-900">Report Notifications</h4>
+            <p className="text-sm text-gray-700">
               Notifikasi untuk laporan konten baru
             </p>
           </div>
@@ -332,16 +320,14 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">
-              Weekly Digest
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h4 className="font-medium text-gray-900">Weekly Digest</h4>
+            <p className="text-sm text-gray-700">
               Ringkasan mingguan aktivitas platform
             </p>
           </div>
@@ -354,7 +340,7 @@ function AdminSettingsContent() {
               }
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
       </div>
@@ -363,40 +349,34 @@ function AdminSettingsContent() {
 
   const renderSecuritySettings = () => (
     <div className="space-y-6">
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <div className="flex items-start space-x-3">
-          <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5" />
+          <ExclamationTriangleIcon className="w-6 h-6 text-red-600 mt-0.5" />
           <div>
-            <h4 className="font-medium text-red-800 dark:text-red-200 mb-2">
-              Security Settings
-            </h4>
-            <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+            <h4 className="font-medium text-red-800 mb-2">Security Settings</h4>
+            <p className="text-sm text-red-700 mb-4">
               Pengaturan keamanan platform. Berhati-hati dalam mengubah
               pengaturan ini.
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-700 dark:text-red-300">
+                <span className="text-sm text-red-700">
                   Rate Limiting Enabled
                 </span>
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-700 dark:text-red-300">
-                  HTTPS Enforced
-                </span>
+                <span className="text-sm text-red-700">HTTPS Enforced</span>
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-700 dark:text-red-300">
+                <span className="text-sm text-red-700">
                   SQL Injection Protection
                 </span>
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-700 dark:text-red-300">
-                  XSS Protection
-                </span>
+                <span className="text-sm text-red-700">XSS Protection</span>
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
               </div>
             </div>
@@ -404,11 +384,9 @@ function AdminSettingsContent() {
         </div>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-          Backup & Recovery
-        </h4>
-        <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-medium text-blue-800 mb-2">Backup & Recovery</h4>
+        <p className="text-sm text-blue-700 mb-3">
           Database backup otomatis setiap hari pada pukul 02:00 WIB
         </p>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -441,10 +419,10 @@ function AdminSettingsContent() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-black">
               ⚙️ Pengaturan Admin
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-700 mt-1">
               Konfigurasi dan pengaturan platform PaberLand
             </p>
           </div>
@@ -452,7 +430,7 @@ function AdminSettingsContent() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
           >
             {saving ? (
               <div className="flex items-center">
@@ -478,8 +456,8 @@ function AdminSettingsContent() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === tab.id
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-700 hover:bg-blue-50"
                   }`}
                 >
                   <IconComponent className="w-5 h-5" />
@@ -492,9 +470,9 @@ function AdminSettingsContent() {
 
         {/* Main Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-gray-900">
                 {tabs.find((tab) => tab.id === activeTab)?.label}
               </h2>
             </div>

@@ -66,7 +66,7 @@ function MyArticlesContent() {
       setStats(statsResult);
     } catch (error) {
       console.error("Error fetching articles:", error);
-      toast.error("Gagal memuat artikel");
+      toast.error("Gagal memuat konten");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -115,29 +115,27 @@ function MyArticlesContent() {
 
   if (loading && !refreshing) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Memuat artikel Anda...
-          </p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-700">Memuat konten Anda...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                📚 Artikel Saya
+              <h1 className="text-3xl font-bold text-gray-900">
+                📚 Konten Saya
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Kelola semua artikel yang telah Anda tulis
+              <p className="text-gray-800 mt-1">
+                Kelola semua konten yang telah Anda tulis
               </p>
             </div>
 
@@ -145,7 +143,7 @@ function MyArticlesContent() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 transition-colors disabled:opacity-50"
               >
                 <ArrowPathIcon
                   className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
@@ -155,10 +153,10 @@ function MyArticlesContent() {
 
               <Link
                 href="/write"
-                className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
               >
                 <PlusIcon className="w-5 h-5 mr-2" />
-                Tulis Artikel Baru
+                Tulis Konten Baru
               </Link>
             </div>
           </div>
@@ -180,8 +178,8 @@ function MyArticlesContent() {
         {/* Results Info */}
         {totalCount > 0 && (
           <div className="mb-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Menampilkan {articles.length} dari {totalCount} artikel
+            <p className="text-sm text-gray-700">
+              Menampilkan {articles.length} dari {totalCount} konten
               {search && ` untuk pencarian "${search}"`}
               {category !== "all" && ` dalam kategori ${category}`}
               {status !== "all" && ` dengan status ${status}`}
@@ -208,7 +206,7 @@ function MyArticlesContent() {
         {/* Empty State */}
         {totalCount === 0 && !loading && (
           <div className="text-center py-12">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
               <svg
                 className="w-12 h-12 text-gray-400"
                 fill="none"
@@ -223,15 +221,15 @@ function MyArticlesContent() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {search || category !== "all" || status !== "all"
-                ? "Tidak ada artikel yang sesuai"
-                : "Belum ada artikel"}
+                ? "Tidak ada konten yang sesuai"
+                : "Belum ada konten"}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            <p className="text-gray-700 mb-6 max-w-md mx-auto">
               {search || category !== "all" || status !== "all"
-                ? "Coba ubah filter pencarian atau buat artikel baru."
-                : "Mulai menulis artikel pertama Anda dan bagikan dengan komunitas PaberLand."}
+                ? "Coba ubah filter pencarian atau buat konten baru."
+                : "Mulai menulis konten pertama Anda dan bagikan dengan komunitas PaberLand."}
             </p>
 
             {search || category !== "all" || status !== "all" ? (
@@ -241,17 +239,17 @@ function MyArticlesContent() {
                   setCategory("all");
                   setStatus("all");
                 }}
-                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-blue-200 rounded-lg text-gray-700 bg-white hover:bg-blue-50 transition-colors"
               >
                 Reset Filter
               </button>
             ) : (
               <Link
                 href="/write"
-                className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
               >
                 <PlusIcon className="w-5 h-5 mr-2" />
-                Tulis Artikel Pertama
+                Tulis Konten Pertama
               </Link>
             )}
           </div>

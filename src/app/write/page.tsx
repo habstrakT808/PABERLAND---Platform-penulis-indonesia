@@ -38,12 +38,12 @@ function WriteArticleContent() {
         setEditArticle(article);
       } else {
         toast.error(
-          "Artikel tidak ditemukan atau Anda tidak memiliki akses untuk mengeditnya"
+          "Konten tidak ditemukan atau Anda tidak memiliki akses untuk mengeditnya"
         );
       }
     } catch (error) {
       console.error("Error fetching article for edit:", error);
-      toast.error("Gagal memuat artikel untuk diedit");
+      toast.error("Gagal memuat konten untuk diedit");
     } finally {
       setLoading(false);
     }
@@ -51,27 +51,25 @@ function WriteArticleContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Memuat artikel untuk diedit...
-          </p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-700">Memuat konten untuk diedit...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {editArticle ? "✏️ Edit Artikel" : "✍️ Tulis Artikel Baru"}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {editArticle ? "✏️ Edit Konten" : "✍️ Tulis Konten Baru"}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-800">
             {editArticle
-              ? "Perbarui artikel Anda dan bagikan kembali dengan komunitas"
+              ? "Perbarui konten Anda dan bagikan kembali dengan komunitas"
               : "Bagikan ide, cerita, dan karya terbaik Anda dengan komunitas penulis Indonesia"}
           </p>
         </div>

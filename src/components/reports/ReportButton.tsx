@@ -34,7 +34,7 @@ export default function ReportButton({
     <>
       <button
         onClick={handleReportClick}
-        className={`inline-flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors ${className}`}
+        className={`inline-flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors ${className}`}
         title="Laporkan konten ini"
       >
         <ExclamationTriangleIcon className="w-4 h-4" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import SignedImage from "@/components/common/SignedImage";
 import Link from "next/link";
 import {
   PencilIcon,
@@ -10,6 +10,8 @@ import {
   EyeSlashIcon,
   CalendarIcon,
   ClockIcon,
+  DocumentTextIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { Article, articleHelpers, articleManagement } from "@/lib/supabase";
 import toast from "react-hot-toast";
@@ -20,26 +22,22 @@ interface ArticleTableProps {
   onArticleUpdate: () => void;
 }
 
-const categoryColors: { [key: string]: string } = {
-  cerpen: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
-  puisi:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
-  artikel:
-    "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
-  "cerita-rakyat":
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
-  "novel-berseri":
-    "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
-  lainnya: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400",
-};
-
-const categoryNames: { [key: string]: string } = {
+const categoryLabels: { [key: string]: string } = {
   cerpen: "Cerpen",
   puisi: "Puisi",
-  artikel: "Artikel",
+  artikel: "Konten",
   "cerita-rakyat": "Cerita Rakyat",
   "novel-berseri": "Novel Berseri",
   lainnya: "Lainnya",
+};
+
+const categoryColors: { [key: string]: string } = {
+  cerpen: "bg-blue-100 text-blue-800",
+  puisi: "bg-purple-100 text-purple-800",
+  artikel: "bg-green-100 text-green-800",
+  "cerita-rakyat": "bg-yellow-100 text-yellow-800",
+  "novel-berseri": "bg-red-100 text-red-800",
+  lainnya: "bg-gray-100 text-gray-800",
 };
 
 export default function ArticleTable({
@@ -68,15 +66,15 @@ export default function ArticleTable({
       if (result.success) {
         toast.success(
           article.published
-            ? "📝 Artikel berhasil dijadikan draft"
-            : "🚀 Artikel berhasil dipublikasikan"
+            ? "📝 Konten berhasil dijadikan draft"
+            : "🚀 Konten berhasil dipublikasikan"
         );
         onArticleUpdate();
       } else {
-        toast.error("Gagal mengubah status artikel: " + result.error);
+        toast.error("Gagal mengubah status konten: " + result.error);
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan saat mengubah status artikel");
+      toast.error("Terjadi kesalahan saat mengubah status konten");
       console.error("Toggle publish error:", error);
     } finally {
       setLoading(article.id, false);
@@ -90,14 +88,14 @@ export default function ArticleTable({
       const result = await articleManagement.deleteArticle(articleId, authorId);
 
       if (result.success) {
-        toast.success("🗑️ Artikel berhasil dihapus");
+        toast.success("🗑️ Konten berhasil dihapus");
         onArticleUpdate();
         setDeleteConfirm(null);
       } else {
-        toast.error("Gagal menghapus artikel: " + result.error);
+        toast.error("Gagal menghapus konten: " + result.error);
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan saat menghapus artikel");
+      toast.error("Terjadi kesalahan saat menghapus konten");
       console.error("Delete article error:", error);
     } finally {
       setLoading(articleId, false);
@@ -106,33 +104,33 @@ export default function ArticleTable({
 
   if (articles.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-          <PencilIcon className="w-8 h-8 text-gray-400" />
+      <div className="bg-white/95 rounded-lg shadow-lg p-8 text-center border border-blue-100">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <DocumentTextIcon className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Belum ada artikel
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Belum ada konten
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Mulai menulis artikel pertama Anda dan bagikan dengan komunitas
+        <p className="text-gray-700 mb-6">
+          Mulai menulis konten pertama Anda dan bagikan dengan komunitas
           PaberLand
         </p>
         <Link
           href="/write"
-          className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <PencilIcon className="w-5 h-5 mr-2" />
-          Tulis Artikel Baru
+          <PlusIcon className="w-5 h-5 mr-2" />
+          Tulis Konten Baru
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white/95 rounded-lg shadow-lg overflow-hidden border border-blue-100">
       {/* Mobile View */}
       <div className="block md:hidden">
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-blue-100">
           {articles.map((article) => (
             <div key={article.id} className="p-4">
               <div className="flex items-start space-x-3">
@@ -140,15 +138,14 @@ export default function ArticleTable({
                 <div className="flex-shrink-0">
                   {article.cover_image ? (
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden">
-                      <Image
+                      <SignedImage
                         src={article.cover_image}
                         alt={article.title}
-                        fill
-                        className="object-cover"
+                        className="object-cover w-full h-full absolute inset-0"
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                       <PencilIcon className="w-6 h-6 text-gray-400" />
                     </div>
                   )}
@@ -163,24 +160,24 @@ export default function ArticleTable({
                         categoryColors.lainnya
                       }`}
                     >
-                      {categoryNames[article.category] || "Lainnya"}
+                      {categoryLabels[article.category] || "Lainnya"}
                     </span>
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         article.published
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {article.published ? "Published" : "Draft"}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
                     {article.title}
                   </h3>
 
-                  <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  <div className="flex items-center space-x-4 text-xs text-gray-600 mb-3">
                     <span className="flex items-center">
                       <EyeIcon className="w-3 h-3 mr-1" />
                       {article.views}
@@ -206,8 +203,8 @@ export default function ArticleTable({
                       disabled={loadingStates[article.id]}
                       className={`inline-flex items-center px-3 py-1 text-xs rounded-lg transition-colors ${
                         article.published
-                          ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                          : "bg-green-100 text-green-700 hover:bg-green-200"
+                          ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"
                       } disabled:opacity-50`}
                     >
                       {loadingStates[article.id] ? (
@@ -237,58 +234,54 @@ export default function ArticleTable({
 
       {/* Desktop View */}
       <div className="hidden md:block">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+        <table className="min-w-full divide-y divide-blue-100">
+          <thead className="bg-blue-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Artikel
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                Konten
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Kategori
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Stats
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Terakhir Update
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Aksi
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white divide-y divide-blue-100">
             {articles.map((article) => (
-              <tr
-                key={article.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
+              <tr key={article.id} className="hover:bg-blue-50">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12">
                       {article.cover_image ? (
                         <div className="relative h-12 w-12 rounded-lg overflow-hidden">
-                          <Image
+                          <SignedImage
                             src={article.cover_image}
                             alt={article.title}
-                            fill
-                            className="object-cover"
+                            className="object-cover w-full h-full absolute inset-0"
                           />
                         </div>
                       ) : (
-                        <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
                           <PencilIcon className="h-6 w-6 text-gray-400" />
                         </div>
                       )}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                      <div className="text-sm font-medium text-gray-900 line-clamp-2">
                         {article.title}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                      <div className="text-sm text-gray-600 line-clamp-1">
                         {article.excerpt}
                       </div>
                     </div>
@@ -300,21 +293,21 @@ export default function ArticleTable({
                       categoryColors[article.category] || categoryColors.lainnya
                     }`}
                   >
-                    {categoryNames[article.category] || "Lainnya"}
+                    {categoryLabels[article.category] || "Lainnya"}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       article.published
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-blue-100 text-blue-800"
                     }`}
                   >
                     {article.published ? "Published" : "Draft"}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   <div className="space-y-1">
                     <div className="flex items-center">
                       <EyeIcon className="w-4 h-4 mr-1" />
@@ -331,7 +324,7 @@ export default function ArticleTable({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   <div className="flex items-center">
                     <ClockIcon className="w-4 h-4 mr-1" />
                     {articleHelpers.formatRelativeTime(article.updated_at)}
@@ -342,8 +335,8 @@ export default function ArticleTable({
                     {article.published && (
                       <Link
                         href={`/article/${article.slug}`}
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
-                        title="Lihat artikel"
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Lihat konten"
                       >
                         <EyeIcon className="w-5 h-5" />
                       </Link>
@@ -351,8 +344,8 @@ export default function ArticleTable({
 
                     <Link
                       href={`/write?edit=${article.id}`}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                      title="Edit artikel"
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Edit konten"
                     >
                       <PencilIcon className="w-5 h-5" />
                     </Link>
@@ -362,8 +355,8 @@ export default function ArticleTable({
                       disabled={loadingStates[article.id]}
                       className={`${
                         article.published
-                          ? "text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300"
-                          : "text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
+                          ? "text-blue-600 hover:text-blue-900"
+                          : "text-blue-600 hover:text-blue-900"
                       } disabled:opacity-50`}
                       title={
                         article.published ? "Jadikan draft" : "Publikasikan"
@@ -380,8 +373,8 @@ export default function ArticleTable({
 
                     <button
                       onClick={() => setDeleteConfirm(article.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                      title="Hapus artikel"
+                      className="text-red-600 hover:text-red-900"
+                      title="Hapus konten"
                     >
                       <TrashIcon className="w-5 h-5" />
                     </button>
@@ -396,18 +389,18 @@ export default function ArticleTable({
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Konfirmasi Hapus Artikel
+          <div className="bg-white rounded-lg max-w-md w-full p-6 border border-blue-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Konfirmasi Hapus Konten
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Apakah Anda yakin ingin menghapus artikel ini? Tindakan ini tidak
+            <p className="text-gray-700 mb-6">
+              Apakah Anda yakin ingin menghapus konten ini? Tindakan ini tidak
               dapat dibatalkan.
             </p>
             <div className="flex items-center justify-end space-x-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
               >
                 Batal
               </button>

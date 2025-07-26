@@ -106,7 +106,7 @@ export default function CommentItem({
 
   return (
     <div className={`${depth > 0 ? "ml-8 md:ml-12" : ""}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-4">
+      <div className="bg-white/95 rounded-lg border border-blue-100 p-4 mb-4">
         {/* Comment Header */}
         <div className="flex items-start space-x-3 mb-3">
           {/* Avatar */}
@@ -120,7 +120,7 @@ export default function CommentItem({
                 className="rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <UserIcon className="w-5 h-5 text-white" />
               </div>
             )}
@@ -129,16 +129,14 @@ export default function CommentItem({
           {/* Comment Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+              <h4 className="font-semibold text-gray-900 text-sm">
                 {comment.profiles?.full_name || "Pengguna Anonim"}
               </h4>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-gray-600">
                 {commentHelpers.formatCommentDate(comment.created_at)}
               </span>
               {comment.updated_at !== comment.created_at && (
-                <span className="text-xs text-gray-400 dark:text-gray-500 italic">
-                  (diedit)
-                </span>
+                <span className="text-xs text-gray-500 italic">(diedit)</span>
               )}
             </div>
 
@@ -149,14 +147,14 @@ export default function CommentItem({
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                  className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 resize-none"
                   disabled={isUpdating}
                 />
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleUpdate}
                     disabled={!editContent.trim() || isUpdating}
-                    className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     {isUpdating ? "Menyimpan..." : "Simpan"}
                   </button>
@@ -166,14 +164,14 @@ export default function CommentItem({
                       setEditContent(comment.content);
                     }}
                     disabled={isUpdating}
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    className="px-3 py-1 bg-blue-50 text-gray-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
                   >
                     Batal
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+              <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
                 {comment.content}
               </div>
             )}
@@ -181,13 +179,13 @@ export default function CommentItem({
         </div>
 
         {/* Comment Actions */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-100">
           <div className="flex items-center space-x-4">
             {/* Reply Button */}
             {depth < maxDepth && (
               <button
                 onClick={() => setShowReplyForm(!showReplyForm)}
-                className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-600 transition-colors"
               >
                 <ChatBubbleLeftIcon className="w-4 h-4" />
                 <span>Balas</span>
@@ -205,7 +203,7 @@ export default function CommentItem({
             {hasReplies && (
               <button
                 onClick={() => setShowReplies(!showReplies)}
-                className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-600 transition-colors"
               >
                 {showReplies ? (
                   <ChevronUpIcon className="w-4 h-4" />
@@ -225,7 +223,7 @@ export default function CommentItem({
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
                 title="Edit komentar"
               >
                 <PencilIcon className="w-4 h-4" />
@@ -233,7 +231,7 @@ export default function CommentItem({
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                className="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
                 title="Hapus komentar"
               >
                 {isDeleting ? (
@@ -248,7 +246,7 @@ export default function CommentItem({
 
         {/* Reply Form */}
         {showReplyForm && (
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="mt-4 pt-4 border-t border-blue-100">
             <CommentForm
               articleId={articleId}
               parentId={comment.id}

@@ -113,17 +113,17 @@ export default function ReportModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white/95 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-blue-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-blue-100">
           <div className="flex items-center space-x-3">
             <ExclamationTriangleIcon className="w-6 h-6 text-red-500" />
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-bold text-gray-900">
                 Laporkan {getContentTypeLabel()}
               </h3>
               {contentTitle && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-64">
+                <p className="text-sm text-gray-600 truncate max-w-64">
                   {contentTitle}
                 </p>
               )}
@@ -131,23 +131,23 @@ export default function ReportModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <XMarkIcon className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-6">
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+            <p className="text-gray-700 text-sm mb-4">
               Bantu kami menjaga kualitas platform dengan melaporkan konten yang
               melanggar aturan.
             </p>
 
             {/* Reason Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label className="block text-sm font-medium text-gray-800 mb-3">
                 Pilih alasan laporan:
               </label>
               <div className="space-y-2">
@@ -156,8 +156,8 @@ export default function ReportModal({
                     key={reasonOption.value}
                     className={`flex items-start space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                       reason === reasonOption.value
-                        ? "border-red-500 bg-red-50 dark:bg-red-900/20"
-                        : "border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        ? "border-red-500 bg-red-50"
+                        : "border-blue-200 hover:bg-blue-50"
                     }`}
                   >
                     <input
@@ -169,10 +169,10 @@ export default function ReportModal({
                       className="mt-1 text-red-600 focus:ring-red-500"
                     />
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-gray-900">
                         {reasonOption.label}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm text-gray-600">
                         {reasonOption.description}
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function ReportModal({
 
             {/* Description */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-800 mb-2">
                 Deskripsi tambahan (opsional):
               </label>
               <textarea
@@ -192,19 +192,19 @@ export default function ReportModal({
                 placeholder="Jelaskan lebih detail tentang masalah yang Anda laporkan..."
                 rows={4}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full px-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="text-xs text-gray-600 mt-1">
                 {description.length}/500 karakter
               </div>
             </div>
 
             {/* Guidelines */}
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-              <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-medium text-yellow-800 mb-2">
                 📋 Panduan Pelaporan:
               </h4>
-              <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+              <ul className="text-sm text-yellow-700 space-y-1">
                 <li>• Laporan akan ditinjau dalam 24 jam</li>
                 <li>• Laporan palsu dapat mengakibatkan sanksi</li>
                 <li>• Identitas pelapor akan dirahasiakan</li>
@@ -218,7 +218,7 @@ export default function ReportModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
             >
               Batal
             </button>
