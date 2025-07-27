@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PlusIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContext";
-import { articleManagement, Article } from "@/lib/supabase";
+import { articleManagement, Article, debugCoverImages } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -64,6 +64,9 @@ function MyArticlesContent() {
       setTotalPages(articlesResult.totalPages);
       setTotalCount(articlesResult.totalCount);
       setStats(statsResult);
+
+      // Debug cover images
+      await debugCoverImages();
     } catch (error) {
       console.error("Error fetching articles:", error);
       toast.error("Gagal memuat konten");

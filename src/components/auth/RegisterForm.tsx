@@ -65,6 +65,7 @@ export default function RegisterForm() {
     setIsLoading(true);
 
     try {
+      // Sign up user - trigger will automatically create profile
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -78,29 +79,19 @@ export default function RegisterForm() {
       });
 
       if (error) {
-        toast.error(error.message);
+        console.error("Signup error:", error);
+        toast.error(error.message || "Database error saving new user");
         return;
       }
 
       if (data.user) {
-        // Create profile with role
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: data.user.id,
-          full_name: formData.fullName,
-          phone: formData.phone,
-          role: formData.role,
-        });
-
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-        }
-
         toast.success(
           "Pendaftaran berhasil! Silakan cek email untuk verifikasi."
         );
         router.push("/auth/login");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       toast.error("Terjadi kesalahan saat mendaftar");
     } finally {
       setIsLoading(false);

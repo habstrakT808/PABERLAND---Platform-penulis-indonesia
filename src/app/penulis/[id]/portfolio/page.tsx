@@ -26,6 +26,7 @@ export default function PortfolioPage() {
   const [portfolioWorks, setPortfolioWorks] = useState<any[]>([]);
   const [stats, setStats] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   const authorId = params.id as string;
 
@@ -55,6 +56,13 @@ export default function PortfolioPage() {
     if (authorId) {
       fetchPortfolioData();
     }
+    // Deteksi mode responsif
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, [authorId]);
 
   const fetchPortfolioData = async () => {
@@ -95,7 +103,7 @@ export default function PortfolioPage() {
       <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📚</div>
+            {!isMobile && <div className="text-6xl mb-4">📚</div>}
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Belum ada karya dalam portofolio
             </h3>
@@ -107,7 +115,7 @@ export default function PortfolioPage() {
                 href={`/penulis/${authorId}`}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                ← Kembali ke Profil
+                ← Kembali
               </Link>
               {user && user.id === authorId && (
                 <Link
@@ -135,7 +143,7 @@ export default function PortfolioPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                📚 Portofolio Karya
+                {!isMobile && "📚 "}Portofolio Karya
               </h1>
               <p className="text-gray-600">
                 Koleksi karya {author?.full_name || "Penulis"}
@@ -155,7 +163,7 @@ export default function PortfolioPage() {
                 href={`/penulis/${authorId}`}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                ← Kembali ke Profil
+                ← Kembali
               </Link>
             </div>
           </div>
@@ -288,7 +296,7 @@ export default function PortfolioPage() {
                       Penghargaan:
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {work.awards.map((award, index) => (
+                      {work.awards.map((award: any, index: number) => (
                         <span
                           key={index}
                           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
@@ -304,7 +312,7 @@ export default function PortfolioPage() {
                 {work.tags && work.tags.length > 0 && (
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1">
-                      {work.tags.map((tag, index) => (
+                      {work.tags.map((tag: any, index: number) => (
                         <span
                           key={index}
                           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
@@ -366,7 +374,7 @@ export default function PortfolioPage() {
         {/* Empty State */}
         {portfolioWorks.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📚</div>
+            {!isMobile && <div className="text-6xl mb-4">📚</div>}
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Belum ada karya dalam portofolio
             </h3>
@@ -377,7 +385,7 @@ export default function PortfolioPage() {
               href={`/penulis/${params.id}`}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              ← Kembali ke Profil
+              ← Kembali
             </Link>
           </div>
         )}

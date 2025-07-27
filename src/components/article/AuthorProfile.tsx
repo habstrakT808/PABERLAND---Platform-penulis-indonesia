@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { UserIcon } from "@heroicons/react/24/outline";
-import { articleManagement } from "@/lib/supabase";
+import { articleManagement, getAvatarUrl } from "@/lib/supabase";
 
 interface AuthorProfileProps {
   author: {
@@ -59,14 +59,14 @@ export default function AuthorProfile({
         <div className="relative">
           {author.avatar_url ? (
             <Image
-              src={author.avatar_url}
+              src={getAvatarUrl(author.avatar_url) || ""}
               alt={author.full_name}
               width={80}
               height={80}
-              className="rounded-full object-cover ring-4 ring-blue-100"
+              className="rounded-full object-cover aspect-square ring-4 ring-blue-100"
             />
           ) : (
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center ring-4 ring-blue-100">
+            <div className="w-20 h-20 aspect-square bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center ring-4 ring-blue-100">
               <UserIcon className="w-10 h-10 text-white" />
             </div>
           )}

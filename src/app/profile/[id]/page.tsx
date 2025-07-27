@@ -26,6 +26,7 @@ import {
   articleHelpers,
   ArticleSummary,
   likeHelpers,
+  getAvatarUrl,
 } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import LikeButton from "@/components/article/LikeButton";
@@ -72,7 +73,7 @@ export default function PublicProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesLoading, setArticlesLoading] = useState(false);
 
-  const articlesPerPage = 6;
+  const articlesPerPage = 4;
   const isOwnProfile = user?.id === profileId;
 
   useEffect(() => {
@@ -191,7 +192,7 @@ export default function PublicProfilePage() {
           .order("created_at", { ascending: false })
           .range(
             (currentPage - 1) * articlesPerPage,
-            currentPage * articlesPerPage - 1
+            (currentPage - 1) * articlesPerPage + 3
           );
 
         if (error) {
@@ -347,11 +348,17 @@ export default function PublicProfilePage() {
 
   const currentArticles =
     activeTab === "articles" ? data.articles : data.likedArticles;
-  const totalPages = Math.ceil(currentArticles.length / articlesPerPage);
-  const paginatedArticles = currentArticles.slice(
-    (currentPage - 1) * articlesPerPage,
-    currentPage * articlesPerPage
-  );
+  const totalPages =
+    activeTab === "articles"
+      ? Math.ceil(data.articles.length / articlesPerPage)
+      : Math.ceil(data.stats.totalLikedArticles / articlesPerPage);
+  const paginatedArticles =
+    activeTab === "articles"
+      ? currentArticles.slice(
+          (currentPage - 1) * articlesPerPage,
+          currentPage * articlesPerPage
+        )
+      : currentArticles;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
@@ -380,7 +387,7 @@ export default function PublicProfilePage() {
               <div className="relative">
                 {data.profile.avatar_url ? (
                   <Image
-                    src={data.profile.avatar_url}
+                    src={getAvatarUrl(data.profile.avatar_url) || ""}
                     alt={data.profile.full_name}
                     width={128}
                     height={128}

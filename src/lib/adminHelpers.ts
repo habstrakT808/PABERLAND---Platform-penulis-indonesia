@@ -58,67 +58,76 @@ export const adminHelpers = {
     return data.is_admin === true;
   },
 
-  // Get admin dashboard stats
-  async getAdminStats(): Promise<AdminStats> {
-    const today = new Date().toISOString().split('T')[0];
+  // Get admin dashboard stats with improved error handling
+async getAdminStats(): Promise<AdminStats> {
+  const today = new Date().toISOString().split('T')[0];
 
-    try {
-      const [
-        usersResult,
-        articlesResult,
-        commentsResult,
-        reportsResult,
-        newUsersResult,
-        newArticlesResult,
-        pendingReportsResult,
-        featuredResult
-      ] = await Promise.all([
-        // Total users
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        // Total articles
-        supabase.from('articles').select('*', { count: 'exact', head: true }),
-        // Total comments
-        supabase.from('comments').select('*', { count: 'exact', head: true }),
-        // Total reports
-        supabase.from('content_reports').select('*', { count: 'exact', head: true }),
-        // New users today
-        supabase.from('profiles').select('*', { count: 'exact', head: true })
-          .gte('created_at', `${today}T00:00:00.000Z`),
-        // New articles today
-        supabase.from('articles').select('*', { count: 'exact', head: true })
-          .gte('created_at', `${today}T00:00:00.000Z`),
-        // Pending reports
-        supabase.from('content_reports').select('*', { count: 'exact', head: true })
-          .eq('status', 'pending'),
-        // Featured content
-        supabase.from('featured_content').select('*', { count: 'exact', head: true })
-          .eq('active', true)
-      ]);
+  try {
+    console.log('🔄 Fetching admin stats...');
 
-      return {
-        totalUsers: usersResult.count || 0,
-        totalArticles: articlesResult.count || 0,
-        totalComments: commentsResult.count || 0,
-        totalReports: reportsResult.count || 0,
-        newUsersToday: newUsersResult.count || 0,
-        newArticlesToday: newArticlesResult.count || 0,
-        pendingReports: pendingReportsResult.count || 0,
-        featuredContent: featuredResult.count || 0
-      };
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      return {
-        totalUsers: 0,
-        totalArticles: 0,
-        totalComments: 0,
-        totalReports: 0,
-        newUsersToday: 0,
-        newArticlesToday: 0,
-        pendingReports: 0,
-        featuredContent: 0
-      };
-    }
-  },
+    // Use Promise.allSettled to handle partial failures
+    const results = await Promise.allSettled([
+      // Total users
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      // Total articles
+      supabase.from('articles').select('*', { count: 'exact', head: true }),
+      // Total comments
+      supabase.from('comments').select('*', { count: 'exact', head: true }),
+      // Total reports (if table exists)
+      supabase.from('content_reports').select('*', { count: 'exact', head: true }),
+      // New users today
+      supabase.from('profiles').select('*', { count: 'exact', head: true })
+        .gte('created_at', `${today}T00:00:00.000Z`),
+      // New articles today
+      supabase.from('articles').select('*', { count: 'exact', head: true })
+        .gte('created_at', `${today}T00:00:00.000Z`),
+      // Pending reports (if table exists)
+      supabase.from('content_reports').select('*', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      // Featured content (if table exists)
+      supabase.from('featured_content').select('*', { count: 'exact', head: true })
+        .eq('active', true)
+    ]);
+
+    const [
+      usersResult,
+      articlesResult,
+      commentsResult,
+      reportsResult,
+      newUsersResult,
+      newArticlesResult,
+      pendingReportsResult,
+      featuredResult
+    ] = results;
+
+    const stats = {
+      totalUsers: usersResult.status === 'fulfilled' ? (usersResult.value.count || 0) : 0,
+      totalArticles: articlesResult.status === 'fulfilled' ? (articlesResult.value.count || 0) : 0,
+      totalComments: commentsResult.status === 'fulfilled' ? (commentsResult.value.count || 0) : 0,
+      totalReports: reportsResult.status === 'fulfilled' ? (reportsResult.value.count || 0) : 0,
+      newUsersToday: newUsersResult.status === 'fulfilled' ? (newUsersResult.value.count || 0) : 0,
+      newArticlesToday: newArticlesResult.status === 'fulfilled' ? (newArticlesResult.value.count || 0) : 0,
+      pendingReports: pendingReportsResult.status === 'fulfilled' ? (pendingReportsResult.value.count || 0) : 0,
+      featuredContent: featuredResult.status === 'fulfilled' ? (featuredResult.value.count || 0) : 0
+    };
+
+    console.log('✅ Admin stats fetched:', stats);
+    return stats;
+
+  } catch (error) {
+    console.error('❌ Error fetching admin stats:', error);
+    return {
+      totalUsers: 0,
+      totalArticles: 0,
+      totalComments: 0,
+      totalReports: 0,
+      newUsersToday: 0,
+      newArticlesToday: 0,
+      pendingReports: 0,
+      featuredContent: 0
+    };
+  }
+},
 
   // Get all users with pagination and search
   async getUsers(page: number = 1, limit: number = 20, search?: string, filter?: 'all' | 'admin' | 'regular') {
@@ -135,7 +144,7 @@ export const adminHelpers = {
         admin_since,
         created_at,
         updated_at
-      `)
+      `, { count: 'exact', head: false })
       .order('created_at', { ascending: false });
 
     // Apply search
@@ -170,7 +179,7 @@ export const adminHelpers = {
   },
 
   // Get all articles with admin info
-  async getArticlesForAdmin(page: number = 1, limit: number = 20, search?: string, category?: string, status?: 'all' | 'published' | 'draft') {
+  async getArticlesForAdmin(page: number = 1, limit: number = 10, search?: string, category?: string, status?: 'all' | 'published' | 'draft') {
     let query = supabase
       .from('articles')
       .select(`
@@ -193,7 +202,7 @@ export const adminHelpers = {
           full_name,
           avatar_url
         )
-      `)
+      `, { count: 'exact', head: false })
       .order('created_at', { ascending: false });
 
     // Apply filters
@@ -338,24 +347,6 @@ export const adminHelpers = {
     }
   },
 
-  async toggleUserStatus(userId: string, adminId: string, suspend: boolean) {
-    try {
-      // Note: This would require adding a 'suspended' field to profiles table
-      // For now, we'll just log the activity
-      await this.logAdminActivity(
-        adminId, 
-        suspend ? 'suspend_user' : 'unsuspend_user', 
-        'user', 
-        userId
-      );
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error toggling user status:', error);
-      return { success: false, error: 'Failed to update user status' };
-    }
-  },
-
   async promoteToAdmin(userId: string, adminId: string) {
     try {
       const { error } = await supabase.rpc('promote_to_admin', {
@@ -484,6 +475,29 @@ export const adminHelpers = {
       });
     } catch (error) {
       console.error('Error logging admin activity:', error);
+    }
+  },
+
+  async deleteUser(userId: string, adminId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
+        .select(); // Supabase akan mengembalikan row yang dihapus
+      console.log('Delete user result:', { data, error, userId });
+      if (error) {
+        console.error('Supabase delete error:', error);
+        return { success: false, error: error.message || 'Failed to delete user' };
+      }
+      if (!data || (typeof data === 'object' && Array.isArray(data) && data.length === 0)) {
+        return { success: false, error: 'User not found or already deleted' };
+      }
+      await this.logAdminActivity(adminId, 'delete_user', 'user', userId);
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return { success: false, error: (error instanceof Error ? error.message : 'Failed to delete user') };
     }
   }
 };

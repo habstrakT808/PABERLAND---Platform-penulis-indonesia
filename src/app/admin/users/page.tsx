@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { adminHelpers } from "@/lib/adminHelpers";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 import AdminProtectedRoute from "@/components/admin/AdminProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Image from "next/image";
@@ -28,6 +29,7 @@ interface User {
   admin_since: string | null;
   created_at: string;
   updated_at: string;
+  suspended?: boolean;
 }
 
 function AdminUsersContent() {
@@ -48,7 +50,7 @@ function AdminUsersContent() {
   const [showUserMenu, setShowUserMenu] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchUsers();
@@ -113,37 +115,27 @@ function AdminUsersContent() {
     }
   };
 
-  const handleSuspendUser = async (
-    userId: string,
-    userName: string,
-    suspend: boolean
-  ) => {
+  const handleDeleteUser = async (userId: string, userName: string) => {
     if (!currentUser) return;
-
+    if (
+      !confirm(
+        `Yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan!`
+      )
+    )
+      return;
     setActionLoading(userId);
     try {
-      const result = await adminHelpers.toggleUserStatus(
-        userId,
-        currentUser.id,
-        suspend
-      );
-
+      const result = await adminHelpers.deleteUser(userId, currentUser.id);
       if (result.success) {
-        toast.success(
-          `${userName} berhasil ${suspend ? "disuspend" : "diaktifkan"}!`
-        );
-        fetchUsers(true);
+        toast.success(`User "${userName}" berhasil dihapus.`);
+        fetchUsers();
       } else {
-        toast.error(
-          result.error ||
-            `Gagal ${suspend ? "mensuspend" : "mengaktifkan"} user`
-        );
+        toast.error(result.error || "Gagal menghapus user");
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan sistem");
+      toast.error("Terjadi kesalahan saat menghapus user");
     } finally {
       setActionLoading(null);
-      setShowUserMenu(null);
     }
   };
 
@@ -294,7 +286,7 @@ function AdminUsersContent() {
                   <div className="relative">
                     {user.avatar_url ? (
                       <Image
-                        src={user.avatar_url}
+                        src={getAvatarUrl(user.avatar_url) || ""}
                         alt={user.full_name}
                         width={48}
                         height={48}
@@ -382,12 +374,12 @@ function AdminUsersContent() {
 
                         <button
                           onClick={() =>
-                            handleSuspendUser(user.id, user.full_name, true)
+                            handleDeleteUser(user.id, user.full_name)
                           }
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-blue-50 transition-colors"
                         >
                           <NoSymbolIcon className="w-4 h-4 inline mr-2" />
-                          Suspend User
+                          Hapus User
                         </button>
 
                         <div className="border-t border-blue-100 my-1"></div>
@@ -453,12 +445,8 @@ function AdminUsersContent() {
       )}
 
       {/* Results Info */}
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
-          Menampilkan {users.length} dari {totalCount} users
-          {search && ` untuk pencarian "${search}"`}
-          {filter !== "all" && ` dengan filter ${filter}`}
-        </p>
+      <div className="mt-4 text-sm text-gray-600 text-center">
+        Menampilkan {users.length} dari {totalCount} users
       </div>
     </div>
   );

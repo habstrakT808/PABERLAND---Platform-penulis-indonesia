@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UsersIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 
 export default function UserRecommendations() {
   const { user } = useAuth();
@@ -114,7 +114,7 @@ export default function UserRecommendations() {
             <Link href={`/penulis/${user.id}`} className="flex-shrink-0">
               {user.avatar_url ? (
                 <Image
-                  src={user.avatar_url}
+                  src={getAvatarUrl(user.avatar_url) || ""}
                   alt={user.full_name}
                   width={40}
                   height={40}

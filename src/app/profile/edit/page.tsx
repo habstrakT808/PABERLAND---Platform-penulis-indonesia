@@ -16,8 +16,9 @@ import {
   EyeSlashIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { supabase } from "@/lib/supabase";
+import { supabase, uploadImageToStorage, getAvatarUrl } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
 
@@ -70,6 +71,11 @@ export default function EditProfilePage() {
   });
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Avatar upload states
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -130,10 +136,6 @@ export default function EditProfilePage() {
       newErrors.phone = "Format nomor telepon tidak valid";
     }
 
-    if (profileData.avatar_url && !isValidUrl(profileData.avatar_url)) {
-      newErrors.avatar_url = "URL avatar tidak valid";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -166,12 +168,39 @@ export default function EditProfilePage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidUrl = (string: string): boolean => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("File harus berupa gambar");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 5MB");
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setUploadingAvatar(true);
+
     try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
+      const filePath = await uploadImageToStorage(file, "avatars");
+      if (filePath) {
+        setProfileData((prev) => ({ ...prev, avatar_url: filePath }));
+        toast.success("Foto profil berhasil diupload!");
+      } else {
+        toast.error("Gagal upload foto profil");
+      }
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast.error("Terjadi kesalahan saat upload foto profil");
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -359,28 +388,30 @@ export default function EditProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white/95 rounded-xl shadow-sm mb-8 border border-blue-100">
-          <div className="border-b border-blue-100">
+        <div className="bg-white/95 rounded-xl shadow-sm border border-blue-100">
+          <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                   activeTab === "profile"
                     ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-600 hover:text-gray-800 hover:border-blue-300"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                👤 Informasi Profil
+                <UserIcon className="w-4 h-4" />
+                <span>Informasi Profil</span>
               </button>
               <button
                 onClick={() => setActiveTab("password")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                   activeTab === "password"
                     ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-600 hover:text-gray-800 hover:border-blue-300"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                🔒 Keamanan
+                <EyeIcon className="w-4 h-4" />
+                <span>Keamanan</span>
               </button>
             </nav>
           </div>
@@ -389,12 +420,20 @@ export default function EditProfilePage() {
             {activeTab === "profile" ? (
               /* Profile Form */
               <form onSubmit={handleProfileSubmit} className="space-y-6">
-                {/* Current Avatar Preview */}
+                {/* Avatar Upload Section */}
                 <div className="flex items-center space-x-6">
                   <div className="relative">
-                    {profileData.avatar_url ? (
+                    {avatarPreview ? (
                       <Image
-                        src={profileData.avatar_url}
+                        src={avatarPreview}
+                        alt="Avatar Preview"
+                        width={80}
+                        height={80}
+                        className="w-20 h-20 rounded-full object-cover border-4 border-blue-100"
+                      />
+                    ) : profileData.avatar_url ? (
+                      <Image
+                        src={getAvatarUrl(profileData.avatar_url) || ""}
                         alt="Avatar"
                         width={80}
                         height={80}
@@ -411,44 +450,41 @@ export default function EditProfilePage() {
                         {profileData.full_name.charAt(0) || "U"}
                       </div>
                     )}
+                    {uploadingAvatar && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">
-                      Avatar Profil
+                      Foto Profil
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Masukkan URL gambar untuk avatar Anda
+                      Upload foto profil Anda (JPG, PNG, maksimal 5MB)
                     </p>
                   </div>
                 </div>
 
-                {/* Avatar URL */}
+                {/* Avatar Upload Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <PhotoIcon className="w-4 h-4 inline mr-2" />
-                    URL Avatar
+                    <CloudArrowUpIcon className="w-4 h-4 inline mr-2" />
+                    Upload Foto Profil
                   </label>
                   <input
-                    type="url"
-                    value={profileData.avatar_url}
-                    onChange={(e) =>
-                      handleInputChange("avatar_url", e.target.value)
-                    }
-                    placeholder="https://example.com/avatar.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.avatar_url
-                        ? "border-red-300 bg-red-50"
-                        : "border-blue-200 bg-white"
-                    } text-gray-900 placeholder-gray-500`}
+                      uploadingAvatar
+                        ? "border-gray-300 bg-gray-100 cursor-not-allowed"
+                        : "border-blue-200 bg-white hover:border-blue-300"
+                    } text-gray-900`}
                   />
-                  {errors.avatar_url && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-                      {errors.avatar_url}
-                    </p>
-                  )}
                   <p className="mt-1 text-xs text-gray-500">
-                    Gunakan URL gambar yang valid (jpg, png, gif)
+                    Format: JPG, PNG, GIF. Maksimal 5MB
                   </p>
                 </div>
 
@@ -563,7 +599,7 @@ export default function EditProfilePage() {
                   <select
                     value={profileData.role}
                     onChange={(e) => handleInputChange("role", e.target.value)}
-                    className="w-full px-4 py-3 border border-blue-200 bg-white text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                   >
                     {roles.map((role) => (
                       <option key={role.value} value={role.value}>
@@ -571,62 +607,40 @@ export default function EditProfilePage() {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Pilih role yang sesuai dengan aktivitas Anda
-                  </p>
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex items-center justify-between pt-6 border-t border-blue-100">
-                  <div className="text-sm text-gray-500">* Wajib diisi</div>
-                  <div className="flex items-center space-x-3">
-                    <Link
-                      href={`/profile/${user?.id}`}
-                      className="px-6 py-2 border border-blue-200 text-gray-700 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      Batal
-                    </Link>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-                    >
-                      {saving ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Menyimpan...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircleIcon className="w-4 h-4" />
-                          <span>Simpan Perubahan</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                <div className="flex justify-end pt-6">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                      saving
+                        ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    {saving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="w-4 h-4" />
+                        <span>Simpan Perubahan</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </form>
             ) : (
               /* Password Form */
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
-                    <div>
-                      <h3 className="text-sm font-medium text-yellow-800">
-                        Keamanan Password
-                      </h3>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        Pastikan password baru Anda kuat dan unik. Gunakan
-                        kombinasi huruf besar, huruf kecil, angka, dan simbol.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Current Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <EyeIcon className="w-4 h-4 inline mr-2" />
                     Password Saat Ini *
                   </label>
                   <div className="relative">
@@ -637,7 +651,7 @@ export default function EditProfilePage() {
                         handlePasswordChange("currentPassword", e.target.value)
                       }
                       placeholder="Masukkan password saat ini"
-                      className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full px-4 py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                         errors.currentPassword
                           ? "border-red-300 bg-red-50"
                           : "border-blue-200 bg-white"
@@ -646,12 +660,12 @@ export default function EditProfilePage() {
                     <button
                       type="button"
                       onClick={() => togglePasswordVisibility("current")}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       {showPasswords.current ? (
-                        <EyeSlashIcon className="w-5 h-5" />
+                        <EyeSlashIcon className="w-4 h-4 text-gray-400" />
                       ) : (
-                        <EyeIcon className="w-5 h-5" />
+                        <EyeIcon className="w-4 h-4 text-gray-400" />
                       )}
                     </button>
                   </div>
@@ -666,6 +680,7 @@ export default function EditProfilePage() {
                 {/* New Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <EyeIcon className="w-4 h-4 inline mr-2" />
                     Password Baru *
                   </label>
                   <div className="relative">
@@ -676,7 +691,7 @@ export default function EditProfilePage() {
                         handlePasswordChange("newPassword", e.target.value)
                       }
                       placeholder="Masukkan password baru"
-                      className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full px-4 py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                         errors.newPassword
                           ? "border-red-300 bg-red-50"
                           : "border-blue-200 bg-white"
@@ -685,12 +700,12 @@ export default function EditProfilePage() {
                     <button
                       type="button"
                       onClick={() => togglePasswordVisibility("new")}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       {showPasswords.new ? (
-                        <EyeSlashIcon className="w-5 h-5" />
+                        <EyeSlashIcon className="w-4 h-4 text-gray-400" />
                       ) : (
-                        <EyeIcon className="w-5 h-5" />
+                        <EyeIcon className="w-4 h-4 text-gray-400" />
                       )}
                     </button>
                   </div>
@@ -700,14 +715,12 @@ export default function EditProfilePage() {
                       {errors.newPassword}
                     </p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    Password minimal 6 karakter
-                  </p>
                 </div>
 
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <EyeIcon className="w-4 h-4 inline mr-2" />
                     Konfirmasi Password Baru *
                   </label>
                   <div className="relative">
@@ -717,8 +730,8 @@ export default function EditProfilePage() {
                       onChange={(e) =>
                         handlePasswordChange("confirmPassword", e.target.value)
                       }
-                      placeholder="Ulangi password baru"
-                      className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      placeholder="Konfirmasi password baru"
+                      className={`w-full px-4 py-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                         errors.confirmPassword
                           ? "border-red-300 bg-red-50"
                           : "border-blue-200 bg-white"
@@ -727,12 +740,12 @@ export default function EditProfilePage() {
                     <button
                       type="button"
                       onClick={() => togglePasswordVisibility("confirm")}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       {showPasswords.confirm ? (
-                        <EyeSlashIcon className="w-5 h-5" />
+                        <EyeSlashIcon className="w-4 h-4 text-gray-400" />
                       ) : (
-                        <EyeIcon className="w-5 h-5" />
+                        <EyeIcon className="w-4 h-4 text-gray-400" />
                       )}
                     </button>
                   </div>
@@ -745,41 +758,28 @@ export default function EditProfilePage() {
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex items-center justify-between pt-6 border-t border-blue-100">
-                  <div className="text-sm text-gray-500">* Wajib diisi</div>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPasswordData({
-                          currentPassword: "",
-                          newPassword: "",
-                          confirmPassword: "",
-                        });
-                        setErrors({});
-                      }}
-                      className="px-6 py-2 border border-blue-200 text-gray-700 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      Reset
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={changingPassword}
-                      className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-                    >
-                      {changingPassword ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Mengubah...</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircleIcon className="w-4 h-4" />
-                          <span>Ubah Password</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                <div className="flex justify-end pt-6">
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                      changingPassword
+                        ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    {changingPassword ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Mengubah Password...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="w-4 h-4" />
+                        <span>Ubah Password</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </form>
             )}

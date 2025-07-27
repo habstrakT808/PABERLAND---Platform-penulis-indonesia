@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import toast from "react-hot-toast";
 import NotificationSystem from "@/components/notifications/NotificationSystem";
 import { adminHelpers } from "@/lib/adminHelpers";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 
 export default function Header() {
   const { user, signOut } = useAuth();
@@ -33,6 +34,9 @@ export default function Header() {
   // Admin states
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminStats, setAdminStats] = useState({ pendingReports: 0 });
+
+  // User profile state
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -200,6 +204,31 @@ export default function Header() {
     checkAdminStatus();
   }, [user]);
 
+  // Fetch user profile effect
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("full_name, avatar_url")
+            .eq("id", user.id)
+            .single();
+
+          if (!error && data) {
+            setUserProfile(data);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
   return (
     <header className="bg-gradient-to-br from-white via-blue-50 to-pink-50 shadow-md border-b border-blue-100 relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -333,11 +362,23 @@ export default function Header() {
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 text-gray-800 hover:text-blue-600 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      {getUserInitial()}
-                    </div>
+                    {userProfile?.avatar_url ? (
+                      <Image
+                        src={getAvatarUrl(userProfile.avatar_url) || ""}
+                        alt={userProfile.full_name || "User"}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {getUserInitial()}
+                      </div>
+                    )}
                     <span className="hidden sm:block text-sm font-medium">
-                      {user.user_metadata?.full_name || "User"}
+                      {userProfile?.full_name ||
+                        user.user_metadata?.full_name ||
+                        "User"}
                     </span>
                     <ChevronDownIcon className="w-4 h-4" />
                   </button>

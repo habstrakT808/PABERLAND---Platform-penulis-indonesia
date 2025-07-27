@@ -21,7 +21,12 @@ import {
   ShareIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { supabase, articleHelpers, ArticleSummary } from "@/lib/supabase";
+import {
+  supabase,
+  articleHelpers,
+  ArticleSummary,
+  getAvatarUrl,
+} from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 interface AuthorData {
@@ -218,10 +223,16 @@ export default function AuthorProfilePage() {
       (sum, article) => sum + (article.views || 0),
       0
     );
+
+    // Use likes_count from articles table for now
+    // TODO: Implement real-time likes count from article_likes table
     const totalLikes = articles.reduce(
       (sum, article) => sum + (article.likes_count || 0),
       0
     );
+
+    // Use comments_count from articles table for now
+    // TODO: Implement real-time comments count from comments table
     const totalComments = articles.reduce(
       (sum, article) => sum + (article.comments_count || 0),
       0
@@ -441,7 +452,7 @@ export default function AuthorProfilePage() {
               <div className="relative">
                 {data.profile.avatar_url ? (
                   <Image
-                    src={data.profile.avatar_url}
+                    src={getAvatarUrl(data.profile.avatar_url) || ""}
                     alt={data.profile.full_name}
                     width={128}
                     height={128}

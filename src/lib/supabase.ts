@@ -333,7 +333,43 @@ export const likeHelpers = {
     return !!data;
   },
 
-  // Toggle like status
+  // Sync likes count for an article
+  async syncLikesCount(articleId: string): Promise<number> {
+    try {
+      // Get real count from article_likes table
+      const { count, error } = await supabase
+        .from('article_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('article_id', articleId);
+
+      if (error) {
+        console.error('Error counting likes:', error);
+        return 0;
+      }
+
+      const realCount = count || 0;
+
+      // Update articles table with real count
+      const { error: updateError } = await supabase
+        .from('articles')
+        .update({ 
+          likes_count: realCount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', articleId);
+
+      if (updateError) {
+        console.error('Error updating article likes count:', updateError);
+      }
+
+      return realCount;
+    } catch (error) {
+      console.error('Error syncing likes count:', error);
+      return 0;
+    }
+  },
+
+  // Toggle like status with improved sync
   async toggleLike(articleId: string, userId: string): Promise<{ success: boolean; isLiked: boolean; error?: string }> {
     try {
       // First check if user has already liked
@@ -362,6 +398,9 @@ export const likeHelpers = {
           return { success: false, isLiked: true, error: deleteError.message };
         }
 
+        // Sync likes count after unlike
+        await this.syncLikesCount(articleId);
+
         return { success: true, isLiked: false };
       } else {
         // Like - add the like
@@ -377,11 +416,34 @@ export const likeHelpers = {
           return { success: false, isLiked: false, error: insertError.message };
         }
 
+        // Sync likes count after like
+        await this.syncLikesCount(articleId);
+
         return { success: true, isLiked: true };
       }
     } catch (error) {
       console.error('Error toggling like:', error);
       return { success: false, isLiked: false, error: 'Terjadi kesalahan sistem' };
+    }
+  },
+
+  // Get real-time likes count for an article
+  async getLikesCount(articleId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('article_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('article_id', articleId);
+
+      if (error) {
+        console.error('Error getting likes count:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error getting likes count:', error);
+      return 0;
     }
   },
 
@@ -614,21 +676,31 @@ export const articleManagement = {
     // Get total views, likes, and comments
     const { data: articles } = await supabase
       .from('articles')
-      .select('views, likes_count, comments_count')
+      .select('id, views, likes_count, comments_count')
       .eq('author_id', userId)
       .eq('published', true);
 
     const totalViews = articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
-    const totalLikes = articles?.reduce((sum, article) => sum + (article.likes_count || 0), 0) || 0;
-    const totalComments = articles?.reduce((sum, article) => sum + (article.comments_count || 0), 0) || 0;
+
+    // Get total likes from article_likes table for accuracy
+    const { count: totalLikes } = await supabase
+      .from('article_likes')
+      .select('*', { count: 'exact', head: true })
+      .in('article_id', articles?.map(article => article.id) || []);
+
+    // Get total comments from comments table for accuracy
+    const { count: totalComments } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .in('article_id', articles?.map(article => article.id) || []);
 
     return {
       totalArticles: totalArticles || 0,
       publishedArticles: publishedArticles || 0,
       draftArticles: draftArticles || 0,
       totalViews,
-      totalLikes,
-      totalComments
+      totalLikes: totalLikes || 0,
+      totalComments: totalComments || 0
     };
   }
 };
@@ -639,6 +711,9 @@ export const articleManagement = {
 
 export const articleHelpers = {
   async getArticle(identifier: string): Promise<Article | null> {
+    try {
+      console.log(`🔍 Fetching article: ${identifier}`);
+      
     const { data, error } = await supabase
       .from('articles')
       .select(`
@@ -659,44 +734,114 @@ export const articleHelpers = {
       return null;
     }
 
+      if (data) {
+        console.log(`📊 Article "${data.title}" - Views from DB: ${data.views}`);
+    }
+
     return data;
+    } catch (error) {
+      console.error('Unexpected error in getArticle:', error);
+      return null;
+    }
   },
 
   // Increment view count with improved error handling
   async incrementViews(articleId: string): Promise<void> {
     try {
-      // Use manual increment approach for reliability
-      await this.manualIncrementViews(articleId);
-    } catch (error) {
-      console.error('Unexpected error in incrementViews:', error);
-    }
-  },
-
-  // Manual increment as fallback
-  async manualIncrementViews(articleId: string): Promise<void> {
-    try {
-      console.log(`Starting manual increment for article ${articleId}`);
+      console.log(`🔄 Incrementing views for article: ${articleId}`);
       
-      // Get current views
+      // Get current views with explicit NULL handling
       const { data, error: fetchError } = await supabase
         .from('articles')
-        .select('views, title')
+        .select('views, title, published')
         .eq('id', articleId)
         .single();
 
       if (fetchError) {
-        console.error('Error fetching views:', fetchError);
+        console.error(`❌ Error fetching article ${articleId}:`, fetchError);
         return;
       }
 
-      const currentViews = data?.views || 0;
-      const newViews = currentViews + 1;
-      const articleTitle = data?.title || 'Unknown';
-      
-      console.log(`Article "${articleTitle}" (${articleId}): Current views = ${currentViews}, New views = ${newViews}`);
+      if (!data) {
+        console.error(`❌ Article ${articleId} not found`);
+        return;
+      }
 
-      // Increment views
-      const { error } = await supabase
+      if (!data.published) {
+        console.log(`ℹ️  Article ${articleId} is not published, skipping view increment`);
+        return;
+      }
+
+      // Handle NULL views - set to 0 if NULL
+      const currentViews = data.views ?? 0;
+      const newViews = currentViews + 1;
+
+      console.log(`📊 Article: ${data.title}`);
+      console.log(`📊 Current views: ${currentViews} -> New views: ${newViews}`);
+
+      // Increment views with explicit value and better error handling
+      const { data: updateData, error: updateError } = await supabase
+        .from('articles')
+        .update({ 
+          views: newViews,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', articleId)
+        .select('views')
+        .single();
+
+      if (updateError) {
+        console.error(`❌ Error updating views for article ${articleId}:`, updateError);
+        return;
+      }
+
+      if (!updateData) {
+        console.error(`❌ No data returned after update for article ${articleId}`);
+        return;
+      }
+
+      console.log(`✅ Successfully incremented views for article ${articleId}`);
+      console.log(`✅ Updated views in database: ${updateData.views}`);
+      
+      // Verify the update was successful
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('articles')
+        .select('views')
+        .eq('id', articleId)
+        .single();
+
+      if (verifyError) {
+        console.error(`❌ Error verifying update for article ${articleId}:`, verifyError);
+      } else {
+        console.log(`🔍 Verification - Views in database: ${verifyData?.views}`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Unexpected error incrementing views for article ${articleId}:`, error);
+    }
+  },
+
+  // Manual increment as fallback - IMPROVED VERSION
+  async manualIncrementViews(articleId: string): Promise<void> {
+    try {
+      // Get current views with explicit NULL handling
+      const { data, error: fetchError } = await supabase
+        .from('articles')
+        .select('views, title, published')
+        .eq('id', articleId)
+        .single();
+
+      if (fetchError || !data || !data.published) {
+        console.error(`❌ Manual increment failed for article ${articleId}:`, fetchError);
+        return;
+      }
+
+      // Handle NULL views - set to 0 if NULL
+      const currentViews = data.views ?? 0;
+      const newViews = currentViews + 1;
+
+      // Increment views with explicit value
+      const { error: updateError } = await supabase
         .from('articles')
         .update({ 
           views: newViews,
@@ -704,23 +849,14 @@ export const articleHelpers = {
         })
         .eq('id', articleId);
 
-      if (error) {
-        console.error('Error in manual increment views:', error);
-        console.error('Error details:', {
-          articleId,
-          currentViews,
-          newViews,
-          error: error.message
-        });
-      } else {
-        console.log(`✅ Successfully incremented views for article "${articleTitle}" (${articleId}) from ${currentViews} to ${newViews}`);
+      if (updateError) {
+        console.error(`❌ Manual increment update failed for article ${articleId}:`, updateError);
+        return;
       }
+
+      console.log(`✅ Manual increment successful for article ${articleId}: ${currentViews} -> ${newViews}`);
     } catch (error) {
-      console.error('Unexpected error in manualIncrementViews:', error);
-      console.error('Error details:', {
-        articleId,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error(`❌ Manual increment error for article ${articleId}:`, error);
     }
   },
 
@@ -1362,5 +1498,492 @@ export async function cleanInvalidCoverImages(authorId: string) {
     console.log('=== END CLEANING ===');
   } catch (error) {
     console.error('Clean error:', error);
+  }
+}
+
+// ==============================
+// PLATFORM STATISTICS SYSTEM (IMPROVED)
+// ==============================
+
+export interface PlatformStatistics {
+  total_users: number;
+  total_content: number;
+  total_views: number;
+  total_likes: number;
+  total_articles: number;
+  total_portfolio_works: number;
+  last_updated: string;
+}
+
+export const platformStatsHelpers = {
+  // Get all platform statistics with fallback calculation
+  async getPlatformStatistics(): Promise<PlatformStatistics> {
+    try {
+      console.log('🔄 Fetching platform statistics...');
+      
+      // First try to get from platform_statistics table
+      const { data: statsData, error: statsError } = await supabase
+        .from('platform_statistics')
+        .select('stat_key, stat_value, last_updated')
+        .order('stat_key');
+
+      if (statsError) {
+        console.error('❌ Error fetching platform statistics:', statsError);
+        // Fallback to manual calculation
+        return await this.calculateStatisticsManually();
+      }
+
+      if (!statsData || statsData.length === 0) {
+        console.warn('⚠️ No statistics data found, calculating manually...');
+        return await this.calculateStatisticsManually();
+      }
+
+      const stats: any = {};
+      let lastUpdated = new Date().toISOString();
+
+      statsData.forEach((item: any) => {
+        const key = item.stat_key as keyof PlatformStatistics;
+        if (key && key !== 'last_updated') {
+          stats[key] = item.stat_value || 0;
+        }
+        if (item.last_updated) {
+          lastUpdated = item.last_updated;
+        }
+      });
+
+      const result = {
+        total_users: stats.total_users || 0,
+        total_content: stats.total_content || 0,
+        total_views: stats.total_views || 0,
+        total_likes: stats.total_likes || 0,
+        total_articles: stats.total_articles || 0,
+        total_portfolio_works: stats.total_portfolio_works || 0,
+        last_updated: lastUpdated
+      };
+
+      console.log('✅ Platform statistics fetched:', result);
+      return result;
+
+    } catch (error) {
+      console.error('❌ Unexpected error in getPlatformStatistics:', error);
+      return await this.calculateStatisticsManually();
+    }
+  },
+
+  // Manual calculation as fallback - IMPROVED VERSION
+  async calculateStatisticsManually(): Promise<PlatformStatistics> {
+    try {
+      console.log('🔄 Calculating statistics manually...');
+
+      const [
+        usersResult,
+        articlesResult,
+        portfolioResult,
+        viewsResult,
+        likesResult
+      ] = await Promise.all([
+        // Total users
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        
+        // Total published articles
+        supabase.from('articles').select('*', { count: 'exact', head: true })
+          .eq('published', true),
+        
+        // Total published portfolio works
+        supabase.from('portfolio_works').select('*', { count: 'exact', head: true })
+          .eq('status', 'published'),
+        
+        // Total views from published articles - IMPROVED QUERY
+        supabase.from('articles').select('views')
+          .eq('published', true)
+          .not('views', 'is', null), // Exclude NULL values
+        
+        // Total likes
+        supabase.from('article_likes').select('*', { count: 'exact', head: true })
+      ]);
+
+      const totalUsers = usersResult.count || 0;
+      const totalArticles = articlesResult.count || 0;
+      const totalPortfolioWorks = portfolioResult.count || 0;
+      const totalContent = totalArticles + totalPortfolioWorks;
+      
+      // IMPROVED VIEWS CALCULATION
+      const totalViews = viewsResult.data?.reduce((sum, article) => {
+        const views = article.views || 0;
+        console.log(`Article views: ${views}`); // Debug log
+        return sum + views;
+      }, 0) || 0;
+      
+      const totalLikes = likesResult.count || 0;
+
+      console.log('📊 Manual calculation details:');
+      console.log('- Total Users:', totalUsers);
+      console.log('- Total Articles:', totalArticles);
+      console.log('- Total Portfolio Works:', totalPortfolioWorks);
+      console.log('- Articles with views:', viewsResult.data?.length || 0);
+      console.log('- Total Views (calculated):', totalViews);
+      console.log('- Total Likes:', totalLikes);
+
+      const result = {
+        total_users: totalUsers,
+        total_content: totalContent,
+        total_views: totalViews,
+        total_likes: totalLikes,
+        total_articles: totalArticles,
+        total_portfolio_works: totalPortfolioWorks,
+        last_updated: new Date().toISOString()
+      };
+
+      console.log('✅ Manual calculation completed:', result);
+      
+      // Try to update the platform_statistics table with calculated values
+      await this.updateStatisticsTable(result);
+      
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error in manual calculation:', error);
+      return {
+        total_users: 0,
+        total_content: 0,
+        total_views: 0,
+        total_likes: 0,
+        total_articles: 0,
+        total_portfolio_works: 0,
+        last_updated: new Date().toISOString()
+      };
+    }
+  },
+
+  // Update platform_statistics table with calculated values
+  async updateStatisticsTable(stats: PlatformStatistics): Promise<void> {
+    try {
+      console.log('🔄 Updating platform_statistics table...');
+
+      const updates = [
+        { stat_key: 'total_users', stat_value: stats.total_users },
+        { stat_key: 'total_content', stat_value: stats.total_content },
+        { stat_key: 'total_views', stat_value: stats.total_views },
+        { stat_key: 'total_likes', stat_value: stats.total_likes },
+        { stat_key: 'total_articles', stat_value: stats.total_articles },
+        { stat_key: 'total_portfolio_works', stat_value: stats.total_portfolio_works }
+      ];
+
+      for (const update of updates) {
+        await supabase
+          .from('platform_statistics')
+          .upsert({
+            ...update,
+            last_updated: new Date().toISOString()
+          }, {
+            onConflict: 'stat_key'
+          });
+      }
+
+      console.log('✅ Platform statistics table updated');
+    } catch (error) {
+      console.error('❌ Error updating platform_statistics table:', error);
+    }
+  },
+
+  // Manually refresh platform statistics
+  async refreshPlatformStatistics(): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('🔄 Refreshing platform statistics...');
+      
+      // Try using the database function first
+      const { error: rpcError } = await supabase.rpc('refresh_platform_statistics');
+      
+      if (rpcError) {
+        console.warn('⚠️ RPC refresh failed, trying manual refresh:', rpcError);
+        // Fallback to manual calculation
+        const stats = await this.calculateStatisticsManually();
+        console.log('✅ Manual refresh completed:', stats);
+        return { success: true };
+      }
+
+      console.log('✅ RPC refresh completed');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error in refreshPlatformStatistics:', error);
+      return { success: false, error: 'Terjadi kesalahan sistem' };
+    }
+  },
+
+  // Get top categories with counts
+  async getTopCategories(): Promise<Array<{ category: string; count: number }>> {
+    try {
+      console.log('🔄 Fetching top categories...');
+
+      // Get categories from articles and portfolio works in parallel
+      const [articlesResult, portfolioResult] = await Promise.all([
+        supabase
+          .from('articles')
+          .select('category')
+          .eq('published', true),
+        
+        supabase
+          .from('portfolio_works')
+          .select('category')
+          .eq('status', 'published')
+      ]);
+
+      if (articlesResult.error) {
+        console.error('❌ Error fetching articles for categories:', articlesResult.error);
+      }
+      if (portfolioResult.error) {
+        console.error('❌ Error fetching portfolio works for categories:', portfolioResult.error);
+      }
+
+      // Combine and count categories
+      const categoryCounts = new Map<string, number>();
+      
+      // Count from articles
+      (articlesResult.data || []).forEach((article) => {
+        if (article.category) {
+          categoryCounts.set(
+            article.category,
+            (categoryCounts.get(article.category) || 0) + 1
+          );
+        }
+      });
+
+      // Count from portfolio works
+      (portfolioResult.data || []).forEach((work) => {
+        if (work.category) {
+          categoryCounts.set(
+            work.category,
+            (categoryCounts.get(work.category) || 0) + 1
+          );
+        }
+      });
+
+      // Convert to array and sort by count
+      const topCategories = Array.from(categoryCounts.entries())
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      console.log('✅ Top categories fetched:', topCategories);
+      return topCategories;
+    } catch (error) {
+      console.error('❌ Error in getTopCategories:', error);
+      return [];
+    }
+  },
+
+  // Debug function to check data availability
+  async debugStatistics(): Promise<void> {
+    try {
+      console.log('🔍 DEBUG: Checking data availability...');
+
+      const [profiles, articles, portfolioWorks, likes] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('articles').select('*', { count: 'exact', head: true }),
+        supabase.from('portfolio_works').select('*', { count: 'exact', head: true }),
+        supabase.from('article_likes').select('*', { count: 'exact', head: true })
+      ]);
+
+      console.log('📊 Data counts:');
+      console.log('- Profiles:', profiles.count);
+      console.log('- Articles:', articles.count);
+      console.log('- Portfolio Works:', portfolioWorks.count);
+      console.log('- Article Likes:', likes.count);
+
+      // Check published articles specifically
+      const { count: publishedArticles } = await supabase
+        .from('articles')
+        .select('*', { count: 'exact', head: true })
+        .eq('published', true);
+      
+      console.log('- Published Articles:', publishedArticles);
+
+      // Check portfolio works with published status
+      const { count: publishedWorks } = await supabase
+        .from('portfolio_works')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published');
+      
+      console.log('- Published Portfolio Works:', publishedWorks);
+
+      // Check views
+      const { data: viewsData } = await supabase
+        .from('articles')
+        .select('views')
+        .eq('published', true);
+      
+      const totalViews = viewsData?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
+      console.log('- Total Views:', totalViews);
+
+    } catch (error) {
+      console.error('❌ Debug error:', error);
+    }
+  },
+
+  // Debug function specifically for views
+  async debugViews(): Promise<void> {
+    try {
+      console.log('🔍 DEBUG VIEWS: Starting analysis...');
+
+      // Check articles with views
+      const { data: articlesWithViews } = await supabase
+        .from('articles')
+        .select('id, title, views, published, created_at')
+        .eq('published', true)
+        .order('views', { ascending: false })
+        .limit(10);
+
+      console.log('📊 Top 10 articles by views:');
+      articlesWithViews?.forEach((article, index) => {
+        console.log(`${index + 1}. "${article.title}" - Views: ${article.views ?? 'NULL'}`);
+      });
+
+      // Check total views calculation
+      const { data: allViews } = await supabase
+        .from('articles')
+        .select('views')
+        .eq('published', true);
+
+      const totalViews = allViews?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
+      const nullViewsCount = allViews?.filter(article => article.views === null).length || 0;
+      const zeroViewsCount = allViews?.filter(article => article.views === 0).length || 0;
+
+      console.log('📈 Views Analysis:');
+      console.log(`- Total published articles: ${allViews?.length || 0}`);
+      console.log(`- Articles with NULL views: ${nullViewsCount}`);
+      console.log(`- Articles with 0 views: ${zeroViewsCount}`);
+      console.log(`- Total views (calculated): ${totalViews}`);
+
+      // Check platform_statistics table
+      const { data: platformStats } = await supabase
+        .from('platform_statistics')
+        .select('stat_key, stat_value')
+        .eq('stat_key', 'total_views')
+        .single();
+
+      console.log(`- Platform stats total_views: ${platformStats?.stat_value ?? 'NOT FOUND'}`);
+
+    } catch (error) {
+      console.error('❌ Debug views error:', error);
+    }
+  }
+};
+
+/**
+ * Get the correct avatar URL for display
+ * @param avatarUrl string from database (could be file path or full URL)
+ * @returns string URL for display
+ */
+export function getAvatarUrl(avatarUrl: string | null): string | null {
+  if (!avatarUrl) return null;
+  
+  // If it's already a full URL, return as is
+  if (avatarUrl.startsWith('http')) {
+    return avatarUrl;
+  }
+  
+  // If it's a file path, construct the public URL
+  return `https://ujbygopdxsarjkkgkvmv.supabase.co/storage/v1/object/public/images/${avatarUrl}`;
+}
+
+export async function debugCoverImages(): Promise<void> {
+  try {
+    console.log('debugCoverImages: Starting debug...');
+    
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id, title, cover_image')
+      .not('cover_image', 'is', null)
+      .limit(10);
+    
+    if (error) {
+      console.error('debugCoverImages: Error fetching articles:', error);
+      return;
+    }
+    
+    console.log('debugCoverImages: Found articles with cover images:');
+    data?.forEach((article, index) => {
+      console.log(`${index + 1}. ID: ${article.id}`);
+      console.log(`   Title: ${article.title}`);
+      console.log(`   Cover Image: ${article.cover_image}`);
+      console.log(`   Is URL: ${article.cover_image?.startsWith('http')}`);
+      console.log('---');
+    });
+    
+    // Test a specific cover image
+    if (data && data.length > 0) {
+      const testArticle = data[0];
+      console.log('debugCoverImages: Testing first article cover image...');
+      
+      if (testArticle.cover_image) {
+        // Test if it's a URL
+        if (testArticle.cover_image.startsWith('http')) {
+          console.log('debugCoverImages: Testing direct URL access...');
+          try {
+            const response = await fetch(testArticle.cover_image, { method: 'HEAD' });
+            console.log('debugCoverImages: URL status:', response.status);
+            console.log('debugCoverImages: URL headers:', response.headers);
+          } catch (error) {
+            console.error('debugCoverImages: Error testing URL:', error);
+          }
+        } else {
+          // Test if it's a file path
+          console.log('debugCoverImages: Testing file path access...');
+          const result = await checkBucketAndFile(testArticle.cover_image);
+          console.log('debugCoverImages: File check result:', result);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('debugCoverImages: Unexpected error:', error);
+  }
+}
+
+export async function checkBucketAndFile(filePath: string): Promise<{ exists: boolean; publicUrl?: string; error?: string }> {
+  if (!filePath) {
+    return { exists: false, error: 'No file path provided' };
+  }
+
+  try {
+    console.log('checkBucketAndFile: Checking file:', filePath);
+    
+    // First, try to get public URL
+    const { data: publicData } = supabase.storage.from('images').getPublicUrl(filePath);
+    
+    if (publicData?.publicUrl) {
+      console.log('checkBucketAndFile: Public URL available:', publicData.publicUrl);
+      
+      // Test if the URL is accessible
+      try {
+        const response = await fetch(publicData.publicUrl, { method: 'HEAD' });
+        if (response.ok) {
+          return { exists: true, publicUrl: publicData.publicUrl };
+        } else {
+          console.log('checkBucketAndFile: Public URL not accessible, status:', response.status);
+        }
+      } catch (error) {
+        console.log('checkBucketAndFile: Error testing public URL:', error);
+      }
+    }
+    
+    // Try signed URL as fallback
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from('images')
+      .createSignedUrl(filePath, 60);
+    
+    if (signedData?.signedUrl && !signedError) {
+      console.log('checkBucketAndFile: Signed URL available');
+      return { exists: true, publicUrl: signedData.signedUrl };
+    }
+    
+    if (signedError) {
+      console.log('checkBucketAndFile: Signed URL error:', signedError);
+      return { exists: false, error: signedError.message };
+    }
+    
+    return { exists: false, error: 'File not found' };
+  } catch (error) {
+    console.error('checkBucketAndFile: Unexpected error:', error);
+    return { exists: false, error: 'Unexpected error' };
   }
 }

@@ -10,9 +10,8 @@ import {
   UsersIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { supabase, followHelpers } from "@/lib/supabase";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import FollowButton from "@/components/social/FollowButton";
 import toast from "react-hot-toast";
 
 interface FollowerData {
@@ -85,12 +84,33 @@ export default function FollowersPage() {
       setProfileData(profile);
 
       // Fetch followers
-      const followersData = await followHelpers.getUserFollowers(
-        profileId,
-        100
-      );
-      setFollowers(followersData as FollowerData[]);
-      setFilteredFollowers(followersData as FollowerData[]);
+      const { data: followersData, error: followersError } = await supabase
+        .from("follows")
+        .select(
+          `
+          id,
+          follower_id,
+          created_at,
+          profiles!follows_follower_id_fkey (
+            id,
+            full_name,
+            avatar_url,
+            bio
+          )
+        `
+        )
+        .eq("following_id", profileId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (followersError) {
+        console.error("Error fetching followers:", followersError);
+        toast.error("Gagal memuat data pengikut");
+        return;
+      }
+
+      setFollowers(followersData as unknown as FollowerData[]);
+      setFilteredFollowers(followersData as unknown as FollowerData[]);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Gagal memuat data pengikut");
@@ -252,7 +272,7 @@ export default function FollowersPage() {
                   >
                     {follower.profiles.avatar_url ? (
                       <Image
-                        src={follower.profiles.avatar_url}
+                        src={getAvatarUrl(follower.profiles.avatar_url) || ""}
                         alt={follower.profiles.full_name}
                         width={64}
                         height={64}
@@ -283,12 +303,7 @@ export default function FollowersPage() {
                   </div>
 
                   <div className="flex-shrink-0">
-                    <FollowButton
-                      targetUserId={follower.follower_id}
-                      targetUserName={follower.profiles.full_name}
-                      size="md"
-                      variant="outline"
-                    />
+                    {/* Follow button removed for now */}
                   </div>
                 </div>
               </div>

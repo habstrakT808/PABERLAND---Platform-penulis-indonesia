@@ -113,8 +113,8 @@ export default function LikeButton({
         inline-flex items-center space-x-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed
         ${
           isLiked
-            ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30"
-            : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-red-500 dark:hover:text-red-400"
+            ? "text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+            : "text-blue-600 dark:text-blue-400 hover:text-red-500 dark:hover:text-red-400"
         }
         ${buttonSizeClasses[size]}
         ${className}
@@ -128,7 +128,9 @@ export default function LikeButton({
             className={`${sizeClasses[size]} text-red-500 animate-pulse`}
           />
         ) : (
-          <HeartOutline className={`${sizeClasses[size]} transition-colors`} />
+          <HeartOutline
+            className={`${sizeClasses[size]} transition-colors text-blue-600 dark:text-blue-400`}
+          />
         )}
 
         {/* Loading Spinner */}
@@ -143,7 +145,9 @@ export default function LikeButton({
       {showCount && (
         <span
           className={`font-bold ${
-            isLiked ? "text-red-600 dark:text-red-400" : ""
+            isLiked
+              ? "text-red-600 dark:text-red-400"
+              : "text-blue-600 dark:text-blue-400"
           }`}
         >
           {likesCount.toLocaleString()}

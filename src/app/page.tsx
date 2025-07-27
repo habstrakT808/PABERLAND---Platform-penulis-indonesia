@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import UserRecommendations from "@/components/social/UserRecommendations";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase, platformStatsHelpers, getAvatarUrl } from "@/lib/supabase";
 
 // Dummy data dengan gambar real dari Unsplash
 const featuredArticles = [
@@ -51,8 +51,8 @@ const featuredArticles = [
 export default function HomePage() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    totalAuthors: 0,
-    totalArticles: 0,
+    totalUsers: 0,
+    totalContent: 0,
     totalViews: 0,
     totalLikes: 0,
   });
@@ -63,6 +63,9 @@ export default function HomePage() {
   const [loadingLatest, setLoadingLatest] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [showContentOnMobile, setShowContentOnMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -71,46 +74,47 @@ export default function HomePage() {
     fetchCategories();
   }, []);
 
+  // Deteksi ukuran layar untuk mobile
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const mobile = window.innerWidth < 768; // md breakpoint
+      setIsMobile(mobile);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
+  // Deteksi scroll untuk menampilkan konten di mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      // Jika user scroll lebih dari 50% dari tinggi layar, tampilkan konten
+      if (scrollY > windowHeight * 0.5) {
+        setShowContentOnMobile(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
+
   const fetchStats = async () => {
     try {
-      // Get total articles
-      const { count: articlesCount } = await supabase
-        .from("articles")
-        .select("*", { count: "exact", head: true })
-        .eq("published", true);
-
-      // Get total authors (users who have published articles)
-      const { count: authorsCount } = await supabase
-        .from("articles")
-        .select("author_id", { count: "exact", head: true })
-        .eq("published", true);
-
-      // Get total views
-      const { data: viewsData } = await supabase
-        .from("articles")
-        .select("views")
-        .eq("published", true);
-
-      const totalViews =
-        viewsData?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
-
-      // Get total likes
-      const { data: likesData } = await supabase
-        .from("articles")
-        .select("likes_count")
-        .eq("published", true);
-
-      const totalLikes =
-        likesData?.reduce(
-          (sum, article) => sum + (article.likes_count || 0),
-          0
-        ) || 0;
+      // Get platform statistics using the helper
+      const platformStats = await platformStatsHelpers.getPlatformStatistics();
 
       setStats({
-        totalAuthors: authorsCount || 0,
-        totalArticles: articlesCount || 0,
-        totalViews: totalViews,
-        totalLikes: totalLikes,
+        totalUsers: platformStats.total_users,
+        totalContent: platformStats.total_content, // Total konten (artikel + portfolio works)
+        totalViews: platformStats.total_views,
+        totalLikes: platformStats.total_likes,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -275,9 +279,24 @@ export default function HomePage() {
   };
 
   const scrollToContent = () => {
-    const element = document.getElementById("content");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    // Jika di mobile, tampilkan konten terlebih dahulu
+    if (isMobile) {
+      setIsLoadingContent(true);
+      setShowContentOnMobile(true);
+      // Tunggu sebentar agar state terupdate, lalu scroll
+      setTimeout(() => {
+        const element = document.getElementById("content");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+        setIsLoadingContent(false);
+      }, 500);
+    } else {
+      // Di desktop, langsung scroll
+      const element = document.getElementById("content");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -307,7 +326,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       {/* Compact Hero Section - Tidak Full Screen */}
-      <section className="relative h-[92vh] flex flex-col justify-between items-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 text-gray-900 pb-2 shadow-md">
+      <section className="relative h-[92vh] md:h-[92vh] flex flex-col justify-between items-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 text-gray-900 pb-2 shadow-md">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-white/60"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/40 via-pink-200/40 to-blue-200/40"></div>
@@ -380,31 +399,31 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
-                {loading ? "..." : stats.totalAuthors}
+                {loading ? "..." : stats.totalContent}
               </div>
               <div className="text-gray-900 text-xs md:text-sm font-semibold">
-                Penulis Aktif
+                Total Konten
               </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
-                {loading ? "..." : stats.totalArticles}
+                {loading ? "..." : stats.totalUsers}
               </div>
               <div className="text-gray-900 text-xs md:text-sm font-semibold">
-                Karya Terpublikasi
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
-              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
-                {loading ? "..." : stats.totalViews}
-              </div>
-              <div className="text-gray-900 text-xs md:text-sm font-semibold">
-                Pembaca
+                Total User
               </div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                 {loading ? "..." : stats.totalLikes}
+              </div>
+              <div className="text-gray-900 text-xs md:text-sm font-semibold">
+                Total Likes
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
+                {loading ? "..." : stats.totalViews}
               </div>
               <div className="text-gray-900 text-xs md:text-sm font-semibold">
                 Total Views
@@ -414,15 +433,19 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Down Indicator */}
-        <div className="relative z-10 mb-8">
+        <div className="relative z-10 mb-8 flex justify-center">
           <button
             onClick={scrollToContent}
-            className="flex flex-col items-center text-blue-700 hover:text-blue-900 font-bold transition-colors group"
+            className={`flex items-center justify-center text-blue-700 hover:text-blue-900 font-bold transition-all duration-300 group
+              ${
+                isMobile
+                  ? "bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105"
+                  : ""
+              }
+            `}
+            aria-label="Lihat Konten"
           >
-            <span className="text-sm mb-1 font-bold uppercase tracking-wide">
-              Jelajahi Konten
-            </span>
-            <ChevronDownIcon className="w-6 h-6 animate-bounce group-hover:scale-110 transition-transform text-blue-500" />
+            <ChevronDownIcon className="w-7 h-7 animate-bounce group-hover:scale-110 transition-transform text-blue-500" />
           </button>
         </div>
       </section>
@@ -430,10 +453,28 @@ export default function HomePage() {
       {/* Main Content - Starts after scroll */}
       <div
         id="content"
-        className="bg-gradient-to-br from-white via-blue-50 to-pink-50"
+        className={`bg-gradient-to-br from-white via-blue-50 to-pink-50 transition-all duration-700 ease-out ${
+          isMobile && !showContentOnMobile
+            ? "opacity-0 translate-y-8 pointer-events-none"
+            : "opacity-100 translate-y-0"
+        } ${isMobile ? "pt-8" : ""}`}
       >
+        {/* Loading indicator untuk mobile */}
+        {isMobile && isLoadingContent && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-600 text-sm">Memuat konten...</p>
+            </div>
+          </div>
+        )}
+
         {/* Featured Articles Section */}
-        <section className="py-16 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl mx-2 md:mx-0">
+        <section
+          className={`py-16 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl mx-2 md:mx-0 ${
+            isMobile && isLoadingContent ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -500,9 +541,21 @@ export default function HomePage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
-                            {article.profiles?.full_name?.charAt(0) || "U"}
-                          </div>
+                          {article.profiles?.avatar_url ? (
+                            <Image
+                              src={
+                                getAvatarUrl(article.profiles.avatar_url) || ""
+                              }
+                              alt={article.profiles.full_name}
+                              width={40}
+                              height={40}
+                              className="w-10 h-10 rounded-full object-cover mr-3"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                              {article.profiles?.full_name?.charAt(0) || "U"}
+                            </div>
+                          )}
                           <div>
                             <div className="font-semibold text-gray-900">
                               {article.profiles?.full_name || "Anonymous"}
@@ -518,11 +571,11 @@ export default function HomePage() {
                           </span>
                           <span className="flex items-center hover:text-red-500 transition-colors">
                             <HeartIcon className="w-5 h-5 mr-1" />
-                            {article.likes}
+                            {article.likes_count}
                           </span>
                           <span className="flex items-center hover:text-blue-500 transition-colors">
                             <ChatBubbleLeftIcon className="w-5 h-5 mr-1" />
-                            {article.comments}
+                            {article.comments_count}
                           </span>
                         </div>
                       </div>
@@ -535,7 +588,11 @@ export default function HomePage() {
         </section>
 
         {/* Latest Articles & Sidebar */}
-        <section className="py-16 bg-blue-50/60 rounded-3xl shadow-lg mx-2 md:mx-0 mt-8">
+        <section
+          className={`py-16 bg-blue-50/60 rounded-3xl shadow-lg mx-2 md:mx-0 mt-8 ${
+            isMobile && isLoadingContent ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* Latest Articles */}
@@ -597,9 +654,22 @@ export default function HomePage() {
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                              {article.profiles?.full_name?.charAt(0) || "U"}
-                            </div>
+                            {article.profiles?.avatar_url ? (
+                              <Image
+                                src={
+                                  getAvatarUrl(article.profiles.avatar_url) ||
+                                  ""
+                                }
+                                alt={article.profiles.full_name}
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 rounded-full object-cover mr-3"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                                {article.profiles?.full_name?.charAt(0) || "U"}
+                              </div>
+                            )}
                             <span className="font-medium text-gray-900">
                               {article.profiles?.full_name || "Anonymous"}
                             </span>

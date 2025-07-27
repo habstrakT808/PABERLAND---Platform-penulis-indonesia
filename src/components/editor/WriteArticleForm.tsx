@@ -16,7 +16,7 @@ import {
   EyeIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import TinyMCEEditor from "@/components/editor/TinyMCEEditor";
+import TinyMCEEditor from "@/components/editor/DynamicTinyMCEEditor";
 import { Article } from "@/lib/supabase";
 
 const categories = [
@@ -100,13 +100,20 @@ export default function WriteArticleForm({
       tempDiv.innerHTML = content;
       const plainText = tempDiv.textContent || tempDiv.innerText || "";
       const excerpt =
-        plainText.slice(0, 200) + (plainText.length > 200 ? "..." : "");
+        plainText.slice(0, 500) + (plainText.length > 500 ? "..." : "");
 
       setFormData((prev) => ({
         ...prev,
         excerpt: excerpt,
       }));
     }
+  };
+
+  // Batasi excerpt maksimal 500 karakter
+  const handleExcerptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    let value = e.target.value;
+    if (value.length > 500) value = value.slice(0, 500);
+    setFormData((prev) => ({ ...prev, excerpt: value }));
   };
 
   const generateSlug = (title: string) => {
@@ -485,11 +492,14 @@ export default function WriteArticleForm({
                 id="excerpt"
                 name="excerpt"
                 value={formData.excerpt}
-                onChange={handleChange}
+                onChange={handleExcerptChange}
                 rows={3}
                 placeholder="Ringkasan akan dibuat otomatis dari konten..."
                 className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
               />
+              <div className="text-xs text-gray-500 text-right mt-1">
+                {formData.excerpt.length}/500 karakter
+              </div>
             </div>
 
             {/* Schedule Publishing */}

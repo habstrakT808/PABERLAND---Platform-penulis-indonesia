@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
             full_name,
             avatar_url
           )
-        `)
+        `, { count: 'exact', head: false })
         .eq('published', true)
         .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%`)
         .order('created_at', { ascending: false });
@@ -117,10 +117,10 @@ export async function GET(request: NextRequest) {
           bio,
           avatar_url,
           created_at
-        `)
+        `, { count: 'exact', head: false })
         .or(`full_name.ilike.%${query}%,bio.ilike.%${query}%`)
         .order('full_name', { ascending: true })
-        .range(0, 20); // Limit authors to 20 for now
+        .range(0, 99); // Ambil maksimal 100 penulis, frontend batasi 6 per page
 
       if (authorsError) {
         console.error('Error searching authors:', authorsError);

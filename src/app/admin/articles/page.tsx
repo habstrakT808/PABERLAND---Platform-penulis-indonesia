@@ -22,6 +22,7 @@ import {
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import SignedImage from "@/components/common/SignedImage";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 
 interface Article {
   id: string;
@@ -66,7 +67,7 @@ function AdminArticlesContent() {
     new Set()
   );
 
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   const categories = [
     { value: "all", label: "Semua Kategori", emoji: "📚" },
@@ -432,7 +433,9 @@ function AdminArticlesContent() {
                         <div className="flex items-center space-x-2 mb-2">
                           {article.profiles.avatar_url ? (
                             <Image
-                              src={article.profiles.avatar_url}
+                              src={
+                                getAvatarUrl(article.profiles.avatar_url) || ""
+                              }
                               alt={article.profiles.full_name}
                               width={24}
                               height={24}

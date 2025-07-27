@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Comment, commentHelpers } from "@/lib/supabase";
+import { Comment, commentHelpers, getAvatarUrl } from "@/lib/supabase";
 import CommentForm from "./CommentForm";
 import toast from "react-hot-toast";
 import {
@@ -113,14 +114,14 @@ export default function CommentItem({
           <div className="flex-shrink-0">
             {comment.profiles?.avatar_url ? (
               <Image
-                src={comment.profiles.avatar_url}
+                src={getAvatarUrl(comment.profiles.avatar_url) || ""}
                 alt={comment.profiles.full_name}
                 width={40}
                 height={40}
-                className="rounded-full object-cover"
+                className="w-10 h-10 aspect-square rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 aspect-square bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <UserIcon className="w-5 h-5 text-white" />
               </div>
             )}

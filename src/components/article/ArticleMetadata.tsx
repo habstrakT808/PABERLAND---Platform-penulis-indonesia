@@ -75,21 +75,19 @@ export default function ArticleMetadata({
       {/* Views */}
       <div className="flex items-center space-x-1">
         <EyeIcon className="w-4 h-4" />
-        <span>{views.toLocaleString()} views</span>
+        <span>{views.toLocaleString()}</span>
       </div>
 
       {/* Likes */}
-      <LikeButton
-        articleId={articleId}
-        initialLikesCount={likesCount}
-        size="sm"
-        showCount={true}
-      />
+      <div className="flex items-center space-x-1">
+        <HeartIcon className="w-4 h-4" />
+        <span>{likesCount.toLocaleString()}</span>
+      </div>
 
       {/* Comments */}
       <div className="flex items-center space-x-1">
         <ChatBubbleLeftIcon className="w-4 h-4" />
-        <span>{commentsCount.toLocaleString()} komentar</span>
+        <span>{commentsCount.toLocaleString()}</span>
       </div>
     </div>
   );

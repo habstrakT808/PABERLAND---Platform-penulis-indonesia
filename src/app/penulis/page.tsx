@@ -1,4 +1,8 @@
 // src/app/penulis/page.tsx
+// Halaman Direktori Penulis dengan statistik komunitas yang diperbaiki:
+// - Total Artikel diubah menjadi Total Konten (keseluruhan karya dari semua genre)
+// - Total Views diperbaiki dengan menghitung langsung dari field views di tabel articles
+// - Total Likes diperbaiki dengan menghitung langsung dari tabel article_likes untuk akurasi
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,7 +20,12 @@ import {
   AdjustmentsHorizontalIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { supabase } from "@/lib/supabase";
+import {
+  supabase,
+  platformStatsHelpers,
+  PlatformStatistics,
+  getAvatarUrl,
+} from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 interface AuthorProfile {
@@ -82,14 +91,14 @@ export default function AuthorsPage() {
   };
 
   const fetchAuthors = async () => {
-    const limit = 12;
+    const limit = 6;
     const from = (currentPage - 1) * limit;
     const to = from + limit - 1;
 
     // First, get all profiles with basic info
     let profilesQuery = supabase
       .from("profiles")
-      .select("id, full_name, bio, avatar_url, role, created_at");
+      .select("id, full_name, avatar_url, role, created_at");
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -175,6 +184,7 @@ export default function AuthorsPage() {
       return {
         ...profile,
         ...stats,
+        bio: null, // agar sesuai tipe AuthorProfile
       };
     });
 
@@ -209,8 +219,8 @@ export default function AuthorsPage() {
         break;
     }
 
-    // Apply pagination
-    const paginatedAuthors = sortedAuthors.slice(from, to + 1);
+    // Apply pagination (benar-benar 6 per halaman)
+    const paginatedAuthors = sortedAuthors.slice(from, from + limit);
     const totalPages = Math.ceil(sortedAuthors.length / limit);
 
     setData((prev) => ({
@@ -223,53 +233,40 @@ export default function AuthorsPage() {
 
   const fetchPlatformStats = async () => {
     try {
-      // Get total authors
-      const { count: authorsCount } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true });
-
-      // Get total articles and stats
-      const { data: articlesData, count: articlesCount } = await supabase
-        .from("articles")
-        .select("views, likes_count, category")
-        .eq("published", true);
-
-      const totals = articlesData?.reduce(
-        (acc, article) => ({
-          totalViews: acc.totalViews + (article.views || 0),
-          totalLikes: acc.totalLikes + (article.likes_count || 0),
-        }),
-        { totalViews: 0, totalLikes: 0 }
-      ) || { totalViews: 0, totalLikes: 0 };
+      // Get platform statistics using the improved helper
+      const platformStats = await platformStatsHelpers.getPlatformStatistics();
 
       // Get top categories
-      const categoryCounts = new Map<string, number>();
-      articlesData?.forEach((article) => {
-        categoryCounts.set(
-          article.category,
-          (categoryCounts.get(article.category) || 0) + 1
-        );
-      });
-
-      const topCategories = Array.from(categoryCounts.entries())
-        .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+      const topCategories = await platformStatsHelpers.getTopCategories();
 
       setData((prev) => ({
         authors: prev?.authors || [],
         totalCount: prev?.totalCount || 0,
         totalPages: prev?.totalPages || 0,
         platformStats: {
-          totalAuthors: authorsCount || 0,
-          totalArticles: articlesCount || 0,
-          totalViews: totals.totalViews,
-          totalLikes: totals.totalLikes,
+          totalAuthors: platformStats.total_users,
+          totalArticles: platformStats.total_content, // Total konten (artikel + portfolio works)
+          totalViews: platformStats.total_views,
+          totalLikes: platformStats.total_likes,
           topCategories,
         },
       }));
     } catch (error) {
-      console.error("Error fetching platform stats:", error);
+      toast.error("Gagal memuat statistik komunitas");
+
+      // Set default values on error
+      setData((prev) => ({
+        authors: prev?.authors || [],
+        totalCount: prev?.totalCount || 0,
+        totalPages: prev?.totalPages || 0,
+        platformStats: {
+          totalAuthors: 0,
+          totalArticles: 0,
+          totalViews: 0,
+          totalLikes: 0,
+          topCategories: [],
+        },
+      }));
     }
   };
 
@@ -330,10 +327,12 @@ export default function AuthorsPage() {
         {/* Platform Stats */}
         {data?.platformStats && (
           <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-              <ChartBarIcon className="w-6 h-6 mr-2" />
-              Statistik Komunitas
-            </h2>
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                <ChartBarIcon className="w-6 h-6 mr-2" />
+                Statistik Komunitas
+              </h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
@@ -345,7 +344,7 @@ export default function AuthorsPage() {
                 <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalArticles)}
                 </div>
-                <div className="text-sm text-gray-700">Total Artikel</div>
+                <div className="text-sm text-gray-700">Total Konten</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
@@ -514,7 +513,7 @@ export default function AuthorsPage() {
                         <div className="relative">
                           {author.avatar_url ? (
                             <Image
-                              src={author.avatar_url}
+                              src={getAvatarUrl(author.avatar_url) || ""}
                               alt={author.full_name}
                               width={64}
                               height={64}
@@ -548,13 +547,6 @@ export default function AuthorsPage() {
                           </div>
                         </div>
                       </div>
-
-                      {/* Author Bio */}
-                      {author.bio && (
-                        <p className="text-gray-800 text-sm mb-4 line-clamp-2 leading-relaxed">
-                          {author.bio}
-                        </p>
-                      )}
 
                       {/* Author Stats */}
                       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -759,27 +751,12 @@ export default function AuthorsPage() {
                     <Link
                       key={category.key}
                       href={`/kategori/${category.key}`}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 transition-colors group"
+                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                      <div className="flex items-center">
-                        <span className="text-lg mr-3">{category.emoji}</span>
-                        <span className="text-gray-800 font-medium group-hover:text-blue-600">
-                          {category.name}
-                        </span>
-                      </div>
-                      <svg
-                        className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
+                      <span>{category.emoji}</span>
+                      <span className="capitalize">
+                        {category.name.replace("-", " ")}
+                      </span>
                     </Link>
                   ))}
                 </div>

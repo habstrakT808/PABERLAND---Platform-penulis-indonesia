@@ -53,50 +53,67 @@ export default function SignedImage({
             return;
           }
 
-          setImageUrl(src);
-          setIsLoading(false);
-          return;
-        }
+          // For Supabase Storage URLs, add transform parameters if needed
+          let url = src;
+          if (url.includes("supabase.co/storage") && (width || height)) {
+            const params = new URLSearchParams();
+            if (width) params.append("width", width.toString());
+            if (height) params.append("height", height.toString());
+            if (fit) params.append("fit", fit);
+            url += (url.includes("?") ? "&" : "?") + params.toString();
+          }
 
-        // For file paths, try public URL first
-        console.log("SignedImage: Trying public URL for path:", src);
-        const { data: publicData } = supabase.storage
-          .from("images")
-          .getPublicUrl(src);
-
-        let url = publicData?.publicUrl || null;
-        // Add transform query if needed
-        if (url && (width || height)) {
-          const params = new URLSearchParams();
-          if (width) params.append("width", width.toString());
-          if (height) params.append("height", height.toString());
-          if (fit) params.append("fit", fit);
-          url += (url.includes("?") ? "&" : "?") + params.toString();
-        }
-        if (url) {
-          console.log("SignedImage: Using public URL:", url);
+          console.log("SignedImage: Using direct URL:", url);
           setImageUrl(url);
           setIsLoading(false);
           return;
         }
 
-        // Fallback to signed URL if public fails
-        console.log("SignedImage: Trying signed URL for path:", src);
-        const signedUrl = await getSignedImageUrl(src);
-        let finalUrl = signedUrl;
-        if (signedUrl && (width || height)) {
-          const params = new URLSearchParams();
-          if (width) params.append("width", width.toString());
-          if (height) params.append("height", height.toString());
-          if (fit) params.append("fit", fit);
-          finalUrl += (signedUrl.includes("?") ? "&" : "?") + params.toString();
-        }
-        if (finalUrl) {
-          console.log("SignedImage: Got signed URL successfully");
-          setImageUrl(finalUrl);
-        } else {
-          console.error("SignedImage: Failed to get any URL for path:", src);
-          setHasError(true);
+        // If it's a file path (doesn't start with http), try to get public URL
+        if (!src.startsWith("http")) {
+          console.log("SignedImage: Processing file path:", src);
+
+          // For file paths, try public URL first
+          console.log("SignedImage: Trying public URL for path:", src);
+          const { data: publicData } = supabase.storage
+            .from("images")
+            .getPublicUrl(src);
+
+          let url = publicData?.publicUrl || null;
+          // Add transform query if needed
+          if (url && (width || height)) {
+            const params = new URLSearchParams();
+            if (width) params.append("width", width.toString());
+            if (height) params.append("height", height.toString());
+            if (fit) params.append("fit", fit);
+            url += (url.includes("?") ? "&" : "?") + params.toString();
+          }
+          if (url) {
+            console.log("SignedImage: Using public URL:", url);
+            setImageUrl(url);
+            setIsLoading(false);
+            return;
+          }
+
+          // Fallback to signed URL if public fails
+          console.log("SignedImage: Trying signed URL for path:", src);
+          const signedUrl = await getSignedImageUrl(src);
+          let finalUrl = signedUrl;
+          if (signedUrl && (width || height)) {
+            const params = new URLSearchParams();
+            if (width) params.append("width", width.toString());
+            if (height) params.append("height", height.toString());
+            if (fit) params.append("fit", fit);
+            finalUrl +=
+              (signedUrl.includes("?") ? "&" : "?") + params.toString();
+          }
+          if (finalUrl) {
+            console.log("SignedImage: Got signed URL successfully");
+            setImageUrl(finalUrl);
+          } else {
+            console.error("SignedImage: Failed to get any URL for path:", src);
+            setHasError(true);
+          }
         }
       } catch (error) {
         console.error("SignedImage: Error loading image:", error);
@@ -138,13 +155,34 @@ export default function SignedImage({
     );
   }
 
+  // If we have a direct URL that starts with http, try to use it directly as fallback
+  if (src.startsWith("http") && !imageUrl) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        onError={(e) => {
+          console.error("SignedImage: Direct URL failed to load:", src);
+          console.error("SignedImage: Error details:", e);
+          setHasError(true);
+          onError?.();
+        }}
+      />
+    );
+  }
+
   return (
     <img
       src={imageUrl}
       alt={alt}
       className={className}
-      onError={() => {
+      onError={(e) => {
         console.error("SignedImage: Image failed to load:", imageUrl);
+        console.error("SignedImage: Error details:", e);
+        console.error("SignedImage: Original src:", src);
+        console.error("SignedImage: Error type:", e.type);
+        console.error("SignedImage: Error target:", e.target);
         setHasError(true);
         onError?.();
       }}

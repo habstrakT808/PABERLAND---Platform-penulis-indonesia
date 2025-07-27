@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 import {
   BellIcon,
   UserPlusIcon,
@@ -100,6 +100,56 @@ export default function NotificationSystem() {
     }
   };
 
+  // Function to clean up old notifications when count exceeds 20
+  const cleanupOldNotifications = async () => {
+    if (!user) return;
+
+    try {
+      // Get total count of notifications for this user
+      const { count, error: countError } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("target_id", user.id);
+
+      if (countError) {
+        console.error("Error counting notifications:", countError);
+        return;
+      }
+
+      // If more than 20 notifications, delete the oldest ones
+      if (count && count > 20) {
+        // Get the 20th newest notification's created_at timestamp
+        const { data: cutoffData, error: cutoffError } = await supabase
+          .from("notifications")
+          .select("created_at")
+          .eq("target_id", user.id)
+          .order("created_at", { ascending: false })
+          .range(19, 19)
+          .single();
+
+        if (cutoffError) {
+          console.error("Error getting cutoff timestamp:", cutoffError);
+          return;
+        }
+
+        if (cutoffData) {
+          // Delete notifications older than the 20th newest
+          const { error: deleteError } = await supabase
+            .from("notifications")
+            .delete()
+            .eq("target_id", user.id)
+            .lt("created_at", cutoffData.created_at);
+
+          if (deleteError) {
+            console.error("Error deleting old notifications:", deleteError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error cleaning up old notifications:", error);
+    }
+  };
+
   const subscribeToNotifications = () => {
     if (!user) return;
 
@@ -113,7 +163,10 @@ export default function NotificationSystem() {
           table: "notifications",
           filter: `target_id=eq.${user.id}`,
         },
-        (payload) => {
+        async (payload) => {
+          // Clean up old notifications first
+          await cleanupOldNotifications();
+
           // Fetch the new notification with profile data
           fetchNotifications();
 
@@ -255,122 +308,115 @@ export default function NotificationSystem() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-blue-200 z-50">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-blue-100">
-            <h3 className="text-lg font-bold text-gray-900">Notifikasi</h3>
-            <div className="flex items-center space-x-2">
-              {unreadCount > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center md:absolute md:inset-auto md:right-0 md:mt-2 md:w-80 md:bg-white md:rounded-xl md:shadow-2xl md:border md:border-blue-200">
+          <div className="w-full max-w-sm mx-4 bg-white rounded-xl shadow-2xl border border-blue-200 md:mx-0 md:max-w-none">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-blue-100">
+              <h3 className="text-lg font-bold text-gray-900">Notifikasi</h3>
+              <div className="flex items-center space-x-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Tandai Semua
+                  </button>
+                )}
                 <button
-                  onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 hover:bg-blue-50 rounded-lg transition-colors"
                 >
-                  Tandai Semua
+                  <XMarkIcon className="w-5 h-5 text-gray-500" />
                 </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-blue-50 rounded-lg transition-colors"
-              >
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
+              </div>
             </div>
-          </div>
 
-          {/* Notifications List */}
-          <div className="max-h-96 overflow-y-auto">
-            {loading ? (
-              <div className="p-4">
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-center space-x-3 animate-pulse"
-                    >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-blue-100 rounded w-3/4"></div>
-                        <div className="h-3 bg-blue-100 rounded w-1/2 mt-1"></div>
+            {/* Notifications List */}
+            <div className="max-h-96 overflow-y-auto">
+              {loading ? (
+                <div className="p-4">
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center space-x-3 animate-pulse"
+                      >
+                        <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="h-4 bg-blue-100 rounded w-3/4"></div>
+                          <div className="h-3 bg-blue-100 rounded w-1/2 mt-1"></div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="p-8 text-center">
+                  <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-500">Belum ada notifikasi</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-blue-100">
+                  {notifications.map((notification) => (
+                    <Link
+                      key={notification.id}
+                      href={getNotificationLink(notification)}
+                      onClick={() => {
+                        if (!notification.read) {
+                          markAsRead(notification.id);
+                        }
+                        setIsOpen(false);
+                      }}
+                      className={`block p-4 hover:bg-blue-50 transition-colors ${
+                        !notification.read ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        {/* Actor Avatar */}
+                        <div className="flex-shrink-0">
+                          {notification.actor_profile.avatar_url ? (
+                            <Image
+                              src={
+                                getAvatarUrl(
+                                  notification.actor_profile.avatar_url
+                                ) || ""
+                              }
+                              alt={notification.actor_profile.full_name}
+                              width={40}
+                              height={40}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              {notification.actor_profile.full_name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Notification Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <p className="text-sm text-gray-900">
+                              {getNotificationText(notification)}
+                            </p>
+                            <div className="flex items-center space-x-2 ml-2">
+                              {getNotificationIcon(notification.type)}
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-1">
+                            {formatTime(notification.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="p-8 text-center">
-                <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">Belum ada notifikasi</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-blue-100">
-                {notifications.map((notification) => (
-                  <Link
-                    key={notification.id}
-                    href={getNotificationLink(notification)}
-                    onClick={() => {
-                      if (!notification.read) {
-                        markAsRead(notification.id);
-                      }
-                      setIsOpen(false);
-                    }}
-                    className={`block p-4 hover:bg-blue-50 transition-colors ${
-                      !notification.read ? "bg-blue-50" : ""
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      {/* Actor Avatar */}
-                      <div className="flex-shrink-0">
-                        {notification.actor_profile.avatar_url ? (
-                          <Image
-                            src={notification.actor_profile.avatar_url}
-                            alt={notification.actor_profile.full_name}
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {notification.actor_profile.full_name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Notification Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <p className="text-sm text-gray-900">
-                            {getNotificationText(notification)}
-                          </p>
-                          <div className="flex items-center space-x-2 ml-2">
-                            {getNotificationIcon(notification.type)}
-                            {!notification.read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {formatTime(notification.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="p-3 border-t border-blue-100 text-center">
-              <Link
-                href="/notifications"
-                onClick={() => setIsOpen(false)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Lihat Semua Notifikasi
-              </Link>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

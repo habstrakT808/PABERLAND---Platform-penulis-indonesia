@@ -18,6 +18,7 @@ import {
   StarIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 
 function AdminLogsContent() {
   const [activities, setActivities] = useState<AdminActivity[]>([]);
@@ -303,7 +304,10 @@ function AdminLogsContent() {
                         {/* Admin Avatar */}
                         {activity.admin_profile?.avatar_url ? (
                           <Image
-                            src={activity.admin_profile.avatar_url}
+                            src={
+                              getAvatarUrl(activity.admin_profile.avatar_url) ||
+                              ""
+                            }
                             alt={activity.admin_profile.full_name}
                             width={32}
                             height={32}

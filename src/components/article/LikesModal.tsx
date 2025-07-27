@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { XMarkIcon, HeartIcon } from "@heroicons/react/24/outline";
-import { likeHelpers } from "@/lib/supabase";
+import { likeHelpers, getAvatarUrl } from "@/lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -116,7 +116,7 @@ export default function LikesModal({
                     >
                       {like.profiles?.avatar_url ? (
                         <Image
-                          src={like.profiles.avatar_url}
+                          src={getAvatarUrl(like.profiles.avatar_url) || ""}
                           alt={like.profiles?.full_name || "User"}
                           width={48}
                           height={48}

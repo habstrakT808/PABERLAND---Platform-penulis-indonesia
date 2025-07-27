@@ -25,22 +25,32 @@ export default function AdminFeaturedPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchArticles();
-  }, []);
+  }, [currentPage]);
 
   const fetchArticles = async () => {
     setLoading(true);
     try {
       const result = await adminHelpers.getArticlesForAdmin(
-        1,
-        100,
+        currentPage,
+        itemsPerPage,
         undefined,
         undefined,
         "published"
       );
-      setArticles(result.articles);
+      // Featured diurutkan paling atas
+      const sorted = [...result.articles].sort(
+        (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+      );
+      setArticles(sorted);
+      setTotalPages(result.totalPages);
+      setTotalCount(result.totalCount);
     } catch (error) {
       toast.error("Gagal memuat data artikel");
     } finally {
@@ -89,61 +99,90 @@ export default function AdminFeaturedPage() {
           {loading ? (
             <div>Memuat data...</div>
           ) : (
-            <div className="space-y-6">
-              {articles.map((article) => (
-                <div
-                  key={article.id}
-                  className={`flex items-center bg-white rounded-lg shadow p-4 border ${
-                    article.featured
-                      ? "border-yellow-300 bg-yellow-50"
-                      : "border-blue-100"
-                  }`}
-                >
-                  <div className="w-24 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0">
-                    {article.cover_image && (
-                      <SignedImage
-                        src={article.cover_image}
-                        alt={article.title}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                      <Link href={`/article/${article.slug}`}>
-                        {article.title}
-                      </Link>
-                    </h3>
-                    <p className="text-gray-600 text-sm line-clamp-2 mb-1">
-                      {article.excerpt}
-                    </p>
-                    <span className="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 mr-2">
-                      {article.category}
-                    </span>
-                    {article.featured && (
-                      <span className="inline-block px-2 py-1 text-xs rounded bg-yellow-200 text-yellow-800">
-                        🌟 Featured
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleToggleFeatured(article)}
-                    disabled={actionLoading === article.id}
-                    className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+            <>
+              <div className="space-y-6">
+                {articles.map((article) => (
+                  <div
+                    key={article.id}
+                    className={`flex items-center bg-white rounded-lg shadow p-4 border ${
                       article.featured
-                        ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                        : "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                    } disabled:opacity-50`}
+                        ? "border-yellow-300 bg-yellow-50"
+                        : "border-blue-100"
+                    }`}
                   >
-                    {actionLoading === article.id
-                      ? "Menyimpan..."
-                      : article.featured
-                      ? "Hapus Featured"
-                      : "Jadikan Featured"}
+                    <div className="w-24 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0">
+                      {article.cover_image && (
+                        <SignedImage
+                          src={article.cover_image}
+                          alt={article.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-1">
+                        <Link href={`/article/${article.slug}`}>
+                          {article.title}
+                        </Link>
+                      </h3>
+                      <p className="text-gray-600 text-sm line-clamp-2 mb-1">
+                        {article.excerpt}
+                      </p>
+                      <span className="inline-block px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 mr-2">
+                        {article.category}
+                      </span>
+                      {article.featured && (
+                        <span className="inline-block px-2 py-1 text-xs rounded bg-yellow-200 text-yellow-800">
+                          🌟 Featured
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleToggleFeatured(article)}
+                      disabled={actionLoading === article.id}
+                      className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        article.featured
+                          ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                          : "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                      } disabled:opacity-50`}
+                    >
+                      {actionLoading === article.id
+                        ? "Menyimpan..."
+                        : article.featured
+                        ? "Hapus Featured"
+                        : "Jadikan Featured"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {/* Pagination */}
+              <div className="flex justify-between items-center mt-8">
+                <span className="text-sm text-gray-600">
+                  Menampilkan {articles.length} dari {totalCount} konten
+                </span>
+                <div className="space-x-2">
+                  <button
+                    className="px-3 py-1 rounded bg-blue-100 text-blue-700 disabled:opacity-50"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
+                  <span className="text-sm text-black">
+                    Halaman {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    className="px-3 py-1 rounded bg-blue-100 text-blue-700 disabled:opacity-50"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
                   </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </AdminLayout>

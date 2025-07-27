@@ -16,7 +16,7 @@ import {
   AdjustmentsHorizontalIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { articleHelpers } from "@/lib/supabase";
+import { articleHelpers, getAvatarUrl } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 interface SearchResult {
@@ -302,31 +302,41 @@ export default function SearchPage() {
               <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                   <UserIcon className="w-5 h-5 mr-2" />
-                  Penulis ({results.authors.length})
+                  Penulis ({results.totalAuthors})
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {results.authors.map((author) => (
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {results.authors.slice(0, 6).map((author) => (
                     <Link
                       key={author.id}
                       href={`/penulis/${author.id}`}
-                      className="flex items-center space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
+                      className="flex items-center min-w-[220px] space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {author.full_name?.charAt(0) || "U"}
-                      </div>
+                      {author.avatar_url ? (
+                        <Image
+                          src={getAvatarUrl(author.avatar_url) || ""}
+                          alt={author.full_name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                          {author.full_name?.charAt(0) || "U"}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-gray-900 truncate">
                           {author.full_name}
                         </div>
-                        {author.bio && (
-                          <div className="text-sm text-gray-600 truncate">
-                            {author.bio}
-                          </div>
-                        )}
                       </div>
                     </Link>
                   ))}
                 </div>
+                {results.totalAuthors > 6 && (
+                  <div className="text-right mt-2 text-xs text-gray-500">
+                    Scroll untuk melihat lebih banyak penulis
+                  </div>
+                )}
               </div>
             )}
 
@@ -334,7 +344,7 @@ export default function SearchPage() {
             {results.articles.length > 0 && (
               <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  📚 Artikel ({results.totalArticles})
+                  📚 Konten ({results.totalArticles})
                 </h3>
                 <div className="space-y-6">
                   {results.articles.map((article) => (
@@ -383,9 +393,23 @@ export default function SearchPage() {
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                                {article.profiles?.full_name?.charAt(0) || "U"}
-                              </div>
+                              {article.profiles?.avatar_url ? (
+                                <Image
+                                  src={
+                                    getAvatarUrl(article.profiles.avatar_url) ||
+                                    ""
+                                  }
+                                  alt={article.profiles.full_name}
+                                  width={32}
+                                  height={32}
+                                  className="w-8 h-8 rounded-full object-cover mr-3"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
+                                  {article.profiles?.full_name?.charAt(0) ||
+                                    "U"}
+                                </div>
+                              )}
                               <span className="font-medium text-gray-900">
                                 {article.profiles?.full_name || "Anonymous"}
                               </span>

@@ -41,6 +41,22 @@ export default function ArticleLikeSection({
     setIsHydrated(true);
   }, [user, articleId]);
 
+  // Load real-time likes count on mount
+  useEffect(() => {
+    if (isHydrated) {
+      loadRealTimeLikesCount();
+    }
+  }, [isHydrated, articleId]);
+
+  const loadRealTimeLikesCount = async () => {
+    try {
+      const realCount = await likeHelpers.getLikesCount(articleId);
+      setLikesCount(realCount);
+    } catch (error) {
+      console.error("Error loading real-time likes count:", error);
+    }
+  };
+
   const handleLike = async () => {
     if (!user) {
       toast.error("Anda harus login terlebih dahulu untuk memberikan like!");
@@ -53,7 +69,10 @@ export default function ArticleLikeSection({
 
       if (result.success) {
         setIsLiked(result.isLiked);
-        setLikesCount((prev) => (result.isLiked ? prev + 1 : prev - 1));
+
+        // Update likes count with real-time data
+        const realCount = await likeHelpers.getLikesCount(articleId);
+        setLikesCount(realCount);
 
         if (result.isLiked) {
           toast.success("❤️ Artikel ditambahkan ke favorit!");
@@ -127,7 +146,7 @@ export default function ArticleLikeSection({
         {/* Views */}
         <div className="flex items-center space-x-2">
           <EyeIcon className="w-5 h-5" />
-          <span className="text-sm font-medium">{displayViews} views</span>
+          <span className="text-sm font-medium">{displayViews}</span>
         </div>
 
         {/* Likes */}
@@ -147,9 +166,7 @@ export default function ArticleLikeSection({
         {/* Comments */}
         <div className="flex items-center space-x-2">
           <ChatBubbleLeftIcon className="w-5 h-5" />
-          <span className="text-sm font-medium">
-            {displayCommentsCount} komentar
-          </span>
+          <span className="text-sm font-medium">{displayCommentsCount}</span>
         </div>
       </div>
 

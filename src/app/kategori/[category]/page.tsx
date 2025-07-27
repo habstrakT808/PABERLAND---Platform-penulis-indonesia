@@ -164,7 +164,7 @@ export default function CategoryPage() {
 
   const fetchArticles = async () => {
     try {
-      const limit = 12;
+      const limit = 6;
       const from = (currentPage - 1) * limit;
       const to = from + limit - 1;
 

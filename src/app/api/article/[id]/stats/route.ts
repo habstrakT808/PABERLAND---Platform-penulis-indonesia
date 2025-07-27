@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, commentHelpers } from "@/lib/supabase";
+import { supabase, commentHelpers, likeHelpers } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
@@ -25,19 +25,15 @@ export async function GET(
     // Get real-time comment count
     const commentCount = await commentHelpers.getCommentCount(articleId);
 
-    // Get likes count from article_likes table
-    const { count: likesCount, error: likesError } = await supabase
-      .from('article_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('article_id', articleId);
+    // Get real-time likes count from article_likes table
+    const likesCount = await likeHelpers.getLikesCount(articleId);
 
-    if (likesError) {
-      console.error('Error fetching likes count:', likesError);
-    }
+    // Sync likes count to articles table for consistency
+    await likeHelpers.syncLikesCount(articleId);
 
     return NextResponse.json({
       views: article.views || 0,
-      likesCount: likesCount || 0,
+      likesCount: likesCount,
       commentsCount: commentCount,
     });
   } catch (error) {

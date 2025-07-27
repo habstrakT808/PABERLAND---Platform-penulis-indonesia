@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { adminHelpers, ContentReport } from "@/lib/adminHelpers";
+import { supabase, getAvatarUrl } from "@/lib/supabase";
 import AdminProtectedRoute from "@/components/admin/AdminProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Image from "next/image";
@@ -366,7 +367,9 @@ function AdminReportsContent() {
                   <div className="flex-shrink-0">
                     {report.reporter_profile?.avatar_url ? (
                       <Image
-                        src={report.reporter_profile.avatar_url}
+                        src={
+                          getAvatarUrl(report.reporter_profile.avatar_url) || ""
+                        }
                         alt={report.reporter_profile.full_name}
                         width={48}
                         height={48}
