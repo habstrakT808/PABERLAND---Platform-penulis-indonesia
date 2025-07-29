@@ -1,10 +1,40 @@
 // src/lib/supabase.ts
-import { createClient } from '@supabase/supabase-js'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Validate environment variables
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
+}
+
+console.log('🔧 Supabase Config:', {
+  url: supabaseUrl,
+  keyLength: supabaseAnonKey.length,
+  environment: process.env.NODE_ENV
+});
+
+let globalSupabaseClient: SupabaseClient | null = null;
+
+export const createSupabaseClient = () => createClientComponentClient()
+
+export const getSupabaseClient = (): SupabaseClient => {
+  if (typeof window !== 'undefined') {
+    // Client-side: gunakan auth helpers
+    return createClientComponentClient()
+  } else {
+    // Server-side: gunakan client biasa
+    return createClient(supabaseUrl, supabaseAnonKey)
+  }
+}
+
+export const supabase = getSupabaseClient();
 
 /**
  * Upload image to Supabase Storage and return the file path (NOT signed URL)

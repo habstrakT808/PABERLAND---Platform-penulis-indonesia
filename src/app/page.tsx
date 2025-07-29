@@ -14,7 +14,8 @@ import {
 } from "@heroicons/react/24/outline";
 import UserRecommendations from "@/components/social/UserRecommendations";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase, platformStatsHelpers, getAvatarUrl } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
+import { platformStatsHelpers, getAvatarUrl } from "@/lib/supabase";
 
 // Dummy data dengan gambar real dari Unsplash
 const featuredArticles = [
@@ -50,6 +51,7 @@ const featuredArticles = [
 
 export default function HomePage() {
   const { user } = useAuth();
+  const supabase = getSupabaseClient(); // ✅ Use singleton
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalContent: 0,
@@ -66,6 +68,21 @@ export default function HomePage() {
   const [showContentOnMobile, setShowContentOnMobile] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
+
+  // Debug authentication
+  useEffect(() => {
+    const debugAuth = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+      console.log("🔍 Debug - Current session:", session ? "exists" : "none");
+      console.log("🔍 Debug - Session error:", error);
+      console.log("🔍 Debug - User from context:", user ? user.email : "none");
+    };
+
+    debugAuth();
+  }, [user, supabase.auth]);
 
   useEffect(() => {
     fetchStats();

@@ -4,11 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { supabase } from "@/lib/supabase";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import toast from "react-hot-toast";
 
 export default function LoginForm() {
   const router = useRouter();
+  const supabase = createClientComponentClient();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -66,8 +67,14 @@ export default function LoginForm() {
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     setSocialLoading(provider);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
       if (error) {
+        console.error("OAuth error:", error);
         toast.error(
           "Gagal login dengan " +
             provider.charAt(0).toUpperCase() +
@@ -75,6 +82,7 @@ export default function LoginForm() {
         );
       }
     } catch (err: any) {
+      console.error("OAuth exception:", err);
       toast.error(
         "Gagal login dengan " +
           provider.charAt(0).toUpperCase() +

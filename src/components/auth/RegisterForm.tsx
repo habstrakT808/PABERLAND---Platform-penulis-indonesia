@@ -65,11 +65,12 @@ export default function RegisterForm() {
     setIsLoading(true);
 
     try {
-      // Sign up user - trigger will automatically create profile
+      // Sign up user with custom email redirect
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm-email`,
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
@@ -88,6 +89,7 @@ export default function RegisterForm() {
         toast.success(
           "Pendaftaran berhasil! Silakan cek email untuk verifikasi."
         );
+        // Redirect langsung ke halaman login
         router.push("/auth/login");
       }
     } catch (error) {
