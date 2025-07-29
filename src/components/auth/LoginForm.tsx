@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -17,6 +17,24 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Handle URL parameters for messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get("error");
+    const message = urlParams.get("message");
+    if (error === "email_expired") {
+      toast.error(message || "Link verifikasi email telah kedaluwarsa");
+    } else if (error === "access_denied") {
+      toast.error(message || "Verifikasi email dibatalkan");
+    } else if (message === "check_email") {
+      toast.success("Silakan cek email Anda untuk verifikasi akun");
+    }
+    // Clean URL
+    if (error || message) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

@@ -16,6 +16,7 @@ import UserRecommendations from "@/components/social/UserRecommendations";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabaseClient } from "@/lib/supabase";
 import { platformStatsHelpers, getAvatarUrl } from "@/lib/supabase";
+import { toast } from "react-toastify";
 
 // Dummy data dengan gambar real dari Unsplash
 const featuredArticles = [
@@ -89,6 +90,18 @@ export default function HomePage() {
     fetchFeaturedArticles();
     fetchLatestArticles();
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get("message");
+    const welcome = urlParams.get("welcome");
+    if (message === "email_verified" && welcome === "true") {
+      toast.success(
+        "🎉 Email berhasil diverifikasi! Selamat datang di PaberLand!"
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   // Deteksi ukuran layar untuk mobile

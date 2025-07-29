@@ -17,15 +17,40 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
     setIsClient(true);
   }, []);
 
+  // Always use production domain for sharing
+  const getShareUrl = () => {
+    try {
+      const prod = "https://paberland.vercel.app";
+      if (
+        url.startsWith("http://localhost") ||
+        url.startsWith("https://localhost")
+      ) {
+        // Replace localhost with production domain
+        const u = new URL(url);
+        return prod + u.pathname + u.search + u.hash;
+      }
+      // If already production, return as is
+      if (url.startsWith(prod)) return url;
+      // If relative, prepend production domain
+      if (url.startsWith("/")) return prod + url;
+      // Fallback
+      return url;
+    } catch {
+      return url;
+    }
+  };
+
+  const shareUrl = getShareUrl();
+
   const shareData = {
     title,
     text: excerpt,
-    url: url,
+    url: shareUrl,
   };
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -46,16 +71,18 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
   const shareLinks = {
     twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       title
-    )}&url=${encodeURIComponent(url)}`,
+    )}&url=${encodeURIComponent(shareUrl)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      url
+      shareUrl
     )}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      url
+      shareUrl
     )}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${title} - ${url}`)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(
+      `${title} - ${shareUrl}`
+    )}`,
     telegram: `https://t.me/share/url?url=${encodeURIComponent(
-      url
+      shareUrl
     )}&text=${encodeURIComponent(title)}`,
   };
 

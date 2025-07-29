@@ -30,6 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/logo_header.png" type="image/png" />
+      </head>
       <body
         className={`${inter.className} min-h-screen bg-white dark:bg-gray-900`}
       >

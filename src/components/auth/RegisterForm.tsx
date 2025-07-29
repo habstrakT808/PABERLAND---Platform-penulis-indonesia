@@ -70,7 +70,7 @@ export default function RegisterForm() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm-email`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
@@ -90,7 +90,7 @@ export default function RegisterForm() {
           "Pendaftaran berhasil! Silakan cek email untuk verifikasi."
         );
         // Redirect langsung ke halaman login
-        router.push("/auth/login");
+        router.push("/auth/login?message=check_email");
       }
     } catch (error) {
       console.error("Registration error:", error);
