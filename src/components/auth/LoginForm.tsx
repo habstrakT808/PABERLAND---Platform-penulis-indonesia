@@ -108,8 +108,7 @@ export default function LoginForm() {
             Masuk ke PaberLand
           </h2>
           <p className="mt-2 text-center text-sm text-gray-700">
-            Lanjutkan perjalanan menulis Anda bersama komunitas penulis
-            Indonesia
+            Lanjutkan perjalanan menulis Anda bersama komunitas member Indonesia
           </p>
         </div>
 

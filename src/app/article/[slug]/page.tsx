@@ -49,7 +49,7 @@ export async function generateMetadata({
     title: `${article.title} - PaberLand`,
     description: article.excerpt,
     keywords: `${article.category}, artikel, PaberLand, ${article.profiles?.full_name}`,
-    authors: [{ name: article.profiles?.full_name || "Penulis PaberLand" }],
+    authors: [{ name: article.profiles?.full_name || "Member PaberLand" }],
     openGraph: {
       title: article.title,
       description: article.excerpt,
@@ -69,7 +69,7 @@ export async function generateMetadata({
       type: "article",
       publishedTime: article.created_at,
       modifiedTime: article.updated_at,
-      authors: [article.profiles?.full_name || "Penulis PaberLand"],
+      authors: [article.profiles?.full_name || "Member PaberLand"],
       section: article.category,
       tags: [article.category, "PaberLand", "artikel"],
     },

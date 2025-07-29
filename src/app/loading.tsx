@@ -32,7 +32,7 @@ export default function Loading() {
 
         <div className="mt-8 pt-8 border-t border-blue-100">
           <p className="text-sm text-gray-500">
-            PaberLand - Platform Komunitas Penulis Indonesia
+            PaberLand - Platform Komunitas Penulis Bacaan Anak Indonesia
           </p>
         </div>
       </div>

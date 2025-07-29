@@ -106,7 +106,9 @@ function WriteArticleContent() {
             <div className="space-y-4 text-gray-700">
               <p>
                 Editor penulisan konten membutuhkan layar yang lebih besar untuk
-                pengalaman terbaik.
+                memberikan pengalaman menulis yang optimal. Silakan gunakan
+                perangkat dengan layar yang lebih lebar untuk mengakses area
+                penulisan yang nyaman.
               </p>
 
               <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -154,7 +156,7 @@ function WriteArticleContent() {
           <p className="text-gray-800">
             {editArticle
               ? "Perbarui konten Anda dan bagikan kembali dengan komunitas"
-              : "Bagikan ide, cerita, dan karya terbaik Anda dengan komunitas penulis Indonesia"}
+              : "Bagikan ide, cerita, dan karya terbaik Anda dengan komunitas Paberland Indonesia"}
           </p>
         </div>
 

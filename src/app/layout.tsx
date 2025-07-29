@@ -9,15 +9,15 @@ import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PaberLand - Komunitas Penulis Indonesia",
+  title: "PaberLand - Komunitas Penulis Bacaan Anak Indonesia",
   description:
-    "Platform komunitas penulis Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
-  keywords: "penulis, sastra, cerpen, puisi, artikel, indonesia, komunitas",
+    "Platform komunitas penulis bacaan anak Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
+  keywords: "member, sastra, cerpen, puisi, artikel, indonesia, komunitas",
   authors: [{ name: "PaberLand Team" }],
   openGraph: {
-    title: "PaberLand - Komunitas Penulis Indonesia",
+    title: "PaberLand - Komunitas Penulis Bacaan Anak Indonesia",
     description:
-      "Platform komunitas penulis Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
+      "Platform komunitas penulis bacaan anak Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
     type: "website",
     locale: "id_ID",
   },

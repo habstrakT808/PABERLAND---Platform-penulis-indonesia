@@ -155,3 +155,76 @@ body {
     gap: 0.5rem;
   }
 }
+
+.tentang-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #faf6f2;
+  color: #2d2d2d;
+}
+.tentang-hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.tentang-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.2em;
+}
+.tentang-hero h2 {
+  font-size: 1.3rem;
+  color: #b87b4b;
+  margin-bottom: 1em;
+}
+.tentang-profil {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px #0001;
+}
+.tentang-profil ul {
+  padding-left: 1.2em;
+}
+.tentang-profil li {
+  margin-bottom: 0.5em;
+}
+.tentang-galeri {
+  margin-bottom: 32px;
+}
+.tentang-galeri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+.tentang-member-card {
+  text-align: center;
+}
+.tentang-member-photo {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #e2c9b0;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.tentang-member-name {
+  font-weight: 500;
+  font-size: 1rem;
+}
+.tentang-statistik {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px #0001;
+  text-align: center;
+}
+.tentang-statistik-list {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  font-size: 1.1rem;
+}

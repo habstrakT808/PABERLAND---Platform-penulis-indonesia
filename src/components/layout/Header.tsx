@@ -271,13 +271,23 @@ export default function Header() {
             </Link>
             <Link
               href="/penulis"
-              className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 pathname.startsWith("/penulis")
-                  ? "text-blue-600 bg-blue-50 border border-blue-200"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+              }`}
+            >
+              Member
+            </Link>
+            <Link
+              href="/tentang"
+              className={`px-3 py-2 text-sm font-medium transition-colors rounded-md ${
+                pathname.startsWith("/tentang")
+                  ? "text-blue-700 bg-blue-50 border border-blue-200"
                   : "text-gray-800 hover:text-blue-600 hover:bg-blue-50"
               }`}
             >
-              Penulis
+              Tentang
             </Link>
             {/* Hapus menu Tulis dan Artikel Saya dari navbar utama */}
           </nav>
@@ -297,7 +307,7 @@ export default function Header() {
                   setShowSearchSuggestions(true)
                 }
                 onBlur={handleSearchBlur}
-                placeholder="Cari konten, penulis..."
+                placeholder="Cari konten, member..."
                 className="block w-full pl-10 pr-12 py-2 border border-blue-200 rounded-lg leading-5 bg-white text-gray-900 placeholder-black focus:outline-none focus:placeholder-black focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
               />
               <button
@@ -533,7 +543,18 @@ export default function Header() {
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Penulis
+                Member
+              </Link>
+              <Link
+                href="/tentang"
+                className={`block px-3 py-2 transition-colors rounded-md ${
+                  pathname.startsWith("/tentang")
+                    ? "text-blue-700 bg-blue-50 border border-blue-200"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Tentang
               </Link>
               {/* Hapus menu Tulis dan Artikel Saya dari mobile menu */}
 
@@ -548,7 +569,7 @@ export default function Header() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari konten, penulis..."
+                      placeholder="Cari konten, member..."
                       className="block w-full pl-10 pr-12 py-2 border border-blue-200 rounded-lg leading-5 bg-white text-gray-800 placeholder-black focus:outline-none focus:placeholder-black focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                     />
                     <button

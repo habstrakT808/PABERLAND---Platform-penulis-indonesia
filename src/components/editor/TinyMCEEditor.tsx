@@ -1,6 +1,7 @@
 "use client";
 
 import { Editor } from "@tinymce/tinymce-react";
+import type { Editor as TinyMCEEditorType } from "tinymce";
 import { useRef } from "react";
 
 interface TinyMCEEditorProps {
@@ -9,22 +10,6 @@ interface TinyMCEEditorProps {
   placeholder?: string;
   height?: number;
   disabled?: boolean;
-}
-
-// Type definitions untuk TinyMCE
-interface TinyMCEEditor {
-  setContent: (content: string) => void;
-  getContent: (options?: { format?: string }) => string;
-  windowManager: {
-    alert: (message: string) => void;
-  };
-  on: (event: string, callback: () => void) => void;
-  ui: {
-    registry: {
-      addMenuButton: (name: string, config: any) => void;
-      addButton: (name: string, config: any) => void;
-    };
-  };
 }
 
 interface MenuItemCallback {
@@ -44,7 +29,7 @@ export default function TinyMCEEditor({
   height = 500,
   disabled = false,
 }: TinyMCEEditorProps) {
-  const editorRef = useRef<TinyMCEEditor | null>(null);
+  const editorRef = useRef<TinyMCEEditorType | null>(null);
 
   const handleEditorChange = (content: string) => {
     onChange(content);
@@ -194,6 +179,87 @@ export default function TinyMCEEditor({
       }...</strong></em></p>
 
 <p><em>Apa yang akan terjadi selanjutnya? Nantikan bab berikutnya!</em></p>`,
+      "info-berita": `<h1>Judul Berita/Info</h1>
+<p><em>Tanggal: ${new Date().toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })}</em></p>
+
+<h2>📰 Lead (Pembuka)</h2>
+<p>Tulis ringkasan inti berita atau info di sini. Jawab pertanyaan: siapa, apa, kapan, di mana, mengapa, dan bagaimana (5W+1H).</p>
+
+<h2>📋 Isi Berita</h2>
+<p>Jelaskan detail peristiwa, data, kutipan narasumber, dan kronologi secara berurutan.</p>
+<ul>
+<li>Fakta utama</li>
+<li>Kutipan narasumber</li>
+<li>Data pendukung</li>
+</ul>
+
+<h2>🔚 Penutup</h2>
+<p>Tambahkan informasi tambahan, penjelasan, atau harapan ke depan.</p>`,
+
+      cermin: `<h1 style="text-align: center;">Judul Cermin (Cerita Mini)</h1>
+<p style="text-align: center;"><em>Oleh: [Nama Penulis]</em></p>
+<p style="text-align: center;"><em>${new Date().toLocaleDateString(
+        "id-ID"
+      )}</em></p>
+<hr />
+
+<p>Paragraf tunggal atau dua paragraf yang langsung menuju inti cerita. Fokus pada satu momen, ide, atau twist yang kuat.</p>
+
+<p style="text-align: center;"><em>— Tamat —</em></p>`,
+
+      "resensi-buku": `<h1>Judul Resensi Buku</h1>
+<p><em>Oleh: [Nama Penulis]</em></p>
+<hr />
+
+<h2>📚 Identitas Buku</h2>
+<ul>
+<li>Judul: [Judul Buku]</li>
+<li>Penulis: [Nama Penulis Buku]</li>
+<li>Penerbit: [Nama Penerbit]</li>
+<li>Tahun Terbit: [Tahun]</li>
+<li>Jumlah Halaman: [Jumlah]</li>
+</ul>
+
+<h2>📝 Ringkasan Isi Buku</h2>
+<p>Ringkas isi buku secara objektif, tanpa opini pribadi.</p>
+
+<h2>⭐ Kelebihan & Kekurangan</h2>
+<ul>
+<li>Kelebihan: [Tulis keunggulan buku]</li>
+<li>Kekurangan: [Tulis kekurangan buku]</li>
+</ul>
+
+<h2>💡 Penilaian & Kesimpulan</h2>
+<p>Berikan penilaian pribadi dan rekomendasi untuk pembaca.</p>`,
+
+      dongeng: `<h1 style="text-align: center;">Judul Dongeng</h1>
+<p style="text-align: center;"><em>Dongeng dari [Daerah/Negara]</em></p>
+<p style="text-align: center;"><em>Diceritakan oleh: [Nama Anda]</em></p>
+<hr />
+
+<p><strong>Pada suatu waktu</strong>, hiduplah [tokoh utama] yang [karakteristik].</p>
+<p>Mulai cerita dengan pengenalan tokoh dan setting. Bangun konflik dan petualangan yang penuh imajinasi.</p>
+
+<p>Tambahkan pesan moral di akhir cerita.</p>
+
+<p style="text-align: center;"><em>— Selesai —</em></p>`,
+
+      cerbung: `<h1>Judul Cerbung - Bagian [Nomor]</h1>
+<p><em>Oleh: [Nama Penulis]</em></p>
+<hr />
+
+<p><strong>Ringkasan bagian sebelumnya:</strong> [Ringkas bagian sebelumnya jika ada]</p>
+
+<p>[Mulai bagian baru dengan hook yang menarik]</p>
+
+<p>[Kembangkan konflik, karakter, dan alur. Akhiri dengan cliffhanger atau pertanyaan yang membuat pembaca ingin lanjut ke bagian berikutnya]</p>
+
+<p style="text-align: center;"><em>Bersambung...</em></p>`,
     };
 
     return templates[type as keyof typeof templates] || templates.artikel;
@@ -203,7 +269,7 @@ export default function TinyMCEEditor({
     <div className="tinymce-wrapper">
       <Editor
         apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
-        onInit={(evt, editor) => (editorRef.current = editor)}
+        onInit={(_evt, editor) => (editorRef.current = editor)}
         value={value}
         onEditorChange={handleEditorChange}
         disabled={disabled}
@@ -359,7 +425,7 @@ export default function TinyMCEEditor({
           placeholder: placeholder,
 
           // Auto-resize
-          resize: "vertical",
+          resize: "both",
 
           // Paste settings - untuk copy paste dari Word, Google Docs, dll
           paste_as_text: false,
@@ -404,50 +470,85 @@ export default function TinyMCEEditor({
           browser_spellcheck: true,
 
           // Custom setup untuk menambah fungsionalitas
-          setup: (editor: TinyMCEEditor) => {
+          setup: (editor: TinyMCEEditorType) => {
             // Custom button untuk template
             editor.ui.registry.addMenuButton("insertTemplate", {
               text: "📝 Template",
               tooltip: "Pilih Template Tulisan",
-              fetch: (callback: MenuItemCallback) => {
+              fetch: (success) => {
                 const items = [
                   {
-                    type: "menuitem",
+                    type: "menuitem" as const,
+                    text: "📰 Template Info/Berita",
+                    onAction: () => {
+                      editor.setContent(getTemplate("info-berita"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
+                    text: "🔎 Template Cermin (Cerita Mini)",
+                    onAction: () => {
+                      editor.setContent(getTemplate("cermin"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
+                    text: "📚 Template Resensi Buku",
+                    onAction: () => {
+                      editor.setContent(getTemplate("resensi-buku"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
+                    text: "🧚 Template Dongeng",
+                    onAction: () => {
+                      editor.setContent(getTemplate("dongeng"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
+                    text: "📝 Template Cerbung",
+                    onAction: () => {
+                      editor.setContent(getTemplate("cerbung"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
                     text: "📰 Template Artikel",
                     onAction: () => {
                       editor.setContent(getTemplate("artikel"));
                     },
                   },
                   {
-                    type: "menuitem",
+                    type: "menuitem" as const,
                     text: "📖 Template Cerpen",
                     onAction: () => {
                       editor.setContent(getTemplate("cerpen"));
                     },
                   },
                   {
-                    type: "menuitem",
+                    type: "menuitem" as const,
                     text: "🎭 Template Puisi",
                     onAction: () => {
                       editor.setContent(getTemplate("puisi"));
                     },
                   },
                   {
-                    type: "menuitem",
+                    type: "menuitem" as const,
                     text: "🏛️ Template Cerita Rakyat",
                     onAction: () => {
                       editor.setContent(getTemplate("cerita-rakyat"));
                     },
                   },
                   {
-                    type: "menuitem",
+                    type: "menuitem" as const,
                     text: "📚 Template Novel Berseri",
                     onAction: () => {
                       editor.setContent(getTemplate("novel-berseri"));
                     },
                   },
                 ];
-                callback(items);
+                success(items);
               },
             });
 

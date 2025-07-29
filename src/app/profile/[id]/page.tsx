@@ -20,6 +20,8 @@ import {
   ShareIcon,
   PhoneIcon,
   EnvelopeIcon,
+  CheckCircleIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import {
   supabase,
@@ -42,6 +44,9 @@ interface ProfileData {
     role: string;
     created_at: string;
     updated_at: string;
+    member_id?: string;
+    prestasi?: string;
+    alamat?: string;
   };
   articles: ArticleSummary[];
   likedArticles: ArticleSummary[];
@@ -421,6 +426,37 @@ export default function PublicProfilePage() {
                   <p className="text-gray-800 mb-4 leading-relaxed max-w-2xl">
                     {data.profile.bio}
                   </p>
+                )}
+                {/* Tambahkan styling kontras dan icon untuk info tambahan */}
+                {data?.profile.member_id && (
+                  <div className="mb-2 flex items-center text-base">
+                    <span className="mr-2 text-blue-700 font-semibold flex items-center">
+                      <UserIcon className="w-4 h-4 mr-1" /> Member ID:
+                    </span>
+                    <span className="text-gray-900 font-medium">
+                      {data.profile.member_id}
+                    </span>
+                  </div>
+                )}
+                {data?.profile.prestasi && (
+                  <div className="mb-2 flex items-center text-base">
+                    <span className="mr-2 text-blue-700 font-semibold flex items-center">
+                      <CheckCircleIcon className="w-4 h-4 mr-1" /> Prestasi:
+                    </span>
+                    <span className="text-gray-900 font-medium">
+                      {data.profile.prestasi}
+                    </span>
+                  </div>
+                )}
+                {data?.profile.alamat && (
+                  <div className="mb-2 flex items-center text-base">
+                    <span className="mr-2 text-blue-700 font-semibold flex items-center">
+                      <MapPinIcon className="w-4 h-4 mr-1" /> Alamat:
+                    </span>
+                    <span className="text-gray-900 font-medium">
+                      {data.profile.alamat}
+                    </span>
+                  </div>
                 )}
 
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">

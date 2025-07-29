@@ -26,6 +26,11 @@ const categories = [
   { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
   { value: "novel-berseri", label: "📚 Novel Berseri" },
   { value: "lainnya", label: "✨ Lainnya" },
+  { value: "info-berita", label: "📰 Info/Berita" },
+  { value: "cermin", label: "🔎 Cermin (Cerita Mini)" },
+  { value: "resensi-buku", label: "📚 Resensi Buku" },
+  { value: "dongeng", label: "🧚 Dongeng" },
+  { value: "cerbung", label: "📝 Cerbung" },
 ];
 
 interface WriteArticleFormProps {

@@ -20,6 +20,7 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
   ArrowLeftIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { supabase, articleHelpers, ArticleSummary } from "@/lib/supabase";
 import toast from "react-hot-toast";
@@ -78,6 +79,51 @@ const categoryConfig = {
     bgColor: "bg-gray-50",
     textColor: "text-gray-600",
     emoji: "✨",
+  },
+  "info-berita": {
+    name: "Info/Berita",
+    description: "Informasi dan berita terkini seputar literasi dan budaya",
+    icon: NewspaperIcon,
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-50",
+    textColor: "text-cyan-600",
+    emoji: "📰",
+  },
+  cermin: {
+    name: "Cermin (Cerita Mini)",
+    description: "Cerita mini yang singkat, padat, dan berkesan",
+    icon: BookOpenIcon,
+    color: "from-pink-500 to-pink-600",
+    bgColor: "bg-pink-50",
+    textColor: "text-pink-600",
+    emoji: "🔎",
+  },
+  "resensi-buku": {
+    name: "Resensi Buku",
+    description: "Ulasan dan penilaian terhadap buku bacaan",
+    icon: DocumentTextIcon,
+    color: "from-amber-500 to-amber-600",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-600",
+    emoji: "📚",
+  },
+  dongeng: {
+    name: "Dongeng",
+    description: "Kisah dongeng penuh pesan moral dan imajinasi",
+    icon: GlobeAltIcon,
+    color: "from-lime-500 to-lime-600",
+    bgColor: "bg-lime-50",
+    textColor: "text-lime-600",
+    emoji: "🧚",
+  },
+  cerbung: {
+    name: "Cerbung (Cerita Bersambung)",
+    description: "Cerita bersambung dengan alur yang memikat",
+    icon: HeartIcon,
+    color: "from-indigo-500 to-indigo-600",
+    bgColor: "bg-indigo-50",
+    textColor: "text-indigo-600",
+    emoji: "📝",
   },
 };
 
@@ -696,7 +742,7 @@ export default function CategoryPage() {
               {data.categoryStats.topAuthors.length > 0 && (
                 <div className="bg-white/95 rounded-xl shadow-lg p-6 border border-blue-100">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    👑 Penulis Teratas
+                    👑 Member Teratas
                   </h3>
                   <div className="space-y-3">
                     {data.categoryStats.topAuthors.map((author, index) => (

@@ -455,6 +455,7 @@ export const likeHelpers = {
     profiles: {
       full_name: string;
       avatar_url: string | null;
+      role: string | null;
     };
   }>> {
     const { data, error } = await supabase
@@ -465,7 +466,8 @@ export const likeHelpers = {
         created_at,
         profiles:user_id (
           full_name,
-          avatar_url
+          avatar_url,
+          role
         )
       `)
       .eq('article_id', articleId)
@@ -1570,79 +1572,67 @@ export const platformStatsHelpers = {
     }
   },
 
-  // Manual calculation as fallback - IMPROVED VERSION
-  async calculateStatisticsManually(): Promise<PlatformStatistics> {
+  // NEW METHOD: Get platform statistics for HOMEPAGE (all registered users)
+  async getHomepageStatistics(): Promise<PlatformStatistics> {
     try {
-      console.log('🔄 Calculating statistics manually...');
+      console.log('🔄 Fetching homepage statistics...');
 
       const [
-        usersResult,
+        totalUsersResult,
         articlesResult,
         portfolioResult,
         viewsResult,
         likesResult
       ] = await Promise.all([
-        // Total users
+        // ✅ HOMEPAGE: Get ALL registered users from profiles
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        
         // Total published articles
         supabase.from('articles').select('*', { count: 'exact', head: true })
           .eq('published', true),
-        
         // Total published portfolio works
         supabase.from('portfolio_works').select('*', { count: 'exact', head: true })
           .eq('status', 'published'),
-        
-        // Total views from published articles - IMPROVED QUERY
+        // Total views from published articles
         supabase.from('articles').select('views')
           .eq('published', true)
-          .not('views', 'is', null), // Exclude NULL values
-        
+          .not('views', 'is', null),
         // Total likes
         supabase.from('article_likes').select('*', { count: 'exact', head: true })
       ]);
 
-      const totalUsers = usersResult.count || 0;
+      const totalUsers = totalUsersResult.count || 0; // ALL registered users
       const totalArticles = articlesResult.count || 0;
       const totalPortfolioWorks = portfolioResult.count || 0;
       const totalContent = totalArticles + totalPortfolioWorks;
       
-      // IMPROVED VIEWS CALCULATION
       const totalViews = viewsResult.data?.reduce((sum, article) => {
         const views = article.views || 0;
-        console.log(`Article views: ${views}`); // Debug log
         return sum + views;
       }, 0) || 0;
       
       const totalLikes = likesResult.count || 0;
 
-      console.log('📊 Manual calculation details:');
-      console.log('- Total Users:', totalUsers);
-      console.log('- Total Articles:', totalArticles);
-      console.log('- Total Portfolio Works:', totalPortfolioWorks);
-      console.log('- Articles with views:', viewsResult.data?.length || 0);
-      console.log('- Total Views (calculated):', totalViews);
+      console.log('📊 Homepage statistics:');
+      console.log('- Total Users (all registered):', totalUsers);
+      console.log('- Total Content:', totalContent);
+      console.log('- Total Views:', totalViews);
       console.log('- Total Likes:', totalLikes);
 
       const result = {
-        total_users: totalUsers,
+        total_users: totalUsers, // ✅ ALL registered users for homepage
         total_content: totalContent,
         total_views: totalViews,
         total_likes: totalLikes,
         total_articles: totalArticles,
         total_portfolio_works: totalPortfolioWorks,
-        last_updated: new Date().toISOString()
+        last_updated: new Date().toISOString(),
       };
 
-      console.log('✅ Manual calculation completed:', result);
-      
-      // Try to update the platform_statistics table with calculated values
-      await this.updateStatisticsTable(result);
-      
+      console.log('✅ Homepage statistics completed:', result);
       return result;
 
     } catch (error) {
-      console.error('❌ Error in manual calculation:', error);
+      console.error('❌ Error in getHomepageStatistics:', error);
       return {
         total_users: 0,
         total_content: 0,
@@ -1653,6 +1643,140 @@ export const platformStatsHelpers = {
         last_updated: new Date().toISOString()
       };
     }
+  },
+
+  // NEW METHOD: Get platform statistics for AUTHORS PAGE (active authors only)
+  async getAuthorsPageStatistics(): Promise<{
+    totalActiveAuthors: number;
+    totalContent: number;
+    totalViews: number;
+    totalLikes: number;
+  }> {
+    try {
+      console.log('🔄 Fetching authors page statistics...');
+
+      const [
+        activeAuthorsResult,
+        articlesResult,
+        portfolioResult,
+        viewsResult,
+        likesResult
+      ] = await Promise.all([
+        // ✅ AUTHORS PAGE: Get active authors (users with published articles)
+        supabase.from('articles').select('author_id').eq('published', true),
+        // Total published articles
+        supabase.from('articles').select('*', { count: 'exact', head: true })
+          .eq('published', true),
+        // Total published portfolio works
+        supabase.from('portfolio_works').select('*', { count: 'exact', head: true })
+          .eq('status', 'published'),
+        // Total views from published articles
+        supabase.from('articles').select('views')
+          .eq('published', true)
+          .not('views', 'is', null),
+        // Total likes
+        supabase.from('article_likes').select('*', { count: 'exact', head: true })
+      ]);
+
+      // Calculate unique active authors
+      const uniqueAuthorIds = [...new Set(activeAuthorsResult.data?.map(a => a.author_id) || [])];
+      const totalActiveAuthors = uniqueAuthorIds.length;
+
+      const totalArticles = articlesResult.count || 0;
+      const totalPortfolioWorks = portfolioResult.count || 0;
+      const totalContent = totalArticles + totalPortfolioWorks;
+      
+      const totalViews = viewsResult.data?.reduce((sum, article) => {
+        const views = article.views || 0;
+        return sum + views;
+      }, 0) || 0;
+      
+      const totalLikes = likesResult.count || 0;
+
+      console.log('📊 Authors page statistics:');
+      console.log('- Active Authors:', totalActiveAuthors);
+      console.log('- Total Content:', totalContent);
+      console.log('- Total Views:', totalViews);
+      console.log('- Total Likes:', totalLikes);
+
+      const result = {
+        totalActiveAuthors,
+        totalContent,
+        totalViews,
+        totalLikes,
+      };
+
+      console.log('✅ Authors page statistics completed:', result);
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error in getAuthorsPageStatistics:', error);
+      return {
+        totalActiveAuthors: 0,
+        totalContent: 0,
+        totalViews: 0,
+        totalLikes: 0,
+      };
+    }
+  },
+
+  // NEW METHOD: Get total users count (all registered users)
+  async getTotalUsersCount(): Promise<number> {
+    try {
+      console.log('🔄 Calculating total users count...');
+      
+      // Get all users from profiles table
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        console.error('❌ Error fetching total users:', error);
+        return 0;
+      }
+
+      const totalUsers = count || 0;
+      console.log('✅ Total users count:', totalUsers);
+      return totalUsers;
+    } catch (error) {
+      console.error('❌ Error in getTotalUsersCount:', error);
+      return 0;
+    }
+  },
+
+  // NEW METHOD: Get active authors count
+  async getActiveAuthorsCount(): Promise<number> {
+    try {
+      console.log('🔄 Calculating active authors count...');
+      
+      // Get unique author IDs from published articles
+      const { data: articles, error } = await supabase
+        .from('articles')
+        .select('author_id')
+        .eq('published', true);
+
+      if (error) {
+        console.error('❌ Error fetching articles for active authors:', error);
+        return 0;
+      }
+
+      // Get unique author IDs
+      const uniqueAuthorIds = [...new Set(articles?.map(a => a.author_id) || [])];
+      const activeAuthorsCount = uniqueAuthorIds.length;
+
+      console.log('✅ Active authors count:', activeAuthorsCount);
+      return activeAuthorsCount;
+    } catch (error) {
+      console.error('❌ Error in getActiveAuthorsCount:', error);
+      return 0;
+    }
+  },
+
+  // Keep existing calculateStatisticsManually for backward compatibility
+  // but make it use ALL registered users (for homepage)
+  async calculateStatisticsManually(): Promise<PlatformStatistics> {
+    console.log('🔄 Using homepage statistics for manual calculation...');
+    return await this.getHomepageStatistics();
   },
 
   // Update platform_statistics table with calculated values

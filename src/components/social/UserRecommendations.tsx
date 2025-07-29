@@ -39,7 +39,7 @@ export default function UserRecommendations() {
         );
         const fallbackQuery = await supabase
           .from("profiles")
-          .select("id, full_name, avatar_url")
+          .select("id, full_name, avatar_url, role")
           .neq("id", user.id)
           .order("created_at", { ascending: false })
           .limit(3);
@@ -48,20 +48,15 @@ export default function UserRecommendations() {
           console.error("Error fetching recommendations:", fallbackQuery.error);
           setRecommendations([]);
         } else {
-          // Add default role for users
-          const usersWithDefaultRole =
-            fallbackQuery.data?.map((user) => ({
-              ...user,
-              role: "Penulis",
-            })) || [];
-          setRecommendations(usersWithDefaultRole);
+          // Use users with their original roles
+          setRecommendations(fallbackQuery.data || []);
         }
       } else {
         // Add default role for users that don't have role set
         const usersWithDefaultRole =
           users?.map((user) => ({
             ...user,
-            role: user.role || "Penulis",
+            role: user.role || "Member",
           })) || [];
         setRecommendations(usersWithDefaultRole);
       }
@@ -102,7 +97,7 @@ export default function UserRecommendations() {
     <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-sm p-6">
       <div className="flex items-center space-x-2 mb-4">
         <SparklesIcon className="w-5 h-5 text-indigo-500" />
-        <h3 className="text-lg font-bold text-gray-900">Penulis Rekomendasi</h3>
+        <h3 className="text-lg font-bold text-gray-900">Member Rekomendasi</h3>
       </div>
 
       <div className="space-y-4">
@@ -135,7 +130,7 @@ export default function UserRecommendations() {
                 {user.full_name}
               </Link>
               <div className="flex items-center space-x-2 text-xs text-gray-500">
-                <span>{user.role || "Penulis"}</span>
+                <span>{user.role || "Member"}</span>
               </div>
             </div>
           </div>
@@ -146,7 +141,7 @@ export default function UserRecommendations() {
         href="/penulis"
         className="block text-center mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
       >
-        Lihat semua penulis →
+        Lihat semua member →
       </Link>
     </div>
   );

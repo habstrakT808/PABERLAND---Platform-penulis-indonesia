@@ -135,9 +135,11 @@ export default function LikesModal({
                       >
                         {like.profiles?.full_name || "User"}
                       </Link>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(like.created_at)}
-                      </p>
+                      <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span>{like.profiles?.role || "Member"}</span>
+                        <span>•</span>
+                        <span>{formatDate(like.created_at)}</span>
+                      </div>
                     </div>
                     <HeartIcon className="w-5 h-5 text-red-500" />
                   </div>

@@ -1,5 +1,5 @@
 // src/app/penulis/page.tsx
-// Halaman Direktori Penulis dengan statistik komunitas yang diperbaiki:
+// Halaman Direktori Member dengan statistik komunitas yang diperbaiki:
 // - Total Artikel diubah menjadi Total Konten (keseluruhan karya dari semua genre)
 // - Total Views diperbaiki dengan menghitung langsung dari field views di tabel articles
 // - Total Likes diperbaiki dengan menghitung langsung dari tabel article_likes untuk akurasi
@@ -84,7 +84,7 @@ export default function AuthorsPage() {
       await Promise.all([fetchAuthors(), fetchPlatformStats()]);
     } catch (error) {
       console.error("Error fetching authors data:", error);
-      toast.error("Gagal memuat data penulis");
+      toast.error("Gagal memuat data member");
     } finally {
       setLoading(false);
     }
@@ -233,8 +233,9 @@ export default function AuthorsPage() {
 
   const fetchPlatformStats = async () => {
     try {
-      // Get platform statistics using the improved helper
-      const platformStats = await platformStatsHelpers.getPlatformStatistics();
+      // ✅ FIXED: Use authors-specific statistics
+      const authorsStats =
+        await platformStatsHelpers.getAuthorsPageStatistics();
 
       // Get top categories
       const topCategories = await platformStatsHelpers.getTopCategories();
@@ -244,14 +245,15 @@ export default function AuthorsPage() {
         totalCount: prev?.totalCount || 0,
         totalPages: prev?.totalPages || 0,
         platformStats: {
-          totalAuthors: platformStats.total_users,
-          totalArticles: platformStats.total_content, // Total konten (artikel + portfolio works)
-          totalViews: platformStats.total_views,
-          totalLikes: platformStats.total_likes,
+          totalAuthors: authorsStats.totalActiveAuthors, // ✅ Active authors only (7)
+          totalArticles: authorsStats.totalContent, // Total konten (17)
+          totalViews: authorsStats.totalViews, // Total views (7105)
+          totalLikes: authorsStats.totalLikes, // Total likes (16)
           topCategories,
         },
       }));
     } catch (error) {
+      console.error("Error in fetchPlatformStats:", error);
       toast.error("Gagal memuat statistik komunitas");
 
       // Set default values on error
@@ -317,10 +319,10 @@ export default function AuthorsPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Direktori Penulis
+            Direktori Member
           </h1>
           <p className="text-lg text-gray-800 max-w-2xl mx-auto">
-            Temukan dan kenali para penulis berbakat di komunitas PaberLand
+            Temukan dan kenali para member berbakat di komunitas PaberLand
           </p>
         </div>
 
@@ -338,7 +340,7 @@ export default function AuthorsPage() {
                 <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                   {formatNumber(data.platformStats.totalAuthors)}
                 </div>
-                <div className="text-sm text-gray-700">Total Penulis</div>
+                <div className="text-sm text-gray-700">Total Member</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
@@ -402,7 +404,7 @@ export default function AuthorsPage() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari penulis..."
+                      placeholder="Cari member..."
                       className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -436,12 +438,12 @@ export default function AuthorsPage() {
                     {searchQuery.trim() ? (
                       <>
                         Menampilkan {data.authors.length} dari {data.totalCount}{" "}
-                        penulis untuk "{searchQuery}"
+                        member untuk "{searchQuery}"
                       </>
                     ) : (
                       <>
                         Menampilkan {data.authors.length} dari {data.totalCount}{" "}
-                        penulis
+                        member
                       </>
                     )}
                   </p>
@@ -473,13 +475,13 @@ export default function AuthorsPage() {
                 <div className="text-6xl mb-4">👤</div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {searchQuery.trim()
-                    ? "Penulis Tidak Ditemukan"
-                    : "Belum Ada Penulis"}
+                    ? "Member Tidak Ditemukan"
+                    : "Belum Ada Member"}
                 </h3>
                 <p className="text-gray-700 mb-6">
                   {searchQuery.trim()
-                    ? `Tidak ditemukan penulis yang cocok dengan "${searchQuery}".`
-                    : "Belum ada penulis yang terdaftar di platform ini."}
+                    ? `Tidak ditemukan member yang cocok dengan "${searchQuery}".`
+                    : "Belum ada member yang terdaftar di platform ini."}
                 </p>
                 {searchQuery.trim() ? (
                   <button
@@ -489,14 +491,14 @@ export default function AuthorsPage() {
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
-                    Lihat Semua Penulis
+                    Lihat Semua Member
                   </button>
                 ) : (
                   <Link
                     href="/auth/register"
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
                   >
-                    Bergabung Sebagai Penulis
+                    Bergabung Sebagai Member
                   </Link>
                 )}
               </div>
@@ -542,7 +544,7 @@ export default function AuthorsPage() {
                           </div>
                           <div className="flex items-center">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {author.role || "Penulis"}
+                              {author.role || "Member"}
                             </span>
                           </div>
                         </div>
@@ -681,7 +683,7 @@ export default function AuthorsPage() {
                   Bergabung dengan Komunitas
                 </h3>
                 <p className="text-gray-800 mb-4 text-sm leading-relaxed">
-                  Jadilah bagian dari komunitas penulis Indonesia dan bagikan
+                  Jadilah bagian dari komunitas member Indonesia dan bagikan
                   karya terbaikmu.
                 </p>
                 <Link
@@ -699,7 +701,7 @@ export default function AuthorsPage() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Penulis Aktif</span>
+                    <span className="text-gray-700">Member Aktif</span>
                     <span className="font-bold text-blue-600">
                       {data?.totalCount || 0}
                     </span>

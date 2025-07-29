@@ -82,7 +82,7 @@ export default function AuthorProfile({
 
           <div className="flex items-center space-x-2 mb-3">
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {author.role || "Penulis"}
+              {author.role || "Member"}
             </span>
             <span className="text-sm text-gray-600">
               • Bergabung {new Date().getFullYear()}

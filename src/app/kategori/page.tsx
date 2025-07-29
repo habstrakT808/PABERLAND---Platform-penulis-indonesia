@@ -10,6 +10,7 @@ import {
   HeartIcon,
   GlobeAltIcon,
   EllipsisHorizontalIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
@@ -69,6 +70,60 @@ const categoryConfig = {
     color: "from-red-500 to-red-600",
     bgColor: "bg-red-50 dark:bg-red-900/20",
     textColor: "text-red-600 dark:text-red-400",
+    emoji: "📚",
+  },
+  "info-berita": {
+    name: "Info/Berita",
+    description: "Informasi dan berita terkini seputar literasi dan budaya",
+    icon: NewspaperIcon,
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
+    textColor: "text-cyan-600 dark:text-cyan-400",
+    emoji: "📰",
+  },
+  cermin: {
+    name: "Cermin (Cerita Mini)",
+    description: "Cerita mini yang singkat, padat, dan berkesan",
+    icon: BookOpenIcon,
+    color: "from-pink-500 to-pink-600",
+    bgColor: "bg-pink-50 dark:bg-pink-900/20",
+    textColor: "text-pink-600 dark:text-pink-400",
+    emoji: "🔎",
+  },
+  "resensi-buku": {
+    name: "Resensi Buku",
+    description: "Ulasan dan kritik buku untuk referensi pembaca",
+    icon: DocumentTextIcon,
+    color: "from-indigo-500 to-indigo-600",
+    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
+    textColor: "text-indigo-600 dark:text-indigo-400",
+    emoji: "📝",
+  },
+  cerbung: {
+    name: "Cerbung",
+    description: "Cerita bersambung yang seru dan menegangkan",
+    icon: DocumentTextIcon,
+    color: "from-orange-500 to-orange-600",
+    bgColor: "bg-orange-50 dark:bg-orange-900/20",
+    textColor: "text-orange-600 dark:text-orange-400",
+    emoji: "📖",
+  },
+  dongeng: {
+    name: "Dongeng",
+    description: "Cerita fantasi yang menghibur dan mendidik",
+    icon: SparklesIcon,
+    color: "from-teal-500 to-teal-600",
+    bgColor: "bg-teal-50 dark:bg-teal-900/20",
+    textColor: "text-teal-600 dark:text-teal-400",
+    emoji: "🧚",
+  },
+  novel: {
+    name: "Novel",
+    description: "Karya sastra panjang dengan plot yang kompleks",
+    icon: BookOpenIcon,
+    color: "from-amber-500 to-amber-600",
+    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    textColor: "text-amber-600 dark:text-amber-400",
     emoji: "📚",
   },
   lainnya: {
@@ -190,7 +245,7 @@ export default function CategoriesPage() {
           </h1>
           <p className="text-lg text-gray-800 max-w-2xl mx-auto">
             Jelajahi berbagai kategori karya sastra dan tulisan dari komunitas
-            penulis PaberLand
+            member PaberLand
           </p>
         </div>
 

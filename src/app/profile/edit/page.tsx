@@ -28,6 +28,9 @@ interface ProfileFormData {
   phone: string;
   avatar_url: string;
   role: string;
+  member_id?: string;
+  prestasi?: string;
+  alamat?: string;
 }
 
 interface PasswordFormData {
@@ -46,6 +49,9 @@ export default function EditProfilePage() {
     phone: "",
     avatar_url: "",
     role: "Penulis",
+    member_id: "",
+    prestasi: "",
+    alamat: "",
   });
 
   const roles = [
@@ -108,6 +114,9 @@ export default function EditProfilePage() {
         phone: data.phone || "",
         avatar_url: data.avatar_url || "",
         role: data.role || "Penulis",
+        member_id: data.member_id || "",
+        prestasi: data.prestasi || "",
+        alamat: data.alamat || "",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -222,6 +231,9 @@ export default function EditProfilePage() {
           phone: profileData.phone.trim() || null,
           avatar_url: profileData.avatar_url.trim() || null,
           role: profileData.role,
+          member_id: profileData.member_id || null,
+          prestasi: profileData.prestasi || null,
+          alamat: profileData.alamat || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user!.id);
@@ -588,6 +600,52 @@ export default function EditProfilePage() {
                   <p className="mt-1 text-xs text-gray-500">
                     {profileData.bio.length}/500 karakter
                   </p>
+                </div>
+
+                {/* Member ID */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Member ID
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.member_id}
+                    onChange={(e) =>
+                      handleInputChange("member_id", e.target.value)
+                    }
+                    placeholder="Isi Member ID jika ada"
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-blue-200 bg-white text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+                {/* Prestasi */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Prestasi
+                  </label>
+                  <textarea
+                    value={profileData.prestasi}
+                    onChange={(e) =>
+                      handleInputChange("prestasi", e.target.value)
+                    }
+                    placeholder="Tulis prestasi, pisahkan dengan koma jika lebih dari satu"
+                    rows={2}
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-blue-200 bg-white text-gray-900 placeholder-gray-500 resize-none"
+                  />
+                </div>
+                {/* Alamat */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alamat
+                  </label>
+                  <textarea
+                    value={profileData.alamat}
+                    onChange={(e) =>
+                      handleInputChange("alamat", e.target.value)
+                    }
+                    placeholder="Alamat lengkap"
+                    rows={2}
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-blue-200 bg-white text-gray-900 placeholder-gray-500 resize-none"
+                  />
                 </div>
 
                 {/* Role */}

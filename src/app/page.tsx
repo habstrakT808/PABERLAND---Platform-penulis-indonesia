@@ -107,14 +107,14 @@ export default function HomePage() {
 
   const fetchStats = async () => {
     try {
-      // Get platform statistics using the helper
-      const platformStats = await platformStatsHelpers.getPlatformStatistics();
+      // ✅ FIXED: Use homepage-specific statistics
+      const platformStats = await platformStatsHelpers.getHomepageStatistics();
 
       setStats({
-        totalUsers: platformStats.total_users,
-        totalContent: platformStats.total_content, // Total konten (artikel + portfolio works)
-        totalViews: platformStats.total_views,
-        totalLikes: platformStats.total_likes,
+        totalUsers: platformStats.total_users, // ✅ All registered users (10)
+        totalContent: platformStats.total_content, // Total konten (17)
+        totalViews: platformStats.total_views, // Total views (7105)
+        totalLikes: platformStats.total_likes, // Total likes (16)
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -164,7 +164,8 @@ export default function HomePage() {
           created_at,
           profiles:author_id (
             full_name,
-            avatar_url
+            avatar_url,
+            role
           )
         `
         )
@@ -209,7 +210,8 @@ export default function HomePage() {
           created_at,
           profiles:author_id (
             full_name,
-            avatar_url
+            avatar_url,
+            role
           )
         `
         )
@@ -341,9 +343,9 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-800">
-              Platform komunitas penulis Indonesia untuk berbagi karya sastra,
-              cerpen, puisi, dan artikel. Mari bersama membangun literasi
-              Indonesia.
+              Platform komunitas penulis bacaan anak Indonesia untuk berbagi
+              karya sastra, cerpen, puisi, dan artikel. Mari bersama membangun
+              literasi Indonesia.
             </p>
           </div>
 
@@ -481,7 +483,7 @@ export default function HomePage() {
                 🌟 Konten Pilihan
               </h2>
               <p className="text-lg text-gray-800 max-w-2xl mx-auto">
-                Karya-karya terbaik dari komunitas penulis PaberLand
+                Karya-karya terbaik dari komunitas member PaberLand
               </p>
             </div>
 
@@ -560,7 +562,9 @@ export default function HomePage() {
                             <div className="font-semibold text-gray-900">
                               {article.profiles?.full_name || "Anonymous"}
                             </div>
-                            <div className="text-sm text-gray-700">Penulis</div>
+                            <div className="text-sm text-gray-700">
+                              {article.profiles?.role || "Member"}
+                            </div>
                           </div>
                         </div>
 
@@ -602,7 +606,7 @@ export default function HomePage() {
                     📚 Konten Terbaru
                   </h2>
                   <p className="text-lg text-gray-800">
-                    Karya-karya segar dari para penulis
+                    Karya-karya segar dari para member
                   </p>
                 </div>
 
@@ -670,9 +674,14 @@ export default function HomePage() {
                                 {article.profiles?.full_name?.charAt(0) || "U"}
                               </div>
                             )}
-                            <span className="font-medium text-gray-900">
-                              {article.profiles?.full_name || "Anonymous"}
-                            </span>
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {article.profiles?.full_name || "Anonymous"}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {article.profiles?.role || "Member"}
+                              </div>
+                            </div>
                           </div>
 
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -749,7 +758,7 @@ export default function HomePage() {
                     Mulai Menulis Hari Ini!
                   </h3>
                   <p className="text-gray-800 mb-4 leading-relaxed text-sm">
-                    Bagikan karya terbaikmu dengan komunitas penulis Indonesia
+                    Bagikan karya terbaikmu dengan komunitas Paberland Indonesia
                     dan raih apresiasi dari ribuan pembaca.
                   </p>
                   <Link

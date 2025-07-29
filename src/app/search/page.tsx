@@ -175,7 +175,7 @@ export default function SearchPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari konten, penulis..."
+                  placeholder="Cari konten, member..."
                   className="block w-full pl-10 pr-12 py-3 border border-blue-200 rounded-lg leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <button
@@ -212,7 +212,7 @@ export default function SearchPage() {
                   {[
                     { value: "all", label: "Semua" },
                     { value: "articles", label: "Artikel" },
-                    { value: "authors", label: "Penulis" },
+                    { value: "authors", label: "Member" },
                   ].map((type) => (
                     <button
                       key={type.value}
@@ -287,7 +287,7 @@ export default function SearchPage() {
                   <span>📚 {results.totalArticles} artikel</span>
                 )}
                 {results.totalAuthors > 0 && (
-                  <span>👤 {results.totalAuthors} penulis</span>
+                  <span>👤 {results.totalAuthors} member</span>
                 )}
                 {results.totalArticles === 0 && results.totalAuthors === 0 && (
                   <span className="text-gray-500">
@@ -302,7 +302,7 @@ export default function SearchPage() {
               <div className="bg-white/95 rounded-xl shadow-sm p-6 border border-blue-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                   <UserIcon className="w-5 h-5 mr-2" />
-                  Penulis ({results.totalAuthors})
+                  Member ({results.totalAuthors})
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2">
                   {results.authors.slice(0, 6).map((author) => (
@@ -334,7 +334,7 @@ export default function SearchPage() {
                 </div>
                 {results.totalAuthors > 6 && (
                   <div className="text-right mt-2 text-xs text-gray-500">
-                    Scroll untuk melihat lebih banyak penulis
+                    Scroll untuk melihat lebih banyak member
                   </div>
                 )}
               </div>
@@ -509,17 +509,15 @@ export default function SearchPage() {
             )}
           </div>
         ) : (
-          searchQuery && (
-            <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Mulai Pencarian Anda
-              </h3>
-              <p className="text-gray-700">
-                Masukkan kata kunci di atas untuk mencari konten dan penulis.
-              </p>
-            </div>
-          )
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Mulai Pencarian
+            </h3>
+            <p className="text-gray-700 mb-6">
+              Masukkan kata kunci di atas untuk mencari konten dan member.
+            </p>
+          </div>
         )}
       </div>
     </div>

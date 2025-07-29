@@ -68,6 +68,31 @@ export default function ReportModal({
 
     setSubmitting(true);
     try {
+      // Debug: Log user info
+      console.log("User ID:", user.id);
+      console.log("Content Type:", contentType);
+      console.log("Content ID:", contentId);
+      console.log("Reason:", reason);
+
+      // Check if user exists in profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Profile check error:", profileError);
+        toast.error("Error: User profile not found");
+        return;
+      }
+
+      if (!profileData) {
+        toast.error("Error: User profile not found in database");
+        return;
+      }
+
+      // Use direct insert for now (RLS is disabled temporarily)
       const { error } = await supabase.from("content_reports").insert([
         {
           reporter_id: user.id,
@@ -79,7 +104,21 @@ export default function ReportModal({
       ]);
 
       if (error) {
-        throw error;
+        console.error("Database error:", error);
+
+        // Handle specific foreign key constraint error
+        if (error.message?.includes("foreign key constraint")) {
+          toast.error(
+            "Error: User profile not found. Silakan logout dan login kembali."
+          );
+        } else if (error.message?.includes("duplicate")) {
+          toast.error("Anda sudah melaporkan konten ini sebelumnya");
+        } else if (error.message?.includes("permission")) {
+          toast.error("Anda tidak memiliki izin untuk melaporkan konten ini");
+        } else {
+          toast.error("Gagal mengirim laporan. Silakan coba lagi.");
+        }
+        return;
       }
 
       toast.success(
@@ -88,9 +127,21 @@ export default function ReportModal({
       onClose();
       setReason("");
       setDescription("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting report:", error);
-      toast.error("Gagal mengirim laporan. Silakan coba lagi.");
+
+      // Handle specific error cases
+      if (error.message?.includes("foreign key constraint")) {
+        toast.error(
+          "Error: User profile not found. Silakan logout dan login kembali."
+        );
+      } else if (error.message?.includes("duplicate")) {
+        toast.error("Anda sudah melaporkan konten ini sebelumnya");
+      } else if (error.message?.includes("permission")) {
+        toast.error("Anda tidak memiliki izin untuk melaporkan konten ini");
+      } else {
+        toast.error("Gagal mengirim laporan. Silakan coba lagi.");
+      }
     } finally {
       setSubmitting(false);
     }

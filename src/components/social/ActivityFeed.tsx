@@ -62,7 +62,8 @@ export default function ActivityFeed() {
           profiles:author_id (
             id,
             full_name,
-            avatar_url
+            avatar_url,
+            role
           )
         `
         )
@@ -200,6 +201,8 @@ export default function ActivityFeed() {
                 </span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <span>{activity.profiles?.role || "Member"}</span>
+                <span>•</span>
                 <ClockIcon className="w-4 h-4" />
                 <span>
                   {articleHelpers.formatRelativeTime(activity.created_at)}
