@@ -31,7 +31,11 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/logo_header.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo_header.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <meta name="msapplication-TileImage" content="/logo_header.png" />
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white dark:bg-gray-900`}
