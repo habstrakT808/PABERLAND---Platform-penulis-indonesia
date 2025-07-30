@@ -449,24 +449,71 @@ export default function PublicProfilePage() {
                     </span>
                   </div>
                 )}
+                {/* Prestasi - Improved formatting */}
                 {data?.profile.prestasi && (
-                  <div className="mb-2 flex items-center text-base">
-                    <span className="mr-2 text-blue-700 font-semibold flex items-center">
-                      <CheckCircleIcon className="w-4 h-4 mr-1" /> Prestasi:
-                    </span>
-                    <span className="text-gray-900 font-medium">
-                      {data.profile.prestasi}
-                    </span>
+                  <div className="mb-4">
+                    <div className="flex items-center mb-2">
+                      <CheckCircleIcon className="w-5 h-5 text-blue-600 mr-2" />
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Prestasi
+                      </h3>
+                    </div>
+                    <div className="pl-7">
+                      {data.profile.prestasi
+                        .split("\n")
+                        .map((achievement, index) => {
+                          const trimmed = achievement.trim();
+                          if (!trimmed) return null;
+
+                          // Check if it's a numbered achievement
+                          const numberedMatch =
+                            trimmed.match(/^(\d+)\.\s*(.+)$/);
+                          if (numberedMatch) {
+                            return (
+                              <div
+                                key={index}
+                                className="mb-2 text-gray-800 flex items-start"
+                              >
+                                <span className="text-yellow-500 mr-2 mt-0.5">
+                                  🏆
+                                </span>
+                                <div>
+                                  <span className="font-semibold text-blue-600">
+                                    {numberedMatch[1]}.
+                                  </span>{" "}
+                                  {numberedMatch[2]}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={index}
+                              className="mb-2 text-gray-800 flex items-start"
+                            >
+                              <span className="text-yellow-500 mr-2 mt-0.5">
+                                🏆
+                              </span>
+                              <div>{trimmed}</div>
+                            </div>
+                          );
+                        })}
+                    </div>
                   </div>
                 )}
+                {/* Alamat - Improved formatting */}
                 {data?.profile.alamat && (
-                  <div className="mb-2 flex items-center text-base">
-                    <span className="mr-2 text-blue-700 font-semibold flex items-center">
-                      <MapPinIcon className="w-4 h-4 mr-1" /> Alamat:
-                    </span>
-                    <span className="text-gray-900 font-medium">
+                  <div className="mb-4">
+                    <div className="flex items-center mb-2">
+                      <MapPinIcon className="w-5 h-5 text-blue-600 mr-2" />
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Alamat
+                      </h3>
+                    </div>
+                    <div className="pl-7 text-gray-800">
                       {data.profile.alamat}
-                    </span>
+                    </div>
                   </div>
                 )}
 
@@ -500,39 +547,46 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-3">
-              {isOwnProfile && (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* First row: Edit, Karya, Bagikan */}
+              <div className="flex items-center space-x-3">
+                {isOwnProfile && (
+                  <Link
+                    href="/profile/edit"
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                    <span>Edit</span>
+                  </Link>
+                )}
                 <Link
-                  href="/profile/edit"
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  href={`/penulis/${generateNameSlug(
+                    data.profile.full_name
+                  )}/portfolio`}
+                  className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <PencilIcon className="w-4 h-4" />
-                  <span>Edit Profil</span>
+                  <BookOpenIcon className="w-4 h-4" />
+                  <span>Karya</span>
                 </Link>
-              )}
-              <Link
-                href={`/penulis/${generateNameSlug(
-                  data.profile.full_name
-                )}/portfolio`}
-                className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                <BookOpenIcon className="w-4 h-4" />
-                <span>Data Karya</span>
-              </Link>
-              <button
-                onClick={handleShare}
-                className="flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                <ShareIcon className="w-4 h-4" />
-                <span>Bagikan</span>
-              </button>
-              <Link
-                href="/penulis"
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeftIcon className="w-4 h-4" />
-                <span>Kembali</span>
-              </Link>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  <ShareIcon className="w-4 h-4" />
+                  <span>Bagikan</span>
+                </button>
+              </div>
+
+              {/* Second row: Kembali (right-aligned on mobile, inline on desktop) */}
+              <div className="flex justify-end sm:justify-start">
+                <Link
+                  href="/penulis"
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <ArrowLeftIcon className="w-4 h-4" />
+                  <span>Kembali</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

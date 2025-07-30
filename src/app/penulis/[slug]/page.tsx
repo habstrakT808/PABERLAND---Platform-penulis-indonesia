@@ -551,18 +551,32 @@ export default function AuthorProfilePage() {
                             trimmed.match(/^(\d+)\.\s*(.+)$/);
                           if (numberedMatch) {
                             return (
-                              <div key={index} className="mb-2 text-gray-800">
-                                <span className="font-semibold text-blue-600">
-                                  {numberedMatch[1]}.
-                                </span>{" "}
-                                {numberedMatch[2]}
+                              <div
+                                key={index}
+                                className="mb-2 text-gray-800 flex items-start"
+                              >
+                                <span className="text-yellow-500 mr-2 mt-0.5">
+                                  🏆
+                                </span>
+                                <div>
+                                  <span className="font-semibold text-blue-600">
+                                    {numberedMatch[1]}.
+                                  </span>{" "}
+                                  {numberedMatch[2]}
+                                </div>
                               </div>
                             );
                           }
 
                           return (
-                            <div key={index} className="mb-2 text-gray-800">
-                              {trimmed}
+                            <div
+                              key={index}
+                              className="mb-2 text-gray-800 flex items-start"
+                            >
+                              <span className="text-yellow-500 mr-2 mt-0.5">
+                                🏆
+                              </span>
+                              <div>{trimmed}</div>
                             </div>
                           );
                         })}
