@@ -77,6 +77,7 @@ export default function PublicProfilePage() {
   const [activeTab, setActiveTab] = useState<"articles" | "liked">("articles");
   const [currentPage, setCurrentPage] = useState(1);
   const [articlesLoading, setArticlesLoading] = useState(false);
+  const [authorSlug, setAuthorSlug] = useState<string>("");
 
   const articlesPerPage = 4;
   const isOwnProfile = user?.id === profileId;
@@ -90,8 +91,20 @@ export default function PublicProfilePage() {
   useEffect(() => {
     if (data) {
       fetchTabContent();
+      // Generate author slug when data is available
+      generateAuthorSlug();
     }
-  }, [activeTab, currentPage, data?.profile.id]);
+  }, [data?.profile.id]);
+
+  const generateAuthorSlug = async () => {
+    if (data?.profile) {
+      const slug = await generateNameSlug(
+        data.profile.full_name,
+        data.profile.id
+      );
+      setAuthorSlug(slug);
+    }
+  };
 
   const fetchProfileData = async () => {
     setLoading(true);
@@ -290,14 +303,40 @@ export default function PublicProfilePage() {
     });
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
+  // Helper function to generate name-based URL slug with sequential numbering for duplicates
+  const generateNameSlug = async (name: string, userId: string) => {
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, "") // Remove special characters
       .replace(/\s+/g, "-") // Replace spaces with hyphens
       .replace(/-+/g, "-") // Replace multiple hyphens with single
       .trim();
+
+    // Check if there are other users with the same name
+    const nameSlug = baseSlug.replace(/-/g, " ").toLowerCase();
+    const { data: usersWithSameName, error } = await supabase
+      .from("profiles")
+      .select("id, created_at")
+      .ilike("full_name", `%${nameSlug}%`)
+      .order("created_at", { ascending: true });
+
+    if (error || !usersWithSameName) {
+      return baseSlug; // Fallback to base slug
+    }
+
+    // Find the position of current user in the list
+    const userIndex = usersWithSameName.findIndex((user) => user.id === userId);
+
+    if (userIndex === 0) {
+      // First user with this name, no number needed
+      return baseSlug;
+    } else if (userIndex > 0) {
+      // Not the first user, add number
+      return `${baseSlug}-${userIndex + 1}`;
+    } else {
+      // User not found in list, return base slug
+      return baseSlug;
+    }
   };
 
   const handleShare = async () => {
@@ -560,9 +599,7 @@ export default function PublicProfilePage() {
                   </Link>
                 )}
                 <Link
-                  href={`/penulis/${generateNameSlug(
-                    data.profile.full_name
-                  )}/portfolio`}
+                  href={`/penulis/${authorSlug}/portfolio`}
                   className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   <BookOpenIcon className="w-4 h-4" />

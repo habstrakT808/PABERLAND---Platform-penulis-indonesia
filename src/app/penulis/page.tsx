@@ -22,6 +22,8 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   supabase,
+  generateNameSlug,
+  generateNameSlugSync,
   platformStatsHelpers,
   PlatformStatistics,
   getAvatarUrl,
@@ -313,16 +315,6 @@ export default function AuthorsPage() {
     return emojiMap[category] || "📝";
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -542,7 +534,7 @@ export default function AuthorsPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-gray-900 truncate">
                             <Link
-                              href={`/penulis/${generateNameSlug(
+                              href={`/penulis/${generateNameSlugSync(
                                 author.full_name
                               )}`}
                               className="hover:text-blue-600 transition-colors"
@@ -623,7 +615,7 @@ export default function AuthorsPage() {
                       {/* View Profile Button */}
                       <div className="mt-4">
                         <Link
-                          href={`/penulis/${generateNameSlug(
+                          href={`/penulis/${generateNameSlugSync(
                             author.full_name
                           )}`}
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"

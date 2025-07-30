@@ -2168,3 +2168,51 @@ export async function checkBucketAndFile(filePath: string): Promise<{ exists: bo
     return { exists: false, error: 'Unexpected error' };
   }
 }
+
+// Helper function to generate name-based URL slug with sequential numbering for duplicates
+export const generateNameSlug = async (name: string, userId: string) => {
+  const baseSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .trim();
+  
+  // Check if there are other users with the same name
+  const nameSlug = baseSlug.replace(/-/g, " ").toLowerCase();
+  const { data: usersWithSameName, error } = await supabase
+    .from("profiles")
+    .select("id, created_at")
+    .ilike("full_name", `%${nameSlug}%`)
+    .order("created_at", { ascending: true });
+  
+  if (error || !usersWithSameName) {
+    return baseSlug; // Fallback to base slug
+  }
+  
+  // Find the position of current user in the list
+  const userIndex = usersWithSameName.findIndex(user => user.id === userId);
+  
+  if (userIndex === 0) {
+    // First user with this name, no number needed
+    return baseSlug;
+  } else if (userIndex > 0) {
+    // Not the first user, add number
+    return `${baseSlug}-${userIndex + 1}`;
+  } else {
+    // User not found in list, return base slug
+    return baseSlug;
+  }
+};
+
+// Synchronous version for components that can't use async
+export const generateNameSlugSync = (name: string) => {
+  const baseSlug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .trim();
+  
+  return baseSlug;
+};

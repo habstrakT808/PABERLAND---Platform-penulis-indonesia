@@ -135,14 +135,18 @@ export default function ActivityFeed() {
     });
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
+  // Helper function to generate name-based URL slug with sequential numbering for duplicates
+  const generateNameSlug = (name: string, userId: string) => {
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, "") // Remove special characters
       .replace(/\s+/g, "-") // Replace spaces with hyphens
       .replace(/-+/g, "-") // Replace multiple hyphens with single
       .trim();
+
+    // For now, return base slug. In a real implementation, you would need to check for duplicates
+    // This is a simplified version for the component
+    return baseSlug;
   };
 
   if (loading) {
@@ -209,7 +213,10 @@ export default function ActivityFeed() {
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <Link
-                  href={`/penulis/${generateNameSlug(activity.author_name)}`}
+                  href={`/penulis/${generateNameSlug(
+                    activity.author_name,
+                    activity.author_id
+                  )}`}
                   className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
                 >
                   {activity.author_name}

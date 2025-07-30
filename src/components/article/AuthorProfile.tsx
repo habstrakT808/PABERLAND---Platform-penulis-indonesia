@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { UserIcon } from "@heroicons/react/24/outline";
-import { articleManagement, getAvatarUrl } from "@/lib/supabase";
+import { supabase, generateNameSlugSync } from "@/lib/supabase";
 
 interface AuthorProfileProps {
   author: {
@@ -40,7 +40,9 @@ export default function AuthorProfile({
 
   const fetchAuthorData = async () => {
     try {
-      const stats = await articleManagement.getUserStats(author.id);
+      const stats = await supabase.rpc("get_user_stats", {
+        params: { user_id: author.id },
+      });
       setAuthorStats({
         totalArticles: stats.totalArticles,
         totalLikes: stats.totalLikes,
@@ -60,16 +62,6 @@ export default function AuthorProfile({
     });
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
-  };
-
   return (
     <div className="bg-white/95 rounded-lg shadow-lg p-6 border border-blue-100">
       {/* Author Header */}
@@ -77,7 +69,7 @@ export default function AuthorProfile({
         <div className="relative">
           {author.avatar_url ? (
             <Image
-              src={getAvatarUrl(author.avatar_url) || ""}
+              src={author.avatar_url || ""}
               alt={author.full_name}
               width={80}
               height={80}
@@ -160,7 +152,7 @@ export default function AuthorProfile({
           </div>
 
           <Link
-            href={`/penulis/${generateNameSlug(author.full_name)}`}
+            href={`/penulis/${generateNameSlugSync(author.full_name)}`}
             className="inline-flex items-center mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Lihat semua konten →

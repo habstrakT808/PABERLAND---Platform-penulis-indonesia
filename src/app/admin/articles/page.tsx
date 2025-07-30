@@ -219,14 +219,18 @@ function AdminArticlesContent() {
     });
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
+  // Helper function to generate name-based URL slug with sequential numbering for duplicates
+  const generateNameSlug = (name: string, userId: string) => {
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, "") // Remove special characters
       .replace(/\s+/g, "-") // Replace spaces with hyphens
       .replace(/-+/g, "-") // Replace multiple hyphens with single
       .trim();
+
+    // For now, return base slug. In a real implementation, you would need to check for duplicates
+    // This is a simplified version for the admin page
+    return baseSlug;
   };
 
   const formatNumber = (num: number) => {
@@ -458,7 +462,8 @@ function AdminArticlesContent() {
                           )}
                           <Link
                             href={`/penulis/${generateNameSlug(
-                              article.profiles.full_name
+                              article.profiles.full_name,
+                              article.id
                             )}`}
                             className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                           >

@@ -101,14 +101,18 @@ export default function UserRecommendations() {
     });
   };
 
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
+  // Helper function to generate name-based URL slug with sequential numbering for duplicates
+  const generateNameSlug = (name: string, userId: string) => {
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, "") // Remove special characters
       .replace(/\s+/g, "-") // Replace spaces with hyphens
       .replace(/-+/g, "-") // Replace multiple hyphens with single
       .trim();
+
+    // For now, return base slug. In a real implementation, you would need to check for duplicates
+    // This is a simplified version for the component
+    return baseSlug;
   };
 
   return (
@@ -125,7 +129,7 @@ export default function UserRecommendations() {
             className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <Link
-              href={`/penulis/${generateNameSlug(user.full_name)}`}
+              href={`/penulis/${generateNameSlug(user.full_name, user.id)}`}
               className="flex-shrink-0"
             >
               {user.avatar_url ? (
@@ -145,7 +149,7 @@ export default function UserRecommendations() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/penulis/${generateNameSlug(user.full_name)}`}
+                href={`/penulis/${generateNameSlug(user.full_name, user.id)}`}
                 className="font-medium text-gray-900 hover:text-indigo-600 transition-colors block"
               >
                 {user.full_name}

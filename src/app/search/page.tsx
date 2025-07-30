@@ -16,7 +16,12 @@ import {
   AdjustmentsHorizontalIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { articleHelpers, getAvatarUrl } from "@/lib/supabase";
+import {
+  articleHelpers,
+  getAvatarUrl,
+  generateNameSlug,
+  generateNameSlugSync,
+} from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 interface SearchResult {
@@ -58,6 +63,30 @@ export default function SearchPage() {
     parseInt(searchParams.get("page") || "1")
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [authorSlugs, setAuthorSlugs] = useState<{ [key: string]: string }>({});
+
+  // Generate author slugs when results change
+  useEffect(() => {
+    if (results?.authors) {
+      generateAuthorSlugs();
+    }
+  }, [results?.authors]);
+
+  const generateAuthorSlugs = async () => {
+    if (!results?.authors) return;
+
+    const slugs: { [key: string]: string } = {};
+    for (const author of results.authors) {
+      try {
+        const slug = await generateNameSlug(author.full_name, author.id);
+        slugs[author.id] = slug;
+      } catch (error) {
+        // Fallback to sync version
+        slugs[author.id] = generateNameSlugSync(author.full_name);
+      }
+    }
+    setAuthorSlugs(slugs);
+  };
 
   // Perform search
   const performSearch = async (
@@ -165,16 +194,6 @@ export default function SearchPage() {
       month: "long",
       day: "numeric",
     });
-  };
-
-  // Helper function to generate name-based URL slug
-  const generateNameSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
   };
 
   return (
@@ -326,7 +345,10 @@ export default function SearchPage() {
                   {results.authors.slice(0, 6).map((author) => (
                     <Link
                       key={author.id}
-                      href={`/penulis/${generateNameSlug(author.full_name)}`}
+                      href={`/penulis/${
+                        authorSlugs[author.id] ||
+                        generateNameSlugSync(author.full_name)
+                      }`}
                       className="flex items-center min-w-[220px] space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
                       {author.avatar_url ? (

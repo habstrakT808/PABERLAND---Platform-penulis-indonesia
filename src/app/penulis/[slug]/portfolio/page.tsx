@@ -43,7 +43,7 @@ export default function PortfolioPage() {
       );
       if (result.success) {
         toast.success("Karya berhasil dihapus!");
-        fetchPortfolioData(); // reload data
+        fetchPortfolioData(authorProfile.id); // reload data
       } else {
         toast.error("Gagal menghapus karya: " + result.error);
       }
@@ -220,33 +220,21 @@ export default function PortfolioPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
-              {stats.totalWorks || 0}
+        <div className="flex justify-center mb-8">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {stats.totalWorks || 0}
+              </div>
+              <div className="text-sm text-gray-700">Total Karya</div>
             </div>
-            <div className="text-sm text-gray-700">Total Karya</div>
-          </div>
 
-          <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
-              {stats.publishedWorks || 0}
+            <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {stats.publishedWorks || 0}
+              </div>
+              <div className="text-sm text-gray-700">Karya Dipublikasikan</div>
             </div>
-            <div className="text-sm text-gray-700">Karya Dipublikasikan</div>
-          </div>
-
-          <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
-              {stats.totalViews || 0}
-            </div>
-            <div className="text-sm text-gray-700">Total Views</div>
-          </div>
-
-          <div className="bg-white/95 rounded-xl shadow-sm p-6 text-center border border-blue-100">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
-              {stats.avgRating || 0}
-            </div>
-            <div className="text-sm text-gray-700">Rating Rata-rata</div>
           </div>
         </div>
 
