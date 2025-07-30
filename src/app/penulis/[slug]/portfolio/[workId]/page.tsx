@@ -51,8 +51,11 @@ export default function PortfolioWorkDetailPage() {
 
   const fetchWorkData = async () => {
     try {
-      // First, get the author profile
+      // First, get the author profile with proper slug resolution
       let authorProfile;
+      let profileError;
+
+      // Try to find by UUID first
       const { data: uuidProfile, error: uuidError } = await supabase
         .from("profiles")
         .select("*")
@@ -62,21 +65,55 @@ export default function PortfolioWorkDetailPage() {
       if (uuidProfile) {
         authorProfile = uuidProfile;
       } else {
-        const nameSlug = slug.replace(/-/g, " ").toLowerCase();
-        const { data: nameProfile, error: nameError } = await supabase
-          .from("profiles")
-          .select("*")
-          .ilike("full_name", `%${nameSlug}%`)
-          .single();
-
-        authorProfile = nameProfile;
+        // If not found by UUID, try to find by name slug with sequential numbering
+        const slugParts = slug.split("-");
+        if (
+          slugParts.length >= 2 &&
+          !isNaN(Number(slugParts[slugParts.length - 1]))
+        ) {
+          // New format: name-number (e.g., mamat-alamat-2)
+          const number = parseInt(slugParts[slugParts.length - 1]);
+          const namePart = slugParts.slice(0, -1).join("-");
+          const nameSlug = namePart.replace(/-/g, " ").toLowerCase();
+          const { data: nameProfiles, error: nameError } = await supabase
+            .from("profiles")
+            .select("*")
+            .ilike("full_name", `%${nameSlug}%`)
+            .order("created_at", { ascending: true });
+          if (nameProfiles && nameProfiles.length > 0) {
+            if (number > 0 && number <= nameProfiles.length) {
+              authorProfile = nameProfiles[number - 1];
+            } else {
+              profileError = new Error("User not found at specified position");
+            }
+          } else {
+            profileError = nameError;
+          }
+        } else {
+          // Old format: name only (for backward compatibility)
+          const nameSlug = slug.replace(/-/g, " ").toLowerCase();
+          const { data: nameProfiles, error: nameError } = await supabase
+            .from("profiles")
+            .select("*")
+            .ilike("full_name", `%${nameSlug}%`)
+            .order("created_at", { ascending: true }); // Order by creation date
+          if (nameProfiles && nameProfiles.length > 0) {
+            authorProfile = nameProfiles[0]; // For backward compatibility, take the first (oldest) user
+          } else {
+            profileError = nameError;
+          }
+        }
       }
 
-      if (!authorProfile) {
+      if (profileError || !authorProfile) {
+        console.error("Author not found:", profileError);
+        console.error("Slug attempted:", slug);
         toast.error("Author tidak ditemukan");
         router.push("/penulis");
         return;
       }
+
+      console.log("Found profile:", authorProfile.full_name, "for slug:", slug);
 
       setAuthor(authorProfile);
 
