@@ -1327,6 +1327,29 @@ export const portfolioHelpers = {
     return data;
   },
 
+  // Get portfolio work by ID with success/error format
+  async getPortfolioWorkById(workId: string): Promise<{ success: boolean; data?: PortfolioWork; error?: string }> {
+    const { data, error } = await supabase
+      .from('portfolio_works')
+      .select(`
+        *,
+        profiles:author_id (
+          id,
+          full_name,
+          avatar_url
+        )
+      `)
+      .eq('id', workId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching portfolio work:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  },
+
   // Create new portfolio work
   async createPortfolioWork(authorId: string, workData: Partial<PortfolioWork>) {
     const { data, error } = await supabase
@@ -1390,8 +1413,10 @@ export const portfolioHelpers = {
     if (error) {
       console.error('Error fetching portfolio stats:', error);
       return {
-        total: 0,
-        published: 0,
+        totalWorks: 0,
+        publishedWorks: 0,
+        totalViews: 0,
+        avgRating: 0,
         unpublished: 0,
         inProgress: 0,
         completed: 0,
@@ -1400,8 +1425,10 @@ export const portfolioHelpers = {
     }
 
     const stats = {
-      total: data.length,
-      published: data.filter(w => w.status === 'published').length,
+      totalWorks: data.length,
+      publishedWorks: data.filter(w => w.status === 'published').length,
+      totalViews: 0, // Portfolio works don't have views yet, but we can add this later
+      avgRating: 0, // Portfolio works don't have ratings yet, but we can add this later
       unpublished: data.filter(w => w.status === 'unpublished').length,
       inProgress: data.filter(w => w.status === 'in_progress').length,
       completed: data.filter(w => w.status === 'completed').length,

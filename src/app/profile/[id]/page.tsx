@@ -286,7 +286,18 @@ export default function PublicProfilePage() {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
+      day: "numeric",
     });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
   };
 
   const handleShare = async () => {
@@ -500,7 +511,9 @@ export default function PublicProfilePage() {
                 </Link>
               )}
               <Link
-                href={`/penulis/${profileId}/portfolio`}
+                href={`/penulis/${generateNameSlug(
+                  data.profile.full_name
+                )}/portfolio`}
                 className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 <BookOpenIcon className="w-4 h-4" />

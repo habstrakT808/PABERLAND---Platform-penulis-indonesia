@@ -20,6 +20,7 @@ import {
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { uploadImageToStorage } from "@/lib/supabase";
 import SignedImage from "@/components/common/SignedImage";
+import { supabase } from "@/lib/supabase";
 
 const categories = [
   { value: "cerpen", label: "📖 Cerpen" },
@@ -68,6 +69,30 @@ function EditPortfolioWorkContent() {
   const [newTag, setNewTag] = useState("");
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Fetch user profile to get full_name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   // Load existing data
   useEffect(() => {
@@ -176,7 +201,20 @@ function EditPortfolioWorkContent() {
 
       if (result.success) {
         toast.success("🎉 Karya berhasil diperbarui!");
-        router.push(`/penulis/${user.id}/portfolio`);
+
+        // Generate name-based URL for redirect
+        if (userProfile?.full_name) {
+          const nameSlug = userProfile.full_name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .trim();
+
+          router.push(`/penulis/${nameSlug}/portfolio`);
+        } else {
+          router.push(`/penulis/${user?.id}/portfolio`);
+        }
       } else {
         toast.error("Gagal memperbarui karya: " + result.error);
       }

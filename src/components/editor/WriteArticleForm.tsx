@@ -19,18 +19,44 @@ import {
 import TinyMCEEditor from "@/components/editor/DynamicTinyMCEEditor";
 import { Article } from "@/lib/supabase";
 
-const categories = [
-  { value: "cerpen", label: "📖 Cerpen" },
-  { value: "puisi", label: "🎭 Puisi" },
-  { value: "artikel", label: "📰 Artikel" },
-  { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
-  { value: "novel-berseri", label: "📚 Novel Berseri" },
-  { value: "lainnya", label: "✨ Lainnya" },
+// Category limits config
+const categoryLimits: Record<
+  string,
+  { maxWords?: number; minParts?: number; maxParts?: number; info: string }
+> = {
+  "info-berita": { info: "" },
+  cerpen: { maxWords: 1000, info: "Maksimal 1000 kata" },
+  dongeng: { maxWords: 1000, info: "Maksimal 1000 kata" },
+  "cerita-rakyat": { maxWords: 1000, info: "Maksimal 1000 kata" },
+  cermin: { maxWords: 200, info: "Maksimal 200 kata" },
+  puisi: { maxWords: 1000, info: "Maksimal 1000 kata" },
+  cerbung: { maxParts: 10, info: "Maksimal 10 bagian (part)" },
+  novel: {
+    minParts: 11,
+    maxParts: 50,
+    info: "Minimal 11 – 50 bab (pagination aktif)",
+  },
+  serial: {
+    maxWords: 1000,
+    info: "Maksimal 1000 kata/judul. Judul tidak dibatasi",
+  },
+  "resensi-buku": { maxWords: 1000, info: "Maksimal 1000 kata" },
+  artikel: { info: "" },
+};
+
+// Define categories array after categoryLimits
+const categories: { value: string; label: string }[] = [
   { value: "info-berita", label: "📰 Info/Berita" },
-  { value: "cermin", label: "🔎 Cermin (Cerita Mini)" },
-  { value: "resensi-buku", label: "📚 Resensi Buku" },
+  { value: "cerpen", label: "📖 Cerpen" },
   { value: "dongeng", label: "🧚 Dongeng" },
+  { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
+  { value: "cermin", label: "🔎 Cermin (Cerita Mini)" },
+  { value: "puisi", label: "🎭 Puisi" },
   { value: "cerbung", label: "📝 Cerbung" },
+  { value: "novel", label: "📚 Novel" },
+  { value: "serial", label: "📚 Serial" },
+  { value: "resensi-buku", label: "📖 Resensi Buku" },
+  { value: "artikel", label: "📰 Artikel" },
 ];
 
 interface WriteArticleFormProps {
@@ -73,6 +99,8 @@ export default function WriteArticleForm({
   const [wordCount, setWordCount] = useState(0);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
+  // Add state for part count (for cerbung/novel/serial)
+  const [partCount, setPartCount] = useState(1);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -275,6 +303,9 @@ export default function WriteArticleForm({
     return Math.ceil(wordCount / 200); // Asumsi 200 kata per menit
   };
 
+  // Show info for selected category
+  const selectedLimit = categoryLimits[formData.category] || {};
+
   return (
     <div className="bg-white/95 rounded-lg shadow-lg border border-blue-100">
       <form onSubmit={onFormSubmit} className="p-6 space-y-6">
@@ -407,24 +438,27 @@ export default function WriteArticleForm({
                     {formData.content.replace(/<[^>]*>/g, "").length}
                   </span>
                 </div>
-
-                {/* Progress bar untuk target kata */}
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Target: 500 kata</span>
-                    <span>
-                      {Math.min(100, Math.round((wordCount / 500) * 100))}%
-                    </span>
+                {selectedLimit.info && (
+                  <div className="mt-2 text-blue-800 font-semibold">
+                    {selectedLimit.info}
                   </div>
-                  <div className="w-full bg-blue-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, (wordCount / 500) * 100)}%`,
-                      }}
-                    ></div>
+                )}
+                {/* For part count (cerbung/novel/serial) */}
+                {(formData.category === "cerbung" ||
+                  formData.category === "novel" ||
+                  formData.category === "serial") && (
+                  <div className="flex items-center mt-2">
+                    <span className="mr-2">Jumlah Part/Bab:</span>
+                    <input
+                      type="number"
+                      min={selectedLimit.minParts || 1}
+                      max={selectedLimit.maxParts || 99}
+                      value={partCount}
+                      onChange={(e) => setPartCount(Number(e.target.value))}
+                      className="w-16 px-2 py-1 border border-blue-300 rounded text-blue-900 text-xs"
+                    />
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -443,7 +477,7 @@ export default function WriteArticleForm({
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
               >
-                {categories.map((cat) => (
+                {categories.map((cat: { value: string; label: string }) => (
                   <option key={cat.value} value={cat.value}>
                     {cat.label}
                   </option>

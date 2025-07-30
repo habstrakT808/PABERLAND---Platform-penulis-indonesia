@@ -26,114 +26,79 @@ interface CategoryStats {
   };
 }
 
+// New category config as per user request
 const categoryConfig = {
-  cerpen: {
-    name: "Cerpen",
-    description: "Cerita pendek yang menghibur dan menginspirasi",
-    icon: BookOpenIcon,
-    color: "from-blue-500 to-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    textColor: "text-blue-600 dark:text-blue-400",
-    emoji: "📖",
-  },
-  puisi: {
-    name: "Puisi",
-    description: "Karya sastra penuh makna dan keindahan kata",
-    icon: SparklesIcon,
-    color: "from-purple-500 to-purple-600",
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    textColor: "text-purple-600 dark:text-purple-400",
-    emoji: "🎭",
-  },
-  artikel: {
-    name: "Artikel",
-    description: "Tulisan informatif dan edukatif",
-    icon: NewspaperIcon,
-    color: "from-green-500 to-green-600",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-    textColor: "text-green-600 dark:text-green-400",
-    emoji: "📰",
-  },
-  "cerita-rakyat": {
-    name: "Cerita Rakyat",
-    description: "Warisan budaya dan kearifan lokal",
-    icon: GlobeAltIcon,
-    color: "from-yellow-500 to-yellow-600",
-    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-    textColor: "text-yellow-600 dark:text-yellow-400",
-    emoji: "🏛️",
-  },
-  "novel-berseri": {
-    name: "Novel Berseri",
-    description: "Cerita panjang yang diterbitkan berseri",
-    icon: HeartIcon,
-    color: "from-red-500 to-red-600",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-    textColor: "text-red-600 dark:text-red-400",
-    emoji: "📚",
-  },
   "info-berita": {
     name: "Info/Berita",
-    description: "Informasi dan berita terkini seputar literasi dan budaya",
-    icon: NewspaperIcon,
-    color: "from-cyan-500 to-cyan-600",
-    bgColor: "bg-cyan-50 dark:bg-cyan-900/20",
-    textColor: "text-cyan-600 dark:text-cyan-400",
+    description: "Ragam Informasi dan Berita Tentang PaberLand.",
+    extra: "",
     emoji: "📰",
   },
-  cermin: {
-    name: "Cermin (Cerita Mini)",
-    description: "Cerita mini yang singkat, padat, dan berkesan",
-    icon: BookOpenIcon,
-    color: "from-pink-500 to-pink-600",
-    bgColor: "bg-pink-50 dark:bg-pink-900/20",
-    textColor: "text-pink-600 dark:text-pink-400",
-    emoji: "🔎",
-  },
-  "resensi-buku": {
-    name: "Resensi Buku",
-    description: "Ulasan dan kritik buku untuk referensi pembaca",
-    icon: DocumentTextIcon,
-    color: "from-indigo-500 to-indigo-600",
-    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
-    textColor: "text-indigo-600 dark:text-indigo-400",
-    emoji: "📝",
-  },
-  cerbung: {
-    name: "Cerbung",
-    description: "Cerita bersambung yang seru dan menegangkan",
-    icon: DocumentTextIcon,
-    color: "from-orange-500 to-orange-600",
-    bgColor: "bg-orange-50 dark:bg-orange-900/20",
-    textColor: "text-orange-600 dark:text-orange-400",
+  cerpen: {
+    name: "Cerpen",
+    description: "Cerita Pendek yang mendidik dan menghibur untuk anak.",
+    extra: "Maksimal 1000 kata",
     emoji: "📖",
   },
   dongeng: {
     name: "Dongeng",
-    description: "Cerita fantasi yang menghibur dan mendidik",
-    icon: SparklesIcon,
-    color: "from-teal-500 to-teal-600",
-    bgColor: "bg-teal-50 dark:bg-teal-900/20",
-    textColor: "text-teal-600 dark:text-teal-400",
+    description:
+      "Cerita Fantasi yang membuat imajinasi anak-anak melambung ke awan.",
+    extra: "Maksimal 1000 kata",
     emoji: "🧚",
+  },
+  "cerita-rakyat": {
+    name: "Cerita Rakyat",
+    description:
+      "Karya Lisan yang mengandung nilai-nilai budaya, moral, dan sejarah.",
+    extra: "Maksimal 1000 kata",
+    emoji: "🏛️",
+  },
+  cermin: {
+    name: "Cermin (Cerita Mini)",
+    description: "Cerita Singkat yang ringan, menghibung, dan bermakna.",
+    extra: "Maksimal 200 kata",
+    emoji: "🔎",
+  },
+  puisi: {
+    name: "Puisi",
+    description:
+      "Karya Sastra yang diungkapkan dengan bahasa yang indah dan bermakna.",
+    extra: "Maksimal 1000 kata",
+    emoji: "🎭",
+  },
+  cerbung: {
+    name: "Cerbung",
+    description: "Cerita Bersambung yang membuat pembaca penasaran.",
+    extra: "Maksimal 10 bagian",
+    emoji: "📝",
   },
   novel: {
     name: "Novel",
-    description: "Karya sastra panjang dengan plot yang kompleks",
-    icon: BookOpenIcon,
-    color: "from-amber-500 to-amber-600",
-    bgColor: "bg-amber-50 dark:bg-amber-900/20",
-    textColor: "text-amber-600 dark:text-amber-400",
+    description:
+      "Cerita Panjang yang menonjolkan tokoh, watak, dan perubahan para tokoh.",
+    extra: "Minimal 11 – 50 bab (pagination aktif)",
     emoji: "📚",
   },
-  lainnya: {
-    name: "Lainnya",
-    description: "Karya kreatif dan eksperimental",
-    icon: EllipsisHorizontalIcon,
-    color: "from-gray-500 to-gray-600",
-    bgColor: "bg-gray-50 dark:bg-gray-900/20",
-    textColor: "text-gray-600 dark:text-gray-400",
-    emoji: "✨",
+  serial: {
+    name: "Serial",
+    description: "Cerita Seru dengan tokoh yang sama.",
+    extra: "Maksimal 1000 kata/judul. Judul tidak dibatasi",
+    emoji: "📚",
+  },
+  "resensi-buku": {
+    name: "Resensi Buku",
+    description:
+      "Tulisan yang berisi penilaian atau komentar pada sebuah buku.",
+    extra: "Maksimal 1000 kata",
+    emoji: "📖",
+  },
+  artikel: {
+    name: "Artikel",
+    description:
+      "Karya tulis yang berisi informasi, opini, atau analisis topik tertentu.",
+    extra: "",
+    emoji: "📰",
   },
 };
 
@@ -244,8 +209,7 @@ export default function CategoriesPage() {
             Kategori Konten
           </h1>
           <p className="text-lg text-gray-800 max-w-2xl mx-auto">
-            Jelajahi berbagai kategori karya sastra dan tulisan dari komunitas
-            member PaberLand
+            Jelajahi Cerita dan Karya Terbaik Member PaberLand
           </p>
         </div>
 
@@ -253,8 +217,6 @@ export default function CategoriesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.entries(categoryConfig).map(([categoryKey, config]) => {
             const stats = categoryStats.find((s) => s.category === categoryKey);
-            const IconComponent = config.icon;
-
             return (
               <Link
                 key={categoryKey}
@@ -262,11 +224,10 @@ export default function CategoriesPage() {
                 className="group"
               >
                 <div className="bg-white/95 rounded-xl p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100">
-                  {/* Category Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-12 h-12 bg-gradient-to-br ${config.color} rounded-lg flex items-center justify-center text-white text-xl`}
+                        className={`w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl`}
                       >
                         {config.emoji}
                       </div>
@@ -280,12 +241,14 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Description */}
-                  <p className="text-gray-800 text-sm mb-4 leading-relaxed">
+                  <p className="text-gray-800 text-sm mb-2 leading-relaxed">
                     {config.description}
                   </p>
-
+                  {config.extra && (
+                    <p className="text-blue-600 text-xs mb-2 font-semibold">
+                      {config.extra}
+                    </p>
+                  )}
                   {/* Latest Article */}
                   {stats?.latest_article && (
                     <div className="border-t border-blue-100 pt-4">
@@ -301,8 +264,6 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   )}
-
-                  {/* Empty State */}
                   {!stats?.count && (
                     <div className="border-t border-blue-100 pt-4 text-center">
                       <div className="text-2xl mb-2">📝</div>
@@ -311,8 +272,6 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   )}
-
-                  {/* Hover Arrow */}
                   <div className="flex justify-end mt-4">
                     <div className="text-blue-600 group-hover:translate-x-1 transition-transform duration-200">
                       <svg

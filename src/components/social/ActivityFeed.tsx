@@ -127,6 +127,24 @@ export default function ActivityFeed() {
     return num.toString();
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -191,10 +209,10 @@ export default function ActivityFeed() {
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <Link
-                  href={`/penulis/${activity.author_id}`}
+                  href={`/penulis/${generateNameSlug(activity.author_name)}`}
                   className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
                 >
-                  {activity.profiles?.full_name || "Pengguna Anonim"}
+                  {activity.author_name}
                 </Link>
                 <span className="text-gray-500 text-sm">
                   mempublikasikan konten baru

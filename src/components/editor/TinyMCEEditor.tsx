@@ -260,6 +260,86 @@ export default function TinyMCEEditor({
 <p>[Kembangkan konflik, karakter, dan alur. Akhiri dengan cliffhanger atau pertanyaan yang membuat pembaca ingin lanjut ke bagian berikutnya]</p>
 
 <p style="text-align: center;"><em>Bersambung...</em></p>`,
+
+      novel: `<h1 style="text-align: center;">Judul Novel</h1>
+<p style="text-align: center;"><em>Oleh: [Nama Penulis]</em></p>
+<p style="text-align: center;"><em>${new Date().toLocaleDateString(
+        "id-ID"
+      )}</em></p>
+<hr />
+
+<h2>Bab 1: [Judul Bab Pertama]</h2>
+
+<p>[Mulai dengan hook yang kuat - bisa berupa aksi, dialog, atau deskripsi yang langsung menarik perhatian pembaca]</p>
+
+<p>"[Dialog pembuka yang menunjukkan karakter atau konflik]," kata [nama tokoh utama].</p>
+
+<p>[Lanjutkan dengan pengembangan karakter, setting, dan plot. Untuk novel, fokus pada:]</p>
+
+<ul>
+<li><strong>Karakter yang kompleks</strong> dengan motivasi dan konflik internal</li>
+<li><strong>Setting yang vivid</strong> dan atmosfer yang kuat</li>
+<li><strong>Plot yang berkembang</strong> dengan konflik eksternal dan internal</li>
+<li><strong>Pacing yang seimbang</strong> antara aksi dan refleksi</li>
+</ul>
+
+<p>[Kembangkan scene utama dengan detail yang cukup untuk membangun dunia novel]</p>
+
+<blockquote>
+<p>[Momen refleksi tokoh atau narasi yang memberikan depth pada cerita]</p>
+</blockquote>
+
+<p>[Bangun menuju klimaks bab dengan konflik yang semakin meningkat]</p>
+
+<p>[Akhiri bab dengan resolusi sementara atau pertanyaan yang membuat pembaca ingin lanjut]</p>
+
+<hr />
+
+<p><em><strong>Bersambung ke Bab 2...</strong></em></p>`,
+
+      serial: `<h1 style="text-align: center;">Judul Serial - Episode [Nomor]</h1>
+<p style="text-align: center;"><em>Oleh: [Nama Penulis]</em></p>
+<p style="text-align: center;"><em>Episode ${
+        Math.floor(Math.random() * 10) + 1
+      } dari ${Math.floor(Math.random() * 20) + 10}</em></p>
+<hr />
+
+<h2>Episode [Nomor]: [Judul Episode]</h2>
+
+<p><strong>Ringkasan episode sebelumnya:</strong> [Ringkas kejadian penting dari episode sebelumnya untuk membantu pembaca mengingat alur cerita]</p>
+
+<hr />
+
+<p>[Mulai episode dengan hook yang menarik - bisa berupa aksi, misteri, atau pengembangan karakter]</p>
+
+<p>"[Dialog pembuka yang menunjukkan dinamika antar karakter atau konflik]," kata [nama tokoh].</p>
+
+<p>[Lanjutkan dengan pengembangan plot yang fokus pada satu episode. Untuk serial, pastikan:]</p>
+
+<ul>
+<li><strong>Konsistensi karakter</strong> dengan episode-episode sebelumnya</li>
+<li><strong>Plot episode yang lengkap</strong> dengan konflik dan resolusi</li>
+<li><strong>Hook untuk episode berikutnya</strong> atau pengembangan arc cerita</li>
+<li><strong>Pacing yang sesuai</strong> untuk format serial</li>
+</ul>
+
+<p>[Kembangkan scene utama episode dengan detail yang cukup untuk membangun dunia serial]</p>
+
+<blockquote>
+<p>[Momen refleksi tokoh atau insight yang memberikan depth pada serial]</p>
+</blockquote>
+
+<p>[Bangun menuju klimaks episode dengan konflik yang semakin meningkat]</p>
+
+<p>[Akhiri dengan resolusi episode atau cliffhanger untuk episode berikutnya]</p>
+
+<hr />
+
+<p><em><strong>Episode ${
+        Math.floor(Math.random() * 10) + 2
+      } akan segera hadir...</strong></em></p>
+
+<p><em>Nantikan episode berikutnya untuk melihat kelanjutan cerita!</em></p>`,
     };
 
     return templates[type as keyof typeof templates] || templates.artikel;
@@ -542,9 +622,16 @@ export default function TinyMCEEditor({
                   },
                   {
                     type: "menuitem" as const,
-                    text: "📚 Template Novel Berseri",
+                    text: "📚 Template Novel",
                     onAction: () => {
-                      editor.setContent(getTemplate("novel-berseri"));
+                      editor.setContent(getTemplate("novel"));
+                    },
+                  },
+                  {
+                    type: "menuitem" as const,
+                    text: "📚 Template Serial",
+                    onAction: () => {
+                      editor.setContent(getTemplate("serial"));
                     },
                   },
                 ];

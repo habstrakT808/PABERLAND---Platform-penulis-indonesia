@@ -156,7 +156,7 @@ function WriteArticleContent() {
           <p className="text-gray-800">
             {editArticle
               ? "Perbarui konten Anda dan bagikan kembali dengan komunitas"
-              : "Bagikan ide, cerita, dan karya terbaik Anda dengan komunitas Paberland Indonesia"}
+              : "Bagikan Cerita dan Karya Terbaik Kamu Supaya Dunia Melihat."}
           </p>
         </div>
 

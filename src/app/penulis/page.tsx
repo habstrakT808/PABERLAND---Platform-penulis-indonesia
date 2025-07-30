@@ -313,6 +313,16 @@ export default function AuthorsPage() {
     return emojiMap[category] || "📝";
   };
 
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -322,7 +332,7 @@ export default function AuthorsPage() {
             Direktori Member
           </h1>
           <p className="text-lg text-gray-800 max-w-2xl mx-auto">
-            Temukan dan kenali para member berbakat di komunitas PaberLand
+            Temukan dan kenali member PaberLand yang hebat dan berbakat
           </p>
         </div>
 
@@ -532,7 +542,9 @@ export default function AuthorsPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-gray-900 truncate">
                             <Link
-                              href={`/penulis/${author.id}`}
+                              href={`/penulis/${generateNameSlug(
+                                author.full_name
+                              )}`}
                               className="hover:text-blue-600 transition-colors"
                             >
                               {author.full_name}
@@ -611,7 +623,9 @@ export default function AuthorsPage() {
                       {/* View Profile Button */}
                       <div className="mt-4">
                         <Link
-                          href={`/penulis/${author.id}`}
+                          href={`/penulis/${generateNameSlug(
+                            author.full_name
+                          )}`}
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"
                         >
                           <UserGroupIcon className="w-4 h-4" />
@@ -680,11 +694,11 @@ export default function AuthorsPage() {
               <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl p-6 text-gray-900 text-center">
                 <div className="text-3xl mb-3">✍️</div>
                 <h3 className="text-lg font-bold mb-2">
-                  Bergabung dengan Komunitas
+                  Bergabung dengan PaberLand
                 </h3>
                 <p className="text-gray-800 mb-4 text-sm leading-relaxed">
-                  Jadilah bagian dari komunitas member Indonesia dan bagikan
-                  karya terbaikmu.
+                  Yuk, jadi bagian dari PaberLand supaya bisa terus berkarya
+                  dengan gembira sepanjang masa.
                 </p>
                 <Link
                   href="/auth/register"
@@ -736,19 +750,25 @@ export default function AuthorsPage() {
                 </h3>
                 <div className="space-y-2">
                   {[
+                    { key: "info/berita", name: "Info/Berita", emoji: "📰" },
                     { key: "cerpen", name: "Cerpen", emoji: "📖" },
-                    { key: "puisi", name: "Puisi", emoji: "🎭" },
-                    { key: "artikel", name: "Artikel", emoji: "📰" },
+                    { key: "dongeng", name: "Dongeng", emoji: "🧚" },
                     {
                       key: "cerita-rakyat",
                       name: "Cerita Rakyat",
                       emoji: "🏛️",
                     },
                     {
-                      key: "novel-berseri",
-                      name: "Novel Berseri",
-                      emoji: "📚",
+                      key: "cermin",
+                      name: "Cermin (Cerita Mini)",
+                      emoji: "🔍",
                     },
+                    { key: "puisi", name: "Puisi", emoji: "🎭" },
+                    { key: "cerbung", name: "Cerbung", emoji: "📚" },
+                    { key: "novel", name: "Novel", emoji: "📖" },
+                    { key: "serial", name: "Serial", emoji: "📚" },
+                    { key: "resensi-buku", name: "Resensi Buku", emoji: "📝" },
+                    { key: "artikel", name: "Artikel", emoji: "📄" },
                   ].map((category) => (
                     <Link
                       key={category.key}

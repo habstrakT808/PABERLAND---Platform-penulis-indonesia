@@ -93,6 +93,24 @@ export default function UserRecommendations() {
     return null;
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
+  };
+
   return (
     <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-sm p-6">
       <div className="flex items-center space-x-2 mb-4">
@@ -106,17 +124,20 @@ export default function UserRecommendations() {
             key={user.id}
             className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg hover:bg-blue-100 transition-colors"
           >
-            <Link href={`/penulis/${user.id}`} className="flex-shrink-0">
+            <Link
+              href={`/penulis/${generateNameSlug(user.full_name)}`}
+              className="flex-shrink-0"
+            >
               {user.avatar_url ? (
                 <Image
                   src={getAvatarUrl(user.avatar_url) || ""}
                   alt={user.full_name}
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 rounded-full object-cover"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
                   {user.full_name.charAt(0)}
                 </div>
               )}
@@ -124,7 +145,7 @@ export default function UserRecommendations() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/penulis/${user.id}`}
+                href={`/penulis/${generateNameSlug(user.full_name)}`}
                 className="font-medium text-gray-900 hover:text-indigo-600 transition-colors block"
               >
                 {user.full_name}

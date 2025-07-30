@@ -43,11 +43,20 @@ export default function LikesModal({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "numeric",
+      year: "numeric",
       month: "long",
-      hour: "2-digit",
-      minute: "2-digit",
+      day: "numeric",
     });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
   };
 
   if (!isOpen) return null;
@@ -130,10 +139,10 @@ export default function LikesModal({
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link
-                        href={`/penulis/${like.user_id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        href={`/penulis/${generateNameSlug(like.full_name)}`}
+                        className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
                       >
-                        {like.profiles?.full_name || "User"}
+                        {like.full_name}
                       </Link>
                       <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                         <span>{like.profiles?.role || "Member"}</span>

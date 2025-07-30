@@ -283,24 +283,29 @@ export default function HomePage() {
           (categoryCounts[article.category] || 0) + 1;
       });
 
-      // Create category objects with colors
-      const categoryColors: { [key: string]: string } = {
-        cerpen: "bg-blue-500",
-        puisi: "bg-purple-500",
-        artikel: "bg-green-500",
-        "cerita-rakyat": "bg-yellow-500",
-        "novel-berseri": "bg-red-500",
-        lainnya: "bg-gray-500",
-      };
+      // Define category order and colors (matching /kategori page)
+      const categoryOrder = [
+        { key: "info-berita", name: "Info/Berita", color: "bg-cyan-500" },
+        { key: "cerpen", name: "Cerpen", color: "bg-blue-500" },
+        { key: "dongeng", name: "Dongeng", color: "bg-lime-500" },
+        { key: "cerita-rakyat", name: "Cerita Rakyat", color: "bg-yellow-500" },
+        { key: "cermin", name: "Cermin (Cerita Mini)", color: "bg-pink-500" },
+        { key: "puisi", name: "Puisi", color: "bg-purple-500" },
+        { key: "cerbung", name: "Cerbung", color: "bg-indigo-500" },
+        { key: "novel", name: "Novel", color: "bg-emerald-500" },
+        { key: "serial", name: "Serial", color: "bg-rose-500" },
+        { key: "resensi-buku", name: "Resensi Buku", color: "bg-amber-500" },
+        { key: "artikel", name: "Artikel", color: "bg-green-500" },
+      ];
 
-      const categoryList = Object.entries(categoryCounts).map(
-        ([name, count]) => ({
-          name: name.charAt(0).toUpperCase() + name.slice(1).replace("-", " "),
-          count,
-          color: categoryColors[name] || "bg-gray-500",
-          href: `/kategori/${name}`,
-        })
-      );
+      // Create category list in correct order
+      const categoryList = categoryOrder.map((cat) => ({
+        name: cat.name,
+        count: categoryCounts[cat.key] || 0,
+        color: cat.color,
+        href: `/kategori/${cat.key}`,
+      }));
+      // Remove filter to show all categories, even with 0 articles
 
       setCategories(categoryList);
     } catch (error) {
@@ -372,13 +377,12 @@ export default function HomePage() {
                 PaberLand
               </span>
             </h1>
-            <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-800">
-              Platform komunitas penulis bacaan anak Indonesia untuk berbagi
-              karya sastra, cerpen, puisi, dan artikel. Mari bersama membangun
-              literasi Indonesia.
+            <p className="text-base md:text-lg lg:text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-800">
+              Platform Forum Penulis Bacaan Anak untuk Berbagi Cerita dan Karya.
+              Mari ciptakan bacaan anak yang sehat, kreatif, dan sesuai dengan
+              perkembangan anak-anak Indonesia.
             </p>
           </div>
-
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
@@ -513,7 +517,7 @@ export default function HomePage() {
                 🌟 Konten Pilihan
               </h2>
               <p className="text-lg text-gray-800 max-w-2xl mx-auto">
-                Karya-karya terbaik dari komunitas member PaberLand
+                Cerita dan Karya Terbaik Member PaberLand
               </p>
             </div>
 
@@ -636,7 +640,7 @@ export default function HomePage() {
                     📚 Konten Terbaru
                   </h2>
                   <p className="text-lg text-gray-800">
-                    Karya-karya segar dari para member
+                    Cerita dan Karya Segar Member PaberLand
                   </p>
                 </div>
 
@@ -785,11 +789,11 @@ export default function HomePage() {
                 <div className="bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200 rounded-xl shadow-lg p-6 text-gray-900 text-center">
                   <div className="text-3xl mb-3">✨</div>
                   <h3 className="text-xl font-bold mb-2">
-                    Mulai Menulis Hari Ini!
+                    Mulai Menulis Hari Ini
                   </h3>
                   <p className="text-gray-800 mb-4 leading-relaxed text-sm">
-                    Bagikan karya terbaikmu dengan komunitas Paberland Indonesia
-                    dan raih apresiasi dari ribuan pembaca.
+                    Bagikan cerita dan karya terbaikmu di sini. Biarkan ribuan
+                    pembaca mengapresiasinya.
                   </p>
                   <Link
                     href="/write"

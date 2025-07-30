@@ -159,6 +159,24 @@ export default function SearchPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -308,7 +326,7 @@ export default function SearchPage() {
                   {results.authors.slice(0, 6).map((author) => (
                     <Link
                       key={author.id}
-                      href={`/penulis/${author.id}`}
+                      href={`/penulis/${generateNameSlug(author.full_name)}`}
                       className="flex items-center min-w-[220px] space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
                       {author.avatar_url ? (

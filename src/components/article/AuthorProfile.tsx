@@ -52,6 +52,24 @@ export default function AuthorProfile({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
+  };
+
   return (
     <div className="bg-white/95 rounded-lg shadow-lg p-6 border border-blue-100">
       {/* Author Header */}
@@ -142,7 +160,7 @@ export default function AuthorProfile({
           </div>
 
           <Link
-            href={`/penulis/${author.id}`}
+            href={`/penulis/${generateNameSlug(author.full_name)}`}
             className="inline-flex items-center mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Lihat semua konten →

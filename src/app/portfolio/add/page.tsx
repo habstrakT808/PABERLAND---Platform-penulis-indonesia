@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { portfolioHelpers } from "@/lib/supabase";
+import {
+  portfolioHelpers,
+  uploadImageToStorage,
+  checkBucketExists,
+  testBucketUpload,
+} from "@/lib/supabase";
 import toast from "react-hot-toast";
 import {
   BookOpenIcon,
@@ -17,12 +22,8 @@ import {
 } from "@heroicons/react/24/outline";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import {
-  uploadImageToStorage,
-  checkBucketExists,
-  testBucketUpload,
-} from "@/lib/supabase";
 import SignedImage from "@/components/common/SignedImage";
+import { supabase } from "@/lib/supabase";
 
 const categories = [
   { value: "cerpen", label: "📖 Cerpen" },
@@ -64,6 +65,30 @@ function AddPortfolioWorkContent() {
   const [newTag, setNewTag] = useState("");
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Fetch user profile to get full_name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -171,7 +196,20 @@ function AddPortfolioWorkContent() {
 
       if (result.success) {
         toast.success("🎉 Karya berhasil ditambahkan ke portofolio!");
-        router.push(`/penulis/${user.id}/portfolio`);
+
+        // Generate name-based URL for redirect
+        if (userProfile?.full_name) {
+          const nameSlug = userProfile.full_name
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .trim();
+
+          router.push(`/penulis/${nameSlug}/portfolio`);
+        } else {
+          router.push(`/penulis/${user?.id}/portfolio`);
+        }
       } else {
         toast.error("Gagal menambahkan karya: " + result.error);
       }
@@ -225,8 +263,8 @@ function AddPortfolioWorkContent() {
             ✨ Tambah Karya Portofolio
           </h1>
           <p className="text-gray-600">
-            Tambahkan karya Anda ke dalam portofolio untuk memamerkan prestasi
-            dan pengalaman menulis
+            Tambahkan karya untuk melengkapi portofolio, menunjukan prestasi,
+            dan pengalaman menulis kamu.
           </p>
         </div>
 
@@ -253,19 +291,15 @@ function AddPortfolioWorkContent() {
                 <label className="block text-sm font-medium text-gray-800 mb-2">
                   Kategori *
                 </label>
-                <select
+                <input
+                  type="text"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                  placeholder="Masukkan kategori karya..."
+                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
                   required
-                >
-                  {categories.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
 

@@ -62,15 +62,6 @@ const categoryConfig = {
     textColor: "text-yellow-600",
     emoji: "🏛️",
   },
-  "novel-berseri": {
-    name: "Novel Berseri",
-    description: "Cerita panjang yang diterbitkan berseri",
-    icon: HeartIcon,
-    color: "from-red-500 to-red-600",
-    bgColor: "bg-red-50",
-    textColor: "text-red-600",
-    emoji: "📚",
-  },
   lainnya: {
     name: "Lainnya",
     description: "Karya kreatif dan eksperimental",
@@ -125,6 +116,25 @@ const categoryConfig = {
     textColor: "text-indigo-600",
     emoji: "📝",
   },
+  novel: {
+    name: "Novel",
+    description:
+      "Karya sastra panjang dengan plot yang kompleks dan karakter yang mendalam",
+    icon: BookOpenIcon,
+    color: "from-emerald-500 to-emerald-600",
+    bgColor: "bg-emerald-50",
+    textColor: "text-emerald-600",
+    emoji: "📚",
+  },
+  serial: {
+    name: "Serial",
+    description: "Cerita berseri dengan episode-episode yang saling terhubung",
+    icon: HeartIcon,
+    color: "from-rose-500 to-rose-600",
+    bgColor: "bg-rose-50",
+    textColor: "text-rose-600",
+    emoji: "📚",
+  },
 };
 
 interface CategoryPageData {
@@ -155,6 +165,54 @@ type Article = {
   likes_count?: number;
   comments_count?: number;
   // ... properti lain sesuai kebutuhan
+};
+
+// Tambahkan mapping untuk CTA kategori
+const categoryWritePrompts: Record<string, { title: string; desc: string }> = {
+  "resensi-buku": {
+    title: "Tulis Resensi Buku",
+    desc: "Bagikan resensi buku terbaik yang sudah kamu baca di sini",
+  },
+  "info-berita": {
+    title: "Tulis Info/Berita",
+    desc: "Bagikan info/berita terpenting di sini",
+  },
+  cerpen: {
+    title: "Tulis Cerpen",
+    desc: "Bagikan cerpen terhebat yang kamu tulis di sini",
+  },
+  dongeng: {
+    title: "Tulis Dongeng",
+    desc: "Bagikan dongeng imaginatif yang kamu tulis di sini",
+  },
+  "cerita-rakyat": {
+    title: "Tulis Cerita Rakyat",
+    desc: "Bagikan cerita rakyat yang kamu tulis di sini",
+  },
+  cermin: {
+    title: "Tulis Cermin (Cerita Mini)",
+    desc: "Bagikan cermin terkeren yang kamu tulis di sini",
+  },
+  puisi: {
+    title: "Tulis Puisi",
+    desc: "Bagikan puisi terindah yang kamu tulis di sini",
+  },
+  cerbung: {
+    title: "Tulis Cerbung",
+    desc: "Bagikan cerita bersambung yang bikin penasaran pembaca di sini",
+  },
+  novel: {
+    title: "Tulis Novel",
+    desc: "Bagikan novel luar biasa yang kamu tulis di sini",
+  },
+  serial: {
+    title: "Tulis Serial",
+    desc: "Bagikan serial menakjubkan yang kamu tulis di sini",
+  },
+  artikel: {
+    title: "Tulis Artikel",
+    desc: "Bagikan artikel yang bermanfaat di sini",
+  },
 };
 
 export default function CategoryPage() {
@@ -835,10 +893,13 @@ export default function CategoryPage() {
                 className={`bg-gradient-to-br ${config.color} rounded-xl p-6 text-white text-center`}
               >
                 <div className="text-3xl mb-3">{config.emoji}</div>
-                <h3 className="text-lg font-bold mb-2">Tulis {config.name}</h3>
+                <h3 className="text-lg font-bold mb-2">
+                  {categoryWritePrompts[category]?.title ||
+                    `Tulis ${config.name}`}
+                </h3>
                 <p className="text-white/90 mb-4 text-sm leading-relaxed">
-                  Bagikan karya {config.name.toLowerCase()} terbaikmu dengan
-                  komunitas PaberLand.
+                  {categoryWritePrompts[category]?.desc ||
+                    `Bagikan karya ${config.name.toLowerCase()} terbaikmu dengan komunitas PaberLand.`}
                 </p>
                 <Link
                   href="/write"

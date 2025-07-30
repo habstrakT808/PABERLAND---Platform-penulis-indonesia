@@ -2,6 +2,21 @@ import Link from "next/link";
 import Image from "next/image";
 
 export default function Footer() {
+  // Kategori lengkap untuk footer, sinkron dengan categoryConfig
+  const footerCategories = [
+    { href: "/kategori/info-berita", name: "Info/Berita", emoji: "📰" },
+    { href: "/kategori/cerpen", name: "Cerpen", emoji: "📖" },
+    { href: "/kategori/dongeng", name: "Dongeng", emoji: "🧚" },
+    { href: "/kategori/cerita-rakyat", name: "Cerita Rakyat", emoji: "🏛️" },
+    { href: "/kategori/cermin", name: "Cermin (Cerita Mini)", emoji: "🔎" },
+    { href: "/kategori/puisi", name: "Puisi", emoji: "🎭" },
+    { href: "/kategori/cerbung", name: "Cerbung", emoji: "📝" },
+    { href: "/kategori/novel", name: "Novel", emoji: "📚" },
+    { href: "/kategori/serial", name: "Serial", emoji: "📚" },
+    { href: "/kategori/resensi-buku", name: "Resensi Buku", emoji: "📖" },
+    { href: "/kategori/artikel", name: "Artikel", emoji: "📰" },
+  ];
+
   return (
     <footer className="bg-gradient-to-br from-white via-blue-50 to-pink-50 border-t border-blue-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -26,9 +41,9 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-gray-800 mb-6 max-w-md leading-relaxed">
-              Platform komunitas penulis bacaan anak Indonesia untuk berbagi
-              karya sastra, cerpen, puisi, dan artikel. Mari bersama membangun
-              literasi Indonesia yang lebih baik.
+              Platform Forum Penulis Bacaan Anak untuk Berbagi Cerita dan Karya.
+              Mari ciptakan bacaan anak yang sehat, kreatif, dan sesuai dengan
+              perkembangan anak-anak Indonesia
             </p>
 
             {/* Contact Info */}
@@ -52,27 +67,6 @@ export default function Footer() {
                   className="hover:text-blue-600 transition-colors"
                 >
                   moderator.pba@gmail.com
-                </a>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <svg
-                  className="w-5 h-5 mr-3 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                </svg>
-                <a
-                  href="tel:088808310508"
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  088808310508
                 </a>
               </div>
               <div className="flex items-start text-gray-700">
@@ -287,44 +281,23 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* ✅ FIXED: Categories - Tampilkan SEMUA kategori di desktop */}
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-6 relative">
-              Kategori Populer
+              Semua Kategori
               <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
             </h3>
-            <div className="grid grid-cols-1 gap-3">
-              {[
-                {
-                  href: "/kategori/info-berita",
-                  name: "Info/Berita",
-                  emoji: "📰",
-                },
-                { href: "/kategori/cermin", name: "Cermin", emoji: "🪞" },
-                {
-                  href: "/kategori/resensi-buku",
-                  name: "Resensi Buku",
-                  emoji: "📚",
-                },
-                { href: "/kategori/cerpen", name: "Cerpen", emoji: "📖" },
-                {
-                  href: "/kategori/cerita-rakyat",
-                  name: "Cerita Rakyat",
-                  emoji: "🏛️",
-                },
-                { href: "/kategori/cerbung", name: "Cerbung", emoji: "📜" },
-                { href: "/kategori/puisi", name: "Puisi", emoji: "🎭" },
-                { href: "/kategori/dongeng", name: "Dongeng", emoji: "🧚" },
-              ].map((category) => (
+            <div className="grid grid-cols-1 gap-2">
+              {footerCategories.map((category) => (
                 <Link
                   key={category.href}
                   href={category.href}
                   className="text-gray-700 hover:text-blue-600 transition-colors duration-200 flex items-center group py-1"
                 >
-                  <span className="mr-2 group-hover:scale-110 transition-transform">
+                  <span className="mr-2 group-hover:scale-110 transition-transform text-sm">
                     {category.emoji}
                   </span>
-                  <span className="group-hover:translate-x-1 transition-transform">
+                  <span className="group-hover:translate-x-1 transition-transform text-sm">
                     {category.name}
                   </span>
                 </Link>
@@ -381,9 +354,9 @@ export default function Footer() {
                   moderator.pba@gmail.com
                 </a>
               </div>
-              <div className="flex items-center text-gray-700">
+              <div className="flex items-start text-gray-700">
                 <svg
-                  className="w-5 h-5 mr-3 text-blue-600"
+                  className="w-5 h-5 mr-3 mt-0.5 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -525,26 +498,20 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Categories */}
+            {/* ✅ FIXED: Categories untuk tablet - tampilkan lebih banyak */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-6 relative">
                 Kategori
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
               </h3>
               <ul className="space-y-2">
-                {[
-                  { href: "/kategori/info-berita", name: "Info/Berita" },
-                  { href: "/kategori/cermin", name: "Cermin" },
-                  { href: "/kategori/resensi-buku", name: "Resensi Buku" },
-                  { href: "/kategori/cerpen", name: "Cerpen" },
-                  { href: "/kategori/puisi", name: "Puisi" },
-                  { href: "/kategori/dongeng", name: "Dongeng" },
-                ].map((category) => (
+                {footerCategories.slice(0, 8).map((category) => (
                   <li key={category.href}>
                     <Link
                       href={category.href}
-                      className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                      className="text-gray-700 hover:text-blue-600 transition-colors text-sm flex items-center"
                     >
+                      <span className="mr-1 text-xs">{category.emoji}</span>
                       {category.name}
                     </Link>
                   </li>
@@ -554,7 +521,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Mobile Layout (1 column) */}
+        {/* ✅ FIXED: Mobile Layout - Rata kiri semua dan tampilkan semua kategori */}
         <div className="md:hidden space-y-8">
           {/* Logo & Description */}
           <div className="text-center">
@@ -693,19 +660,19 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Mobile: Navigation & Categories Grid */}
+          {/* ✅ FIXED: Mobile Navigation & Categories Grid - Rata kiri */}
           <div className="grid grid-cols-2 gap-8">
-            {/* Navigation */}
+            {/* Navigation - Rata kiri */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-4 relative text-center">
+              <h3 className="text-base font-bold text-gray-900 mb-4 relative">
                 Navigasi
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <div className="absolute -bottom-1 left-0 w-6 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
               </h3>
-              <ul className="space-y-3 text-center">
+              <ul className="space-y-3">
                 <li>
                   <Link
                     href="/"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm block text-left"
                   >
                     Beranda
                   </Link>
@@ -713,7 +680,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/kategori"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm block text-left"
                   >
                     Kategori
                   </Link>
@@ -721,7 +688,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/penulis"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm block text-left"
                   >
                     Member
                   </Link>
@@ -729,7 +696,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/write"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm block text-left"
                   >
                     Tulis Konten
                   </Link>
@@ -737,7 +704,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/tentang"
-                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm"
+                    className="text-gray-700 hover:text-blue-600 transition-colors text-sm block text-left"
                   >
                     Tentang
                   </Link>
@@ -745,27 +712,23 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Categories */}
+            {/* ✅ FIXED: Categories - Rata kiri dan tampilkan SEMUA */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-4 relative text-center">
+              <h3 className="text-base font-bold text-gray-900 mb-4 relative">
                 Kategori
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <div className="absolute -bottom-1 left-0 w-6 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
               </h3>
-              <ul className="space-y-2 text-center">
-                {[
-                  { href: "/kategori/info-berita", name: "Info/Berita" },
-                  { href: "/kategori/cermin", name: "Cermin" },
-                  { href: "/kategori/resensi-buku", name: "Resensi" },
-                  { href: "/kategori/cerpen", name: "Cerpen" },
-                  { href: "/kategori/puisi", name: "Puisi" },
-                  { href: "/kategori/dongeng", name: "Dongeng" },
-                ].map((category) => (
+              <ul className="space-y-2">
+                {footerCategories.map((category) => (
                   <li key={category.href}>
                     <Link
                       href={category.href}
-                      className="text-gray-700 hover:text-blue-600 transition-colors text-xs"
+                      className="text-gray-700 hover:text-blue-600 transition-colors text-xs flex items-start text-left"
                     >
-                      {category.name}
+                      <span className="mr-1 flex-shrink-0">
+                        {category.emoji}
+                      </span>
+                      <span className="leading-tight">{category.name}</span>
                     </Link>
                   </li>
                 ))}

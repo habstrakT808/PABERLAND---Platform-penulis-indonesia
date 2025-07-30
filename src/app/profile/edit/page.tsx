@@ -83,6 +83,18 @@ export default function EditProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  // New state for achievements
+  const [formData, setFormData] = useState({
+    full_name: "",
+    bio: "",
+    phone: "",
+    member_id: "",
+    prestasi: "",
+    alamat: "",
+  });
+  const [achievements, setAchievements] = useState<string[]>([]);
+  const [newAchievement, setNewAchievement] = useState("");
+
   useEffect(() => {
     if (!user) {
       router.push("/auth/login");
@@ -118,8 +130,17 @@ export default function EditProfilePage() {
         prestasi: data.prestasi || "",
         alamat: data.alamat || "",
       });
+
+      // Parse achievements from prestasi field
+      if (data.prestasi) {
+        const achievementList = data.prestasi
+          .split("\n")
+          .map((item: string) => item.trim())
+          .filter((item: string) => item.length > 0);
+        setAchievements(achievementList);
+      }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error:", error);
       toast.error("Terjadi kesalahan saat memuat profil");
     } finally {
       setLoading(false);
@@ -223,6 +244,9 @@ export default function EditProfilePage() {
 
     setSaving(true);
     try {
+      // Combine achievements into prestasi field
+      const prestasiText = achievements.join("\n");
+
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -232,7 +256,7 @@ export default function EditProfilePage() {
           avatar_url: profileData.avatar_url.trim() || null,
           role: profileData.role,
           member_id: profileData.member_id || null,
-          prestasi: profileData.prestasi || null,
+          prestasi: prestasiText || null,
           alamat: profileData.alamat || null,
           updated_at: new Date().toISOString(),
         })
@@ -334,6 +358,33 @@ export default function EditProfilePage() {
 
   const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const addAchievement = () => {
+    if (newAchievement.trim()) {
+      setAchievements([...achievements, newAchievement.trim()]);
+      setNewAchievement("");
+    }
+  };
+
+  const removeAchievement = (index: number) => {
+    setAchievements(achievements.filter((_, i) => i !== index));
+  };
+
+  const moveAchievement = (index: number, direction: "up" | "down") => {
+    const newAchievements = [...achievements];
+    if (direction === "up" && index > 0) {
+      [newAchievements[index], newAchievements[index - 1]] = [
+        newAchievements[index - 1],
+        newAchievements[index],
+      ];
+    } else if (direction === "down" && index < newAchievements.length - 1) {
+      [newAchievements[index], newAchievements[index + 1]] = [
+        newAchievements[index + 1],
+        newAchievements[index],
+      ];
+    }
+    setAchievements(newAchievements);
   };
 
   if (loading) {
@@ -619,18 +670,82 @@ export default function EditProfilePage() {
                 </div>
                 {/* Prestasi */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 mb-2">
                     Prestasi
                   </label>
-                  <textarea
-                    value={profileData.prestasi}
-                    onChange={(e) =>
-                      handleInputChange("prestasi", e.target.value)
-                    }
-                    placeholder="Tulis prestasi, pisahkan dengan koma jika lebih dari satu"
-                    rows={2}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors border-blue-200 bg-white text-gray-900 placeholder-gray-500 resize-none"
-                  />
+                  <div className="space-y-3">
+                    {/* Existing achievements */}
+                    {achievements.map((achievement, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <span className="text-sm font-medium text-gray-600 w-8">
+                          {index + 1}.
+                        </span>
+                        <input
+                          type="text"
+                          value={achievement}
+                          onChange={(e) => {
+                            const newAchievements = [...achievements];
+                            newAchievements[index] = e.target.value;
+                            setAchievements(newAchievements);
+                          }}
+                          className="flex-1 px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                          placeholder="Masukkan prestasi..."
+                        />
+                        <button
+                          type="button"
+                          onClick={() => moveAchievement(index, "up")}
+                          disabled={index === 0}
+                          className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-50"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveAchievement(index, "down")}
+                          disabled={index === achievements.length - 1}
+                          className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-50"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAchievement(index)}
+                          className="p-1 text-red-400 hover:text-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Add new achievement */}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-600 w-8">
+                        {achievements.length + 1}.
+                      </span>
+                      <input
+                        type="text"
+                        value={newAchievement}
+                        onChange={(e) => setNewAchievement(e.target.value)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && addAchievement()
+                        }
+                        className="flex-1 px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                        placeholder="Masukkan prestasi baru..."
+                      />
+                      <button
+                        type="button"
+                        onClick={addAchievement}
+                        disabled={!newAchievement.trim()}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-600">
+                    Tambahkan prestasi satu per satu. Gunakan tombol ↑↓ untuk
+                    mengatur urutan.
+                  </p>
                 </div>
                 {/* Alamat */}
                 <div>

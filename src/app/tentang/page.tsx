@@ -11,48 +11,30 @@ import { useRef, useEffect, useState } from "react";
 
 const members = [
   { name: "Ali Muakhir", img: "/img/ali-muakhir.jpg", role: "Pengawas" },
+  { name: "Dewi Rieka", img: "/img/dewi-rieka.jpg", role: "Direktur" },
+  {
+    name: "Mita Akhsayanti",
+    img: "/img/mita-akhsayanti.jpg",
+    role: "Sekretaris I",
+  },
   {
     name: "Tethy Ezokanzo",
     img: "/img/tethy-ezokanzo.jpg",
-    role: "Pengawas",
+    role: "Sekretaris II",
   },
-  { name: "Wylvera W.", img: "/img/wylvera.jpg", role: "Direktur" },
-  { name: "Dewi Rieka", img: "/img/dewi-rieka.jpg", role: "Wakil Direktur" },
-  {
-    name: "Shinta Handini",
-    img: "/img/shinta-handini.jpg",
-    role: "Ketua - Kesekretariatan",
-  },
-  {
-    name: "Rakhmita Akhsayanty",
-    img: "/img/rakhmita.jpg",
-    role: "Wakil Ketua - Kesekretariatan",
-  },
-  {
-    name: "Fita Chakra",
-    img: "/img/fita-chakra.jpg",
-    role: "Ketua - Divisi Keuangan",
-  },
-  {
-    name: "Gina Sonia",
-    img: "/img/gina-sonia.jpg",
-    role: "Wakil Ketua - Divisi Keuangan",
-  },
-  {
-    name: "Lina Herlina",
-    img: "/img/lina-herlina.jpg",
-    role: "Ketua - Divisi Markom",
-  },
+  { name: "Fita Chakra", img: "/img/fita-chakra.jpg", role: "Keuangan I" },
+  { name: "Gina Sonia", img: "/img/gina-sonia.jpg", role: "Keuangan II" },
+  { name: "Lina Herlina", img: "/img/lina-herlina.jpg", role: "Markom I" },
   {
     name: "Pramesetya Aniendita",
     img: "/img/pramesetya.jpg",
-    role: "Wakil Ketua - Divisi Markom",
+    role: "Markom II",
   },
-  { name: "Sokat", img: "/img/sokat.jpg", role: "Ketua - Divisi Literasi" },
+  { name: "Sokat Rachman", img: "/img/sokat.jpg", role: "Div. Literasi I" },
   {
-    name: "Assyfa Nurhalimah",
-    img: "/img/assyfa.jpg",
-    role: "Wakil Ketua - Divisi Literasi",
+    name: "Syifa Nurhalimah",
+    img: "/img/syifa-nurhalimah.jpg",
+    role: "Div. Literasi II",
   },
 ];
 

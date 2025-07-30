@@ -214,9 +214,19 @@ function AdminArticlesContent() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
-      month: "short",
+      month: "long",
       day: "numeric",
     });
+  };
+
+  // Helper function to generate name-based URL slug
+  const generateNameSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single
+      .trim();
   };
 
   const formatNumber = (num: number) => {
@@ -447,10 +457,12 @@ function AdminArticlesContent() {
                             </div>
                           )}
                           <Link
-                            href={`/penulis/${article.profiles.id}`}
-                            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                            href={`/penulis/${generateNameSlug(
+                              article.profiles.full_name
+                            )}`}
+                            className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                           >
-                            {article.profiles.full_name}
+                            Lihat Profil
                           </Link>
                         </div>
 
