@@ -82,23 +82,53 @@ export default function PortfolioPage() {
       if (uuidProfile) {
         profile = uuidProfile;
       } else {
-        // If not found by UUID, try to find by name slug
-        const nameSlug = slug.replace(/-/g, " ").toLowerCase();
-        const { data: nameProfile, error: nameError } = await supabase
-          .from("profiles")
-          .select("*")
-          .ilike("full_name", `%${nameSlug}%`)
-          .single();
-
-        profile = nameProfile;
-        profileError = nameError;
+        // If not found by UUID, try to find by name slug with sequential numbering
+        const slugParts = slug.split("-");
+        if (
+          slugParts.length >= 2 &&
+          !isNaN(Number(slugParts[slugParts.length - 1]))
+        ) {
+          // New format: name-number (e.g., mamat-alamat-2)
+          const number = parseInt(slugParts[slugParts.length - 1]);
+          const namePart = slugParts.slice(0, -1).join("-");
+          const nameSlug = namePart.replace(/-/g, " ").toLowerCase();
+          const { data: nameProfiles, error: nameError } = await supabase
+            .from("profiles")
+            .select("*")
+            .ilike("full_name", `%${nameSlug}%`)
+            .order("created_at", { ascending: true });
+          if (nameProfiles && nameProfiles.length > 0) {
+            if (number > 0 && number <= nameProfiles.length) {
+              profile = nameProfiles[number - 1];
+            } else {
+              profileError = new Error("User not found at specified position");
+            }
+          } else {
+            profileError = nameError;
+          }
+        } else {
+          // Old format: name only (for backward compatibility)
+          const nameSlug = slug.replace(/-/g, " ").toLowerCase();
+          const { data: nameProfiles, error: nameError } = await supabase
+            .from("profiles")
+            .select("*")
+            .ilike("full_name", `%${nameSlug}%`)
+            .order("created_at", { ascending: true }); // Order by creation date
+          if (nameProfiles && nameProfiles.length > 0) {
+            profile = nameProfiles[0]; // For backward compatibility, take the first (oldest) user
+          } else {
+            profileError = nameError;
+          }
+        }
       }
 
       if (profileError || !profile) {
         console.error("Author not found:", profileError);
+        console.error("Slug attempted:", slug); // Added for debugging
         notFound();
         return;
       }
+      console.log("Found profile:", profile.full_name, "for slug:", slug); // Added for debugging
 
       setAuthorProfile(profile);
       fetchPortfolioData(profile.id);
