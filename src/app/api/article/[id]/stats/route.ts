@@ -3,10 +3,10 @@ import { supabase, commentHelpers, likeHelpers } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const articleId = params.id;
+    const { id: articleId } = await params;
 
     // Fetch article data directly from database using ID
     const { data: article, error: articleError } = await supabase

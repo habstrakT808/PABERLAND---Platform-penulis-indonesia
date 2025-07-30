@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { UserIcon } from "@heroicons/react/24/outline";
-import { supabase, generateNameSlugSync } from "@/lib/supabase";
+import { supabase, generateNameSlugSync, getAvatarUrl } from "@/lib/supabase";
 
 interface AuthorProfileProps {
   author: {
@@ -40,15 +40,49 @@ export default function AuthorProfile({
 
   const fetchAuthorData = async () => {
     try {
-      const stats = await supabase.rpc("get_user_stats", {
-        params: { user_id: author.id },
-      });
+      // Get total articles count
+      const { count: articlesCount, error: articlesError } = await supabase
+        .from("articles")
+        .select("*", { count: "exact", head: true })
+        .eq("author_id", author.id)
+        .eq("published", true);
+
+      if (articlesError) {
+        console.error("Error fetching articles count:", articlesError);
+      }
+
+      // Get total likes from all articles by this user
+      const { data: articles, error: likesError } = await supabase
+        .from("articles")
+        .select("likes_count")
+        .eq("author_id", author.id)
+        .eq("published", true);
+
+      if (likesError) {
+        console.error("Error fetching likes data:", likesError);
+      }
+
+      // Calculate total likes
+      const totalLikes = articles
+        ? articles.reduce((sum, article) => sum + (article.likes_count || 0), 0)
+        : 0;
+
       setAuthorStats({
-        totalArticles: stats.totalArticles,
-        totalLikes: stats.totalLikes,
+        totalArticles: articlesCount || 0,
+        totalLikes: totalLikes,
+      });
+
+      console.log(`📊 Author stats for ${author.full_name}:`, {
+        totalArticles: articlesCount || 0,
+        totalLikes: totalLikes,
+        articlesData: articles,
       });
     } catch (error) {
       console.error("Error fetching author data:", error);
+      setAuthorStats({
+        totalArticles: 0,
+        totalLikes: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -69,7 +103,12 @@ export default function AuthorProfile({
         <div className="relative">
           {author.avatar_url ? (
             <Image
-              src={author.avatar_url || ""}
+              src={
+                getAvatarUrl(author.avatar_url) ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  author.full_name
+                )}&background=3b82f6&color=fff&size=80`
+              }
               alt={author.full_name}
               width={80}
               height={80}
@@ -112,14 +151,14 @@ export default function AuthorProfile({
       <div className="grid grid-cols-2 gap-2 mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
         <div className="text-center">
           <div className="text-lg font-bold text-blue-600">
-            {loading ? "..." : authorStats.totalArticles}
+            {loading ? "..." : authorStats.totalArticles || 0}
           </div>
           <div className="text-xs text-gray-600">Konten</div>
         </div>
 
         <div className="text-center">
           <div className="text-lg font-bold text-blue-600">
-            {loading ? "..." : authorStats.totalLikes.toLocaleString()}
+            {loading ? "..." : (authorStats.totalLikes || 0).toLocaleString()}
           </div>
           <div className="text-xs text-gray-600">Likes</div>
         </div>

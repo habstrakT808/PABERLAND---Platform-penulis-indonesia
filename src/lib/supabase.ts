@@ -2058,13 +2058,21 @@ export const platformStatsHelpers = {
 export function getAvatarUrl(avatarUrl: string | null): string | null {
   if (!avatarUrl) return null;
   
-  // If it's already a full URL, return as is
+  // If it's already a full URL, validate and return
   if (avatarUrl.startsWith('http')) {
-    return avatarUrl;
+    try {
+      new URL(avatarUrl); // Validate URL format
+      return avatarUrl;
+    } catch {
+      // Invalid URL, return null
+      return null;
+    }
   }
   
   // If it's a file path, construct the public URL
-  return `https://ujbygopdxsarjkkgkvmv.supabase.co/storage/v1/object/public/images/${avatarUrl}`;
+  // Make sure the path doesn't start with a slash
+  const cleanPath = avatarUrl.startsWith('/') ? avatarUrl.slice(1) : avatarUrl;
+  return `https://ujbygopdxsarjkkgkvmv.supabase.co/storage/v1/object/public/images/${cleanPath}`;
 }
 
 export async function debugCoverImages(): Promise<void> {

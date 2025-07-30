@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const articleId = params.id;
+    const { id: articleId } = await params;
     
     console.log(`🔄 API: Starting increment for article: ${articleId}`);
     

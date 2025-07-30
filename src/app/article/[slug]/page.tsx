@@ -249,7 +249,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                             src={
                               getAvatarUrl(
                                 updatedArticle.profiles.avatar_url
-                              ) || ""
+                              ) ||
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                updatedArticle.profiles.full_name
+                              )}&background=3b82f6&color=fff&size=48`
                             }
                             alt={updatedArticle.profiles.full_name}
                             width={48}
