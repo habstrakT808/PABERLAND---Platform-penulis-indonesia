@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { UserIcon } from "@heroicons/react/24/outline";
-import { supabase, generateNameSlugSync, getAvatarUrl } from "@/lib/supabase";
+import { supabase, generateNameSlugSync, generateNameSlug, getAvatarUrl } from "@/lib/supabase";
 
 interface AuthorProfileProps {
   author: {
@@ -33,10 +33,17 @@ export default function AuthorProfile({
     totalLikes: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [authorSlug, setAuthorSlug] = useState<string>("");
 
   useEffect(() => {
     fetchAuthorData();
+    generateAuthorSlug();
   }, [author.id]);
+
+  const generateAuthorSlug = async () => {
+    const slug = await generateNameSlug(author.full_name, author.id);
+    setAuthorSlug(slug);
+  };
 
   const fetchAuthorData = async () => {
     try {
@@ -126,7 +133,7 @@ export default function AuthorProfile({
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-xl font-bold text-gray-900">
               <Link
-                href={`/member/${generateNameSlugSync(author.full_name)}`}
+                href={`/member/${authorSlug || author.full_name.toLowerCase().replace(/\s+/g, '-')}`}
                 className="font-medium text-blue-600 hover:text-blue-700"
               >
                 {author.full_name}
@@ -196,7 +203,7 @@ export default function AuthorProfile({
           </div>
 
           <Link
-            href={`/member/${generateNameSlugSync(author.full_name)}`}
+            href={`/member/${authorSlug || author.full_name.toLowerCase().replace(/\s+/g, '-')}`}
             className="inline-flex items-center mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Lihat semua konten →

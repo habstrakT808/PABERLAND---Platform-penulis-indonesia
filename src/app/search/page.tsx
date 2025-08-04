@@ -83,8 +83,8 @@ export default function SearchPage() {
 
     const slugs: { [key: string]: string } = {};
     for (const author of results.authors) {
-      // Use sync version only to avoid Promise in href
-      slugs[author.id] = generateNameSlugSync(author.full_name);
+      // Use async version to handle duplicate names properly
+      slugs[author.id] = await generateNameSlug(author.full_name, author.id);
     }
     setAuthorSlugs(slugs);
   };
@@ -346,7 +346,7 @@ export default function SearchPage() {
                   {results.authors.slice(0, 6).map((author) => (
                     <Link
                       key={author.id}
-                      href={`/member/${authorSlugs[author.id] || generateNameSlugSync(author.full_name)}`}
+                      href={`/member/${authorSlugs[author.id] || author.full_name.toLowerCase().replace(/\s+/g, '-')}`}
                       className="flex items-center min-w-[220px] space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
                       {author.avatar_url ? (

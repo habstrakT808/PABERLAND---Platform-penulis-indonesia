@@ -17,12 +17,28 @@ export default function UserRecommendations() {
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userSlugs, setUserSlugs] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (user) {
       fetchRecommendations();
     }
   }, [user]);
+
+  // Generate user slugs when recommendations change
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      generateUserSlugs();
+    }
+  }, [recommendations]);
+
+  const generateUserSlugs = async () => {
+    const slugs: { [key: string]: string } = {};
+    for (const user of recommendations) {
+      slugs[user.id] = await generateNameSlug(user.full_name, user.id);
+    }
+    setUserSlugs(slugs);
+  };
 
   const fetchRecommendations = async () => {
     if (!user) return;
@@ -129,7 +145,7 @@ export default function UserRecommendations() {
             className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <Link
-              href={`/member/${generateNameSlugSync(user.full_name)}`}
+              href={`/member/${userSlugs[user.id] || user.full_name.toLowerCase().replace(/\s+/g, '-')}`}
               className="flex-shrink-0"
             >
               {user.avatar_url ? (
@@ -149,7 +165,7 @@ export default function UserRecommendations() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/member/${generateNameSlugSync(user.full_name)}`}
+                href={`/member/${userSlugs[user.id] || user.full_name.toLowerCase().replace(/\s+/g, '-')}`}
                 className="font-medium text-blue-600 hover:text-blue-700"
               >
                 {user.full_name}

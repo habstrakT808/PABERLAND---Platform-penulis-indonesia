@@ -89,8 +89,8 @@ export default function AuthorsPage() {
 
     const slugs: { [key: string]: string } = {};
     for (const author of data.authors) {
-      // Use sync version only to avoid Promise in href
-      slugs[author.id] = generateNameSlugSync(author.full_name);
+      // Use async version to handle duplicate names properly
+      slugs[author.id] = await generateNameSlug(author.full_name, author.id);
     }
     setAuthorSlugs(slugs);
   };

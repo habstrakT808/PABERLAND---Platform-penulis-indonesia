@@ -6,6 +6,7 @@ import { XMarkIcon, HeartIcon } from "@heroicons/react/24/outline";
 import {
   supabase,
   generateNameSlugSync,
+  generateNameSlug,
   getAvatarUrl,
   likeHelpers,
 } from "@/lib/supabase";
@@ -27,12 +28,30 @@ export default function LikesModal({
 }: LikesModalProps) {
   const [likes, setLikes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userSlugs, setUserSlugs] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (isOpen && articleId) {
       fetchLikes();
     }
   }, [isOpen, articleId]);
+
+  // Generate user slugs when likes change
+  useEffect(() => {
+    if (likes.length > 0) {
+      generateUserSlugs();
+    }
+  }, [likes]);
+
+  const generateUserSlugs = async () => {
+    const slugs: { [key: string]: string } = {};
+    for (const like of likes) {
+      if (like.full_name) {
+        slugs[like.user_id] = await generateNameSlug(like.full_name, like.user_id);
+      }
+    }
+    setUserSlugs(slugs);
+  };
 
   const fetchLikes = async () => {
     setLoading(true);
@@ -134,7 +153,7 @@ export default function LikesModal({
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link
-                        href={`/member/${generateNameSlugSync(like.full_name)}`}
+                        href={`/member/${userSlugs[like.user_id] || like.full_name.toLowerCase().replace(/\s+/g, '-')}`}
                         className="font-medium text-blue-600 hover:text-blue-700"
                       >
                         {like.full_name}
