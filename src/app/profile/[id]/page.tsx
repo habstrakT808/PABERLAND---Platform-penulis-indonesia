@@ -118,7 +118,7 @@ export default function PublicProfilePage() {
 
       if (profileError || !profile) {
         console.error("Profile not found:", profileError);
-        router.push("/penulis");
+        router.push("/member");
         return;
       }
 
@@ -390,10 +390,10 @@ export default function PublicProfilePage() {
               Penulis yang Anda cari tidak ditemukan atau telah dihapus.
             </p>
             <Link
-              href="/penulis"
+              href="/member"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              Kembali ke Direktori Penulis
+              ← Kembali ke Direktori Member
             </Link>
           </div>
         </div>
@@ -424,8 +424,8 @@ export default function PublicProfilePage() {
             Beranda
           </Link>
           <span>/</span>
-          <Link href="/penulis" className="hover:text-blue-600">
-            Penulis
+          <Link href="/member" className="hover:text-blue-600">
+            Member
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">
@@ -599,7 +599,7 @@ export default function PublicProfilePage() {
                   </Link>
                 )}
                 <Link
-                  href={`/penulis/${authorSlug}/portfolio`}
+                  href={`/member/${authorSlug}/portfolio`}
                   className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   <BookOpenIcon className="w-4 h-4" />
@@ -617,7 +617,7 @@ export default function PublicProfilePage() {
               {/* Second row: Kembali (right-aligned on mobile, inline on desktop) */}
               <div className="flex justify-end sm:justify-start">
                 <Link
-                  href="/penulis"
+                  href="/member"
                   className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <ArrowLeftIcon className="w-4 h-4" />

@@ -18,12 +18,18 @@ interface ArticleFiltersProps {
 
 const categories = [
   { value: "all", label: "📂 Semua Kategori" },
+  { value: "info/berita", label: "📰 Info/Berita" },
   { value: "cerpen", label: "📖 Cerpen" },
-  { value: "puisi", label: "🎭 Puisi" },
-  { value: "artikel", label: "📰 Konten" },
+  { value: "dongeng", label: "🧚 Dongeng" },
   { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
-  { value: "novel-berseri", label: "📚 Novel Berseri" },
-  { value: "lainnya", label: "✨ Lainnya" },
+  { value: "cermin (cerita mini)", label: "🔍 Cermin (Cerita Mini)" },
+  { value: "puisi", label: "🎭 Puisi" },
+  { value: "cerbung", label: "📚 Cerbung" },
+  { value: "novel", label: "📖 Novel" },
+  { value: "serial", label: "📚 Serial" },
+  { value: "resensi buku", label: "📖 Resensi Buku" },
+  { value: "artikel", label: "📰 Artikel" },
+  { value: "buku", label: "📚 Buku" },
 ];
 
 const statuses = [

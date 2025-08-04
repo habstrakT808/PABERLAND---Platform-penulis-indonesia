@@ -59,6 +59,7 @@ export async function uploadImageToStorage(file: File, folder: string = 'portfol
   console.log('uploadImageToStorage: Generated file path:', filePath);
 
   try {
+    // Try to upload directly without checking bucket first
     const { data, error } = await supabase.storage.from('images').upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -66,6 +67,13 @@ export async function uploadImageToStorage(file: File, folder: string = 'portfol
     
     if (error) {
       console.error('uploadImageToStorage: Upload error:', error);
+      
+      // If bucket doesn't exist error, try to create it or provide helpful message
+      if (error.message?.includes('bucket') || error.message?.includes('not found')) {
+        console.error('uploadImageToStorage: Bucket access issue. Please check Supabase Storage configuration.');
+        return null;
+      }
+      
       return null;
     }
     
@@ -75,16 +83,6 @@ export async function uploadImageToStorage(file: File, folder: string = 'portfol
     }
     
     console.log('uploadImageToStorage: Upload successful, data:', data);
-    
-    // Verify file exists after upload
-    const { data: listData, error: listError } = await supabase.storage.from('images').list(folder);
-    if (listError) {
-      console.error('uploadImageToStorage: Error listing files after upload:', listError);
-    } else {
-      console.log('uploadImageToStorage: Files in folder after upload:', listData);
-      const fileExists = listData?.some(f => f.name === fileName);
-      console.log('uploadImageToStorage: File exists after upload:', fileExists);
-    }
     
     // Return filePath
     console.log('uploadImageToStorage: Returning file path:', filePath);
@@ -200,11 +198,27 @@ export async function checkBucketExists(bucketName: string): Promise<boolean> {
   try {
     console.log('checkBucketExists: Checking bucket:', bucketName);
     
+    // Try to list buckets first
     const { data, error } = await supabase.storage.listBuckets();
     
     if (error) {
       console.error('checkBucketExists: Error listing buckets:', error);
-      return false;
+      
+      // Fallback: try to access the bucket directly
+      try {
+        const { data: bucketData, error: bucketError } = await supabase.storage.from(bucketName).list('', { limit: 1 });
+        
+        if (bucketError) {
+          console.error('checkBucketExists: Bucket access failed:', bucketError);
+          return false;
+        }
+        
+        console.log('checkBucketExists: Bucket exists (fallback):', true);
+        return true;
+      } catch (fallbackError) {
+        console.error('checkBucketExists: Fallback also failed:', fallbackError);
+        return false;
+      }
     }
     
     const bucketExists = data?.some(bucket => bucket.name === bucketName);
@@ -214,7 +228,10 @@ export async function checkBucketExists(bucketName: string): Promise<boolean> {
     return bucketExists || false;
   } catch (error) {
     console.error('checkBucketExists: Unexpected error:', error);
-    return false;
+    
+    // Final fallback: assume bucket exists if we can't check
+    console.log('checkBucketExists: Assuming bucket exists due to error');
+    return true;
   }
 }
 
@@ -1894,59 +1911,39 @@ export const platformStatsHelpers = {
   // Get top categories with counts
   async getTopCategories(): Promise<Array<{ category: string; count: number }>> {
     try {
-      console.log('🔄 Fetching top categories...');
+      console.log('🔄 Fetching all categories with counts (articles only)...');
 
-      // Get categories from articles and portfolio works in parallel
-      const [articlesResult, portfolioResult] = await Promise.all([
-        supabase
-          .from('articles')
-          .select('category')
-          .eq('published', true),
-        
-        supabase
-          .from('portfolio_works')
-          .select('category')
-          .eq('status', 'published')
-      ]);
+      // Get categories from articles only (not portfolio works)
+      const { data: articlesData, error: articlesError } = await supabase
+        .from('articles')
+        .select('category')
+        .eq('published', true);
 
-      if (articlesResult.error) {
-        console.error('❌ Error fetching articles for categories:', articlesResult.error);
-      }
-      if (portfolioResult.error) {
-        console.error('❌ Error fetching portfolio works for categories:', portfolioResult.error);
+      if (articlesError) {
+        console.error('❌ Error fetching articles for categories:', articlesError);
       }
 
-      // Combine and count categories
+      console.log('📊 Articles data:', articlesData);
+
+      // Count categories from articles only
       const categoryCounts = new Map<string, number>();
       
-      // Count from articles
-      (articlesResult.data || []).forEach((article) => {
+      // Count from articles only
+      (articlesData || []).forEach((article) => {
         if (article.category) {
-          categoryCounts.set(
-            article.category,
-            (categoryCounts.get(article.category) || 0) + 1
-          );
+          const currentCount = categoryCounts.get(article.category) || 0;
+          categoryCounts.set(article.category, currentCount + 1);
+          console.log(`📝 Article category "${article.category}": ${currentCount + 1}`);
         }
       });
 
-      // Count from portfolio works
-      (portfolioResult.data || []).forEach((work) => {
-        if (work.category) {
-          categoryCounts.set(
-            work.category,
-            (categoryCounts.get(work.category) || 0) + 1
-          );
-        }
-      });
-
-      // Convert to array and sort by count
-      const topCategories = Array.from(categoryCounts.entries())
+      // Convert to array and sort by count (descending)
+      const allCategories = Array.from(categoryCounts.entries())
         .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
+        .sort((a, b) => b.count - a.count);
 
-      console.log('✅ Top categories fetched:', topCategories);
-      return topCategories;
+      console.log('✅ All categories fetched (articles only):', allCategories);
+      return allCategories;
     } catch (error) {
       console.error('❌ Error in getTopCategories:', error);
       return [];
@@ -2046,6 +2043,60 @@ export const platformStatsHelpers = {
 
     } catch (error) {
       console.error('❌ Debug views error:', error);
+    }
+  },
+
+  // Debug function to check category data
+  async debugCategories(): Promise<void> {
+    try {
+      console.log('🔍 DEBUG CATEGORIES: Starting analysis...');
+
+      // Check articles by category
+      const { data: articlesByCategory } = await supabase
+        .from('articles')
+        .select('category, title, published')
+        .eq('published', true)
+        .order('category');
+
+      console.log('📊 Articles by category:');
+      const articleCategories = new Map<string, string[]>();
+      articlesByCategory?.forEach((article) => {
+        if (article.category) {
+          if (!articleCategories.has(article.category)) {
+            articleCategories.set(article.category, []);
+          }
+          articleCategories.get(article.category)!.push(article.title);
+        }
+      });
+
+      articleCategories.forEach((titles, category) => {
+        console.log(`📝 "${category}" (${titles.length}):`, titles);
+      });
+
+      // Check portfolio works by category
+      const { data: portfolioByCategory } = await supabase
+        .from('portfolio_works')
+        .select('category, title, status')
+        .eq('status', 'published')
+        .order('category');
+
+      console.log('📚 Portfolio works by category:');
+      const portfolioCategories = new Map<string, string[]>();
+      portfolioByCategory?.forEach((work) => {
+        if (work.category) {
+          if (!portfolioCategories.has(work.category)) {
+            portfolioCategories.set(work.category, []);
+          }
+          portfolioCategories.get(work.category)!.push(work.title);
+        }
+      });
+
+      portfolioCategories.forEach((titles, category) => {
+        console.log(`📚 "${category}" (${titles.length}):`, titles);
+      });
+
+    } catch (error) {
+      console.error('❌ Debug categories error:', error);
     }
   }
 };
@@ -2210,6 +2261,69 @@ export const generateNameSlug = async (name: string, userId: string) => {
   } else {
     // User not found in list, return base slug
     return baseSlug;
+  }
+};
+
+// Function to get the correct slug for a user by their ID
+export const getUserSlugById = async (userId: string) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, created_at")
+      .eq("id", userId)
+      .single();
+    
+    if (error || !profile) {
+      return null;
+    }
+    
+    return await generateNameSlug(profile.full_name, profile.id);
+  } catch (error) {
+    console.error("Error getting user slug:", error);
+    return null;
+  }
+};
+
+// Function to get user ID by slug
+export const getUserIdBySlug = async (slug: string) => {
+  try {
+    // Parse the slug to extract base name and potential number
+    const slugParts = slug.split("-");
+    let baseName: string;
+    let userIndex: number = 0;
+    
+    // Check if the last part is a number (e.g., "mamat-alamat-1")
+    if (slugParts.length >= 2 && !isNaN(Number(slugParts[slugParts.length - 1]))) {
+      // Extract the number and base name
+      userIndex = parseInt(slugParts[slugParts.length - 1]) - 1; // Convert to 0-based index
+      baseName = slugParts.slice(0, -1).join("-").replace(/-/g, " ").toLowerCase();
+    } else {
+      // No number suffix, treat as first user (index 0)
+      baseName = slug.replace(/-/g, " ").toLowerCase();
+      userIndex = 0;
+    }
+    
+    // Find all users with the same base name
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name, created_at")
+      .ilike("full_name", `%${baseName}%`)
+      .order("created_at", { ascending: true });
+
+    if (profilesError || !profiles || profiles.length === 0) {
+      return null;
+    }
+    
+    // Return the user at the specified index
+    if (userIndex >= 0 && userIndex < profiles.length) {
+      return profiles[userIndex].id;
+    }
+    
+    // Fallback: if index is out of range, return the first user
+    return profiles[0]?.id || null;
+  } catch (error) {
+    console.error("Error getting user ID by slug:", error);
+    return null;
   }
 };
 

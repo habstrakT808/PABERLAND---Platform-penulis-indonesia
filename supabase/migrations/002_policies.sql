@@ -9,6 +9,12 @@ ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Admins can delete any profile" ON public.profiles FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND is_admin = true
+  )
+);
 
 -- Articles policies
 CREATE POLICY "Published articles are viewable by everyone" ON public.articles 

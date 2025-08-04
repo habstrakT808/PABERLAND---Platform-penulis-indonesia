@@ -3,7 +3,12 @@
 
 import { useState, useEffect } from "react";
 import { XMarkIcon, HeartIcon } from "@heroicons/react/24/outline";
-import { likeHelpers, getAvatarUrl } from "@/lib/supabase";
+import {
+  supabase,
+  generateNameSlugSync,
+  getAvatarUrl,
+  likeHelpers,
+} from "@/lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -47,20 +52,6 @@ export default function LikesModal({
       month: "long",
       day: "numeric",
     });
-  };
-
-  // Helper function to generate name-based URL slug with sequential numbering for duplicates
-  const generateNameSlug = (name: string, userId: string) => {
-    const baseSlug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
-
-    // For now, return base slug. In a real implementation, you would need to check for duplicates
-    // This is a simplified version for the component
-    return baseSlug;
   };
 
   if (!isOpen) return null;
@@ -124,7 +115,7 @@ export default function LikesModal({
                     className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   >
                     <Link
-                      href={`/penulis/${like.user_id}`}
+                      href={`/member/${like.user_id}`}
                       className="flex-shrink-0"
                     >
                       {like.profiles?.avatar_url ? (
@@ -143,11 +134,8 @@ export default function LikesModal({
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link
-                        href={`/penulis/${generateNameSlug(
-                          like.full_name,
-                          like.user_id
-                        )}`}
-                        className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                        href={`/member/${generateNameSlugSync(like.full_name)}`}
+                        className="font-medium text-blue-600 hover:text-blue-700"
                       >
                         {like.full_name}
                       </Link>

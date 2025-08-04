@@ -38,12 +38,18 @@ interface SearchResult {
 
 const categories = [
   { value: "all", label: "Semua Kategori" },
-  { value: "cerpen", label: "Cerpen" },
-  { value: "puisi", label: "Puisi" },
-  { value: "artikel", label: "Artikel" },
-  { value: "cerita-rakyat", label: "Cerita Rakyat" },
-  { value: "novel-berseri", label: "Novel Berseri" },
-  { value: "lainnya", label: "Lainnya" },
+  { value: "info/berita", label: "📰 Info/Berita" },
+  { value: "cerpen", label: "📖 Cerpen" },
+  { value: "dongeng", label: "🧚 Dongeng" },
+  { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
+  { value: "cermin (cerita mini)", label: "🔍 Cermin (Cerita Mini)" },
+  { value: "puisi", label: "🎭 Puisi" },
+  { value: "cerbung", label: "📚 Cerbung" },
+  { value: "novel", label: "📖 Novel" },
+  { value: "serial", label: "📚 Serial" },
+  { value: "resensi buku", label: "📖 Resensi Buku" },
+  { value: "artikel", label: "📰 Artikel" },
+  { value: "buku", label: "📚 Buku" },
 ];
 
 export default function SearchPage() {
@@ -77,13 +83,8 @@ export default function SearchPage() {
 
     const slugs: { [key: string]: string } = {};
     for (const author of results.authors) {
-      try {
-        const slug = await generateNameSlug(author.full_name, author.id);
-        slugs[author.id] = slug;
-      } catch (error) {
-        // Fallback to sync version
-        slugs[author.id] = generateNameSlugSync(author.full_name);
-      }
+      // Use sync version only to avoid Promise in href
+      slugs[author.id] = generateNameSlugSync(author.full_name);
     }
     setAuthorSlugs(slugs);
   };
@@ -345,10 +346,7 @@ export default function SearchPage() {
                   {results.authors.slice(0, 6).map((author) => (
                     <Link
                       key={author.id}
-                      href={`/penulis/${
-                        authorSlugs[author.id] ||
-                        generateNameSlugSync(author.full_name)
-                      }`}
+                      href={`/member/${authorSlugs[author.id] || generateNameSlugSync(author.full_name)}`}
                       className="flex items-center min-w-[220px] space-x-3 p-4 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors bg-white/80"
                     >
                       {author.avatar_url ? (

@@ -109,7 +109,7 @@ export default function PortfolioWorkDetailPage() {
         console.error("Author not found:", profileError);
         console.error("Slug attempted:", slug);
         toast.error("Author tidak ditemukan");
-        router.push("/penulis");
+        router.push("/member");
         return;
       }
 
@@ -123,7 +123,7 @@ export default function PortfolioWorkDetailPage() {
         setWork(result.data);
       } else {
         toast.error("Karya portfolio tidak ditemukan");
-        router.push(`/penulis/${slug}/portfolio`);
+        router.push(`/member/${slug}/portfolio`);
       }
     } catch (error) {
       console.error("Error fetching work data:", error);
@@ -145,7 +145,7 @@ export default function PortfolioWorkDetailPage() {
       );
       if (result.success) {
         toast.success("Karya berhasil dihapus!");
-        router.push(`/penulis/${slug}/portfolio`);
+        router.push(`/member/${slug}/portfolio`);
       } else {
         toast.error("Gagal menghapus karya: " + result.error);
       }
@@ -186,7 +186,7 @@ export default function PortfolioWorkDetailPage() {
             Karya yang Anda cari tidak ditemukan atau telah dihapus.
           </p>
           <Link
-            href={`/penulis/${slug}/portfolio`}
+            href={`/member/${slug}/portfolio`}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Kembali ke Portfolio
@@ -207,16 +207,16 @@ export default function PortfolioWorkDetailPage() {
             Beranda
           </Link>
           <span>/</span>
-          <Link href="/penulis" className="hover:text-blue-600">
+          <Link href="/member" className="hover:text-blue-600">
             Member
           </Link>
           <span>/</span>
-          <Link href={`/penulis/${slug}`} className="hover:text-blue-600">
+          <Link href={`/member/${slug}`} className="hover:text-blue-600">
             {author.full_name}
           </Link>
           <span>/</span>
           <Link
-            href={`/penulis/${slug}/portfolio`}
+            href={`/member/${slug}/portfolio`}
             className="hover:text-blue-600"
           >
             Portfolio
@@ -238,7 +238,7 @@ export default function PortfolioWorkDetailPage() {
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-600">Oleh:</span>
                   <Link
-                    href={`/penulis/${slug}`}
+                    href={`/member/${slug}`}
                     className="font-medium text-blue-600 hover:text-blue-700"
                   >
                     {author.full_name}
@@ -289,7 +289,7 @@ export default function PortfolioWorkDetailPage() {
               )}
 
               <Link
-                href={`/penulis/${slug}/portfolio`}
+                href={`/member/${slug}/portfolio`}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeftIcon className="w-4 h-4" />
@@ -448,7 +448,7 @@ export default function PortfolioWorkDetailPage() {
                   )}
                   <div>
                     <Link
-                      href={`/penulis/${slug}`}
+                      href={`/member/${slug}`}
                       className="font-medium text-gray-900 hover:text-blue-600"
                     >
                       {author.full_name}
@@ -457,7 +457,7 @@ export default function PortfolioWorkDetailPage() {
                   </div>
                 </div>
                 <Link
-                  href={`/penulis/${slug}/portfolio`}
+                  href={`/member/${slug}/portfolio`}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
                   Lihat Portfolio Lengkap →

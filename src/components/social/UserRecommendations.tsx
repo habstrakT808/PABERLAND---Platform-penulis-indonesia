@@ -6,7 +6,12 @@ import { SparklesIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase, getAvatarUrl } from "@/lib/supabase";
+import {
+  supabase,
+  generateNameSlug,
+  generateNameSlugSync,
+  getAvatarUrl,
+} from "@/lib/supabase";
 
 export default function UserRecommendations() {
   const { user } = useAuth();
@@ -101,18 +106,13 @@ export default function UserRecommendations() {
     });
   };
 
-  // Helper function to generate name-based URL slug with sequential numbering for duplicates
-  const generateNameSlug = (name: string, userId: string) => {
-    const baseSlug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
-
-    // For now, return base slug. In a real implementation, you would need to check for duplicates
-    // This is a simplified version for the component
-    return baseSlug;
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M";
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "K";
+    }
+    return num.toString();
   };
 
   return (
@@ -129,7 +129,7 @@ export default function UserRecommendations() {
             className="flex items-center space-x-3 p-3 bg-white/80 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <Link
-              href={`/penulis/${generateNameSlug(user.full_name, user.id)}`}
+              href={`/member/${generateNameSlugSync(user.full_name)}`}
               className="flex-shrink-0"
             >
               {user.avatar_url ? (
@@ -149,8 +149,8 @@ export default function UserRecommendations() {
 
             <div className="flex-1 min-w-0">
               <Link
-                href={`/penulis/${generateNameSlug(user.full_name, user.id)}`}
-                className="font-medium text-gray-900 hover:text-indigo-600 transition-colors block"
+                href={`/member/${generateNameSlugSync(user.full_name)}`}
+                className="font-medium text-blue-600 hover:text-blue-700"
               >
                 {user.full_name}
               </Link>
@@ -163,10 +163,10 @@ export default function UserRecommendations() {
       </div>
 
       <Link
-        href="/penulis"
-        className="block text-center mt-4 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+        href="/member"
+        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
       >
-        Lihat semua member →
+        Lihat Semua Member →
       </Link>
     </div>
   );

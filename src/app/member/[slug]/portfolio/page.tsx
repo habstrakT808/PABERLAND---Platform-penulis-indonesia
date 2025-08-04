@@ -183,10 +183,10 @@ export default function PortfolioPage() {
             Member yang Anda cari tidak ditemukan atau telah dihapus.
           </p>
           <Link
-            href="/penulis"
+            href="/member"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Kembali ke Direktori Member
+            Kembali ke Direktori
           </Link>
         </div>
       </div>
@@ -204,11 +204,11 @@ export default function PortfolioPage() {
             Beranda
           </Link>
           <span>/</span>
-          <Link href="/penulis" className="hover:text-blue-600">
+          <Link href="/member" className="hover:text-blue-600">
             Member
           </Link>
           <span>/</span>
-          <Link href={`/penulis/${slug}`} className="hover:text-blue-600">
+          <Link href={`/member/${slug}`} className="hover:text-blue-600">
             {authorProfile.full_name}
           </Link>
           <span>/</span>
@@ -234,12 +234,12 @@ export default function PortfolioPage() {
                   className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  <span>Tambah Prestasi</span>
+                  <span>Tambah Karya</span>
                 </Link>
               )}
 
               <Link
-                href={`/penulis/${slug}`}
+                href={`/member/${slug}`}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <BookOpenIcon className="w-4 h-4" />
@@ -340,7 +340,7 @@ export default function PortfolioPage() {
                   {work.description.length > 150 && (
                     <div className="mb-4">
                       <Link
-                        href={`/penulis/${slug}/portfolio/${work.id}`}
+                        href={`/member/${slug}/portfolio/${work.id}`}
                         className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                       >
                         Baca selengkapnya →

@@ -77,7 +77,7 @@ export default function FollowersPage() {
 
       if (profileError || !profile) {
         console.error("Profile not found:", profileError);
-        router.push("/penulis");
+        router.push("/member");
         return;
       }
 
@@ -168,10 +168,10 @@ export default function FollowersPage() {
             Profil yang Anda cari tidak ditemukan.
           </p>
           <Link
-            href="/penulis"
+            href="/member"
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Kembali ke Direktori Penulis
+            ← Kembali ke Direktori Member
           </Link>
         </div>
       </div>

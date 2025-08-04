@@ -480,24 +480,54 @@ async getAdminStats(): Promise<AdminStats> {
 
   async deleteUser(userId: string, adminId: string) {
     try {
+      console.log('🔄 Attempting to delete user:', userId);
+      
+      // First, check if user exists and get their name for logging
+      const { data: userCheck, error: checkError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('id', userId)
+        .single();
+
+      if (checkError || !userCheck) {
+        console.error('User not found:', checkError);
+        return { success: false, error: 'User not found' };
+      }
+
+      console.log('✅ User found:', userCheck.full_name);
+
+      // Delete the user (CASCADE will handle related data)
       const { data, error } = await supabase
         .from('profiles')
         .delete()
         .eq('id', userId)
-        .select(); // Supabase akan mengembalikan row yang dihapus
+        .select();
+
       console.log('Delete user result:', { data, error, userId });
+      
       if (error) {
         console.error('Supabase delete error:', error);
         return { success: false, error: error.message || 'Failed to delete user' };
       }
-      if (!data || (typeof data === 'object' && Array.isArray(data) && data.length === 0)) {
+
+      // Check if any rows were actually deleted
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        console.log('⚠️ No rows deleted - user may have been already deleted');
         return { success: false, error: 'User not found or already deleted' };
       }
-      await this.logAdminActivity(adminId, 'delete_user', 'user', userId);
+
+      console.log('✅ User successfully deleted');
+      await this.logAdminActivity(adminId, 'delete_user', 'user', userId, {
+        deleted_user_name: userCheck.full_name
+      });
+      
       return { success: true };
     } catch (error) {
       console.error('Error deleting user:', error);
-      return { success: false, error: (error instanceof Error ? error.message : 'Failed to delete user') };
+      return { 
+        success: false, 
+        error: (error instanceof Error ? error.message : 'Failed to delete user') 
+      };
     }
   }
 };

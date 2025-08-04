@@ -1,4 +1,4 @@
-// src/app/penulis/[slug]/page.tsx
+// src/app/member/[slug]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,9 +24,12 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   supabase,
+  generateNameSlug,
+  generateNameSlugSync,
+  getUserIdBySlug,
+  getAvatarUrl,
   articleHelpers,
   ArticleSummary,
-  getAvatarUrl,
 } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
@@ -84,124 +87,101 @@ export default function AuthorProfilePage() {
   const articlesPerPage = 6;
 
   useEffect(() => {
+    const fetchAuthorData = async () => {
+      setLoading(true);
+      try {
+        // Get user ID by slug
+        const userId = await getUserIdBySlug(slug);
+        
+        if (!userId) {
+          console.error("Author not found for slug:", slug);
+          router.push("/member");
+          return;
+        }
+
+        // Get profile by ID
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (profileError || !profile) {
+          console.error("Author not found:", profileError);
+          router.push("/member");
+          return;
+        }
+
+        // Fetch author's articles
+        const { data: articles, error: articlesError } = await supabase
+          .from("articles")
+          .select(`
+            id,
+            title,
+            excerpt,
+            cover_image,
+            category,
+            slug,
+            views,
+            likes_count,
+            comments_count,
+            created_at,
+            published
+          `)
+          .eq("author_id", profile.id)
+          .eq("published", true)
+          .order("created_at", { ascending: false });
+
+        if (articlesError) {
+          console.error("Error fetching articles:", articlesError);
+        } else {
+          setData({
+            profile: profile,
+            articles: articles || [],
+            stats: {
+              totalArticles: articles?.length || 0,
+              publishedArticles: articles?.length || 0,
+              totalViews: articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0,
+              totalLikes: articles?.reduce((sum, article) => sum + (article.likes_count || 0), 0) || 0,
+              totalComments: articles?.reduce((sum, article) => sum + (article.comments_count || 0), 0) || 0,
+              avgViewsPerArticle: articles?.length ? Math.round((articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0) / articles.length) : 0,
+              categoriesCount: 0,
+              categories: [],
+              monthlyStats: []
+            }
+          });
+        }
+
+        // Fetch author's portfolio
+        const { data: portfolioWorks, error: portfolioError } = await supabase
+          .from("portfolio_works")
+          .select("*")
+          .eq("author_id", profile.id)
+          .order("created_at", { ascending: false });
+
+        if (portfolioError) {
+          console.error("Error fetching portfolio:", portfolioError);
+        }
+
+      } catch (error) {
+        console.error("Error fetching author data:", error);
+        toast.error("Gagal memuat profil penulis");
+        router.push("/member");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (slug) {
       fetchAuthorData();
     }
-  }, [slug]);
+  }, [slug, router]);
 
   useEffect(() => {
     if (data) {
       fetchAuthorArticles();
     }
   }, [currentPage, sortBy, selectedCategory, searchQuery, data?.profile.id]);
-
-  const fetchAuthorData = async () => {
-    setLoading(true);
-    try {
-      // Check if slug is a UUID or name slug
-      let profile;
-      let profileError;
-
-      // Try to find by UUID first
-      const { data: uuidProfile, error: uuidError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", slug)
-        .single();
-
-      if (uuidProfile) {
-        profile = uuidProfile;
-      } else {
-        // If not found by UUID, try to find by name slug
-        // Handle both old format (name only) and new format (name-number)
-        const slugParts = slug.split("-");
-
-        if (
-          slugParts.length >= 2 &&
-          !isNaN(Number(slugParts[slugParts.length - 1]))
-        ) {
-          // New format: name-number (e.g., ali-muakhir-1)
-          const number = parseInt(slugParts[slugParts.length - 1]);
-          const namePart = slugParts.slice(0, -1).join("-"); // Get the name part
-
-          // Find all users with this name
-          const nameSlug = namePart.replace(/-/g, " ").toLowerCase();
-          const { data: nameProfiles, error: nameError } = await supabase
-            .from("profiles")
-            .select("*")
-            .ilike("full_name", `%${nameSlug}%`)
-            .order("created_at", { ascending: true }); // Order by creation date
-
-          if (nameProfiles && nameProfiles.length > 0) {
-            // Get the user at the specified position (number - 1 for 0-based index)
-            if (number > 0 && number <= nameProfiles.length) {
-              profile = nameProfiles[number - 1];
-            } else {
-              profileError = new Error("User not found at specified position");
-            }
-          } else {
-            profileError = nameError;
-          }
-        } else {
-          // Old format: name only (for backward compatibility)
-          const nameSlug = slug.replace(/-/g, " ").toLowerCase();
-          const { data: nameProfiles, error: nameError } = await supabase
-            .from("profiles")
-            .select("*")
-            .ilike("full_name", `%${nameSlug}%`)
-            .order("created_at", { ascending: true }); // Order by creation date
-
-          if (nameProfiles && nameProfiles.length > 0) {
-            // For backward compatibility, take the first (oldest) user with this name
-            profile = nameProfiles[0];
-          } else {
-            profileError = nameError;
-          }
-        }
-      }
-
-      if (profileError || !profile) {
-        console.error("Author not found:", profileError);
-        console.error("Slug attempted:", slug);
-        router.push("/penulis");
-        return;
-      }
-
-      console.log("Found profile:", profile.full_name, "for slug:", slug);
-
-      // Fetch author stats
-      const { data: articles, error: articlesError } = await supabase
-        .from("articles")
-        .select("*")
-        .eq("author_id", profile.id);
-
-      if (articlesError) {
-        console.error("Error fetching author articles:", articlesError);
-        return;
-      }
-
-      // Process statistics
-      const publishedArticles =
-        articles?.filter((article) => article.published) || [];
-      const stats = processAuthorStats(publishedArticles);
-
-      setData({
-        profile,
-        articles: [], // Will be populated by fetchAuthorArticles
-        stats: {
-          ...stats,
-          totalArticles: articles?.length || 0,
-          publishedArticles: publishedArticles.length,
-        },
-      });
-    } catch (error) {
-      console.error("Error fetching author data:", error);
-      toast.error("Gagal memuat profil penulis");
-      router.push("/penulis");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAuthorArticles = async () => {
     if (!data?.profile.id) return;
@@ -471,7 +451,7 @@ export default function AuthorProfilePage() {
             Penulis yang Anda cari tidak ditemukan atau telah dihapus.
           </p>
           <Link
-            href="/penulis"
+            href="/member"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             Kembali ke Direktori Penulis
@@ -492,7 +472,7 @@ export default function AuthorProfilePage() {
             Beranda
           </Link>
           <span>/</span>
-          <Link href="/penulis" className="hover:text-blue-600">
+          <Link href="/member" className="hover:text-blue-600">
             Penulis
           </Link>
           <span>/</span>
@@ -658,7 +638,7 @@ export default function AuthorProfilePage() {
             {/* Action Buttons */}
             <div className="flex items-center space-x-3">
               <Link
-                href={`/penulis/${slug}/portfolio`}
+                href={`/member/${slug}/portfolio`}
                 className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 <BookOpenIcon className="w-4 h-4" />
@@ -674,7 +654,7 @@ export default function AuthorProfilePage() {
               </button>
 
               <Link
-                href="/penulis"
+                href="/member"
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeftIcon className="w-4 h-4" />
@@ -1061,7 +1041,7 @@ export default function AuthorProfilePage() {
                   Temukan penulis berbakat lainnya di komunitas PaberLand.
                 </p>
                 <Link
-                  href="/penulis"
+                  href="/member"
                   className="bg-white/80 hover:bg-white text-gray-900 px-4 py-2 rounded-lg font-medium transition-colors inline-block"
                 >
                   🔍 Lihat Semua Penulis

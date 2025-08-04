@@ -95,7 +95,7 @@ export default function Tentang() {
       </div>
 
       {/* Hero Section Fullscreen */}
-      <section className="relative h-screen flex flex-col justify-center items-center overflow-hidden">
+      <section className="relative h-screen flex flex-col justify-center items-center overflow-hidden pt-70 md:pt-0">
         {/* Animated Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100" />
         <div className="absolute inset-0 bg-white/60" />

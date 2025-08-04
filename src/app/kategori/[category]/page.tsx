@@ -272,7 +272,8 @@ export default function CategoryPage() {
       const from = (currentPage - 1) * limit;
       const to = from + limit - 1;
 
-      let query = supabase
+      // Get articles only
+      let articlesQuery = supabase
         .from("articles")
         .select(
           `
@@ -298,7 +299,7 @@ export default function CategoryPage() {
 
       // Apply search filter
       if (searchQuery.trim()) {
-        query = query.or(
+        articlesQuery = articlesQuery.or(
           `title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`
         );
       }
@@ -306,23 +307,23 @@ export default function CategoryPage() {
       // Apply sorting
       switch (sortBy) {
         case "newest":
-          query = query.order("created_at", { ascending: false });
+          articlesQuery = articlesQuery.order("created_at", { ascending: false });
           break;
         case "oldest":
-          query = query.order("created_at", { ascending: true });
+          articlesQuery = articlesQuery.order("created_at", { ascending: true });
           break;
         case "popular":
-          query = query.order("views", { ascending: false });
+          articlesQuery = articlesQuery.order("views", { ascending: false });
           break;
         case "most_liked":
-          query = query.order("likes_count", { ascending: false });
+          articlesQuery = articlesQuery.order("likes_count", { ascending: false });
           break;
       }
 
       // Apply pagination
-      query = query.range(from, to);
+      articlesQuery = articlesQuery.range(from, to);
 
-      const { data: articles, error, count } = await query;
+      const { data: articles, error } = await articlesQuery;
 
       if (error) {
         console.error("Error fetching articles:", error);
@@ -330,7 +331,7 @@ export default function CategoryPage() {
         return;
       }
 
-      // Get total count for pagination
+      // Get total count for pagination (articles only)
       let countQuery = supabase
         .from("articles")
         .select("*", { count: "exact", head: true })
@@ -372,8 +373,8 @@ export default function CategoryPage() {
 
   const fetchCategoryStats = async () => {
     try {
-      // Get category statistics
-      const { data: statsData, error: statsError } = await supabase
+      // Get articles statistics only
+      const { data: articlesData, error: articlesError } = await supabase
         .from("articles")
         .select(
           `
@@ -388,15 +389,15 @@ export default function CategoryPage() {
         .eq("published", true)
         .eq("category", category);
 
-      if (statsError) {
-        console.error("Error fetching category stats:", statsError);
+      if (articlesError) {
+        console.error("Error fetching articles stats:", articlesError);
         toast.error("Gagal memuat statistik kategori");
         return;
       }
 
-      // Process statistics
+      // Process statistics (articles only)
       const stats = {
-        totalArticles: statsData?.length || 0,
+        totalArticles: articlesData?.length || 0, // Only articles count
         totalViews: 0,
         totalLikes: 0,
         totalComments: 0,
@@ -405,7 +406,8 @@ export default function CategoryPage() {
 
       const authorCounts = new Map<string, number>();
 
-      statsData?.forEach((article: Article) => {
+      // Process articles only
+      articlesData?.forEach((article: Article) => {
         stats.totalViews += article.views || 0;
         stats.totalLikes += article.likes_count || 0;
         stats.totalComments += article.comments_count || 0;

@@ -22,7 +22,13 @@ import {
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import SignedImage from "@/components/common/SignedImage";
-import { supabase, getAvatarUrl } from "@/lib/supabase";
+import {
+  supabase,
+  generateNameSlug,
+  generateNameSlugSync,
+  getAvatarUrl,
+  articleHelpers,
+} from "@/lib/supabase";
 
 interface Article {
   id: string;
@@ -234,7 +240,9 @@ function AdminArticlesContent() {
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000) {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M";
+    } else if (num >= 1000) {
       return (num / 1000).toFixed(1) + "K";
     }
     return num.toString();
@@ -461,13 +469,12 @@ function AdminArticlesContent() {
                             </div>
                           )}
                           <Link
-                            href={`/penulis/${generateNameSlug(
-                              article.profiles.full_name,
-                              article.id
+                            href={`/member/${generateNameSlugSync(
+                              article.profiles?.full_name || "Unknown"
                             )}`}
                             className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
                           >
-                            Lihat Profil
+                            {article.profiles?.full_name || "Unknown"}
                           </Link>
                         </div>
 

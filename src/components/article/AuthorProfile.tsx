@@ -125,7 +125,12 @@ export default function AuthorProfile({
         <div className="flex-1">
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-xl font-bold text-gray-900">
-              {author.full_name}
+              <Link
+                href={`/member/${generateNameSlugSync(author.full_name)}`}
+                className="font-medium text-blue-600 hover:text-blue-700"
+              >
+                {author.full_name}
+              </Link>
             </h3>
           </div>
 
@@ -191,7 +196,7 @@ export default function AuthorProfile({
           </div>
 
           <Link
-            href={`/penulis/${generateNameSlugSync(author.full_name)}`}
+            href={`/member/${generateNameSlugSync(author.full_name)}`}
             className="inline-flex items-center mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Lihat semua konten →

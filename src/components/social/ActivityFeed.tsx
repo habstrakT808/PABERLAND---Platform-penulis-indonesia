@@ -194,7 +194,7 @@ export default function ActivityFeed() {
           {/* Author Info */}
           <div className="flex items-center space-x-3 mb-4">
             <Link
-              href={`/penulis/${activity.author_id}`}
+              href={`/member/${activity.author_id}`}
               className="flex-shrink-0"
             >
               {activity.author_avatar ? (
@@ -213,11 +213,8 @@ export default function ActivityFeed() {
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <Link
-                  href={`/penulis/${generateNameSlug(
-                    activity.author_name,
-                    activity.author_id
-                  )}`}
-                  className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                  href={`/member/${activity.author_id}`}
+                  className="font-medium text-blue-600 hover:text-blue-700"
                 >
                   {activity.author_name}
                 </Link>

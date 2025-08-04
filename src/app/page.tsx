@@ -362,78 +362,122 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
-      {/* Compact Hero Section - Tidak Full Screen */}
-      <section className="relative h-[92vh] md:h-[92vh] flex flex-col justify-between items-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 text-gray-900 pb-2 shadow-md">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-white/60"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/40 via-pink-200/40 to-blue-200/40"></div>
+      {/* Hero Section dengan Background Light Cyan */}
+      <section
+        className="relative h-[92vh] md:h-[92vh] flex flex-col justify-center items-center overflow-hidden"
+        style={{ backgroundColor: "#d8ebeb" }}
+      >
+        {/* Oval Decorations */}
+        <div
+          className="absolute top-20 left-10 w-20 h-12 rounded-full opacity-30"
+          style={{ backgroundColor: "#7bb2b1" }}
+        ></div>
+        <div
+          className="absolute top-32 right-20 w-16 h-10 rounded-full opacity-40"
+          style={{ backgroundColor: "#7bb2b1" }}
+        ></div>
+        <div
+          className="absolute top-16 right-1/3 w-12 h-8 rounded-full opacity-35"
+          style={{ backgroundColor: "#7bb2b1" }}
+        ></div>
+        <div
+          className="absolute top-40 left-1/4 w-14 h-9 rounded-full opacity-25"
+          style={{ backgroundColor: "#7bb2b1" }}
+        ></div>
+        <div
+          className="absolute top-24 left-1/2 w-18 h-11 rounded-full opacity-30"
+          style={{ backgroundColor: "#7bb2b1" }}
+        ></div>
 
         {/* Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-16">
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-gray-900">
-              Selamat Datang di{" "}
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                PaberLand
+        <div
+          className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+          style={{ marginTop: "-200px" }}
+        >
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold mb-6 leading-tight text-gray-900 text-center">
+              <span className="block sm:inline">Selamat Datang di</span>
+              <span
+                className="inline-block font-bold mt-2 sm:mt-0 sm:ml-2"
+                style={{
+                  fontFamily: "inherit",
+                  fontSize: "1em",
+                  lineHeight: 1,
+                }}
+              >
+                <span style={{ color: "#00AEEF" }}>Paber</span>
+                <span
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #FFB800 0%, #FF6B00 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    fontWeight: "bold",
+                  }}
+                >
+                  L
+                </span>
+                <span style={{ color: "#00AEEF" }}>and</span>
               </span>
             </h1>
-            <p className="text-base md:text-lg lg:text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-gray-800">
+            <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-4xl mx-auto leading-relaxed text-gray-800 font-medium">
               Platform Forum Penulis Bacaan Anak untuk Berbagi Cerita dan Karya.
+              <br />
               Mari ciptakan bacaan anak yang sehat, kreatif, dan sesuai dengan
               perkembangan anak-anak Indonesia.
             </p>
           </div>
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+
+          {/* CTA Button */}
+          <div className="mb-8 sm:mb-12 relative z-20">
             <Link
               href="/write"
-              className="group bg-white text-blue-700 px-8 py-3 rounded-lg font-bold text-base hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="group text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-flex items-center"
+              style={{ backgroundColor: "#7bb2b1" }}
             >
-              <span className="flex items-center justify-center">
-                ✍️ Mulai Menulis
-                <svg
-                  className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </Link>
-            {!user && (
-              <Link
-                href="/auth/register"
-                className="group border-2 border-blue-500 text-blue-700 px-8 py-3 rounded-lg font-bold text-base hover:bg-blue-50 hover:text-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              Mulai Menulis
+              <svg
+                className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <span className="flex items-center justify-center">
-                  🚀 Bergabung Sekarang
-                  <svg
-                    className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </span>
-              </Link>
-            )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </Link>
           </div>
 
-          {/* Stats Preview - Lebih Compact */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+          {/* Bear Image - Positioned behind button */}
+          <div
+            className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-4xl -z-10"
+            style={{
+              bottom: isMobile ? "-150px" : "-300px",
+              background: "transparent",
+            }}
+          >
+            <Image
+              src="/hero_section.png"
+              alt="Bear Illustration"
+              width={800}
+              height={400}
+              className="w-full h-auto max-w-4xl block mx-auto"
+              style={{
+                margin: 0,
+                padding: 0,
+                background: "transparent",
+              }}
+              priority
+            />
+          </div>
+
+          {/* Stats Preview - Commented out for now */}
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                 {loading ? "..." : stats.totalContent}
               </div>
@@ -441,7 +485,7 @@ export default function HomePage() {
                 Total Konten
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                 {loading ? "..." : stats.totalUsers}
               </div>
@@ -449,7 +493,7 @@ export default function HomePage() {
                 Total User
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                 {loading ? "..." : stats.totalLikes}
               </div>
@@ -457,7 +501,7 @@ export default function HomePage() {
                 Total Likes
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow flex flex-col items-center">
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg flex flex-col items-center">
               <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                 {loading ? "..." : stats.totalViews}
               </div>
@@ -465,14 +509,14 @@ export default function HomePage() {
                 Total Views
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Scroll Down Indicator */}
-        <div className="relative z-10 mb-8 flex justify-center">
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
           <button
             onClick={scrollToContent}
-            className={`flex items-center justify-center text-blue-700 hover:text-blue-900 font-bold transition-all duration-300 group
+            className={`flex items-center justify-center text-gray-800 hover:text-blue-600 font-bold transition-all duration-300 group
               ${
                 isMobile
                   ? "bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -481,7 +525,7 @@ export default function HomePage() {
             `}
             aria-label="Lihat Konten"
           >
-            <ChevronDownIcon className="w-7 h-7 animate-bounce group-hover:scale-110 transition-transform text-blue-500" />
+            <ChevronDownIcon className="w-7 h-7 animate-bounce group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </section>

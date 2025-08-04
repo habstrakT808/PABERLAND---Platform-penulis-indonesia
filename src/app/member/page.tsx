@@ -1,4 +1,4 @@
-// src/app/penulis/page.tsx
+// src/app/member/page.tsx
 // Halaman Direktori Member dengan statistik komunitas yang diperbaiki:
 // - Total Artikel diubah menjadi Total Konten (keseluruhan karya dari semua genre)
 // - Total Views diperbaiki dengan menghitung langsung dari field views di tabel articles
@@ -75,6 +75,25 @@ export default function AuthorsPage() {
     "newest" | "oldest" | "most_articles" | "most_popular" | "alphabetical"
   >("most_articles");
   const [showFilters, setShowFilters] = useState(false);
+  const [authorSlugs, setAuthorSlugs] = useState<{ [key: string]: string }>({});
+
+  // Generate author slugs when data changes
+  useEffect(() => {
+    if (data?.authors) {
+      generateAuthorSlugs();
+    }
+  }, [data?.authors]);
+
+  const generateAuthorSlugs = async () => {
+    if (!data?.authors) return;
+
+    const slugs: { [key: string]: string } = {};
+    for (const author of data.authors) {
+      // Use sync version only to avoid Promise in href
+      slugs[author.id] = generateNameSlugSync(author.full_name);
+    }
+    setAuthorSlugs(slugs);
+  };
 
   useEffect(() => {
     fetchAuthorsData();
@@ -242,6 +261,9 @@ export default function AuthorsPage() {
       // Get top categories
       const topCategories = await platformStatsHelpers.getTopCategories();
 
+      // Debug categories
+      await platformStatsHelpers.debugCategories();
+
       setData((prev) => ({
         authors: prev?.authors || [],
         totalCount: prev?.totalCount || 0,
@@ -304,15 +326,40 @@ export default function AuthorsPage() {
   };
 
   const getCategoryEmoji = (category: string) => {
-    const emojiMap: { [key: string]: string } = {
+    const categoryConfig = {
+      "info-berita": "📰",
       cerpen: "📖",
-      puisi: "🎭",
-      artikel: "📰",
+      dongeng: "🧚",
       "cerita-rakyat": "🏛️",
-      "novel-berseri": "📚",
-      lainnya: "✨",
+      cermin: "🔎",
+      puisi: "🎭",
+      cerbung: "📝",
+      novel: "📚",
+      serial: "📚",
+      "resensi-buku": "📖",
+      artikel: "📰",
     };
-    return emojiMap[category] || "📝";
+    return categoryConfig[category as keyof typeof categoryConfig] || "📄";
+  };
+
+  const getCategoryName = (category: string) => {
+    const categoryConfig = {
+      "info-berita": "Info/Berita",
+      cerpen: "Cerpen",
+      dongeng: "Dongeng",
+      "cerita-rakyat": "Cerita Rakyat",
+      cermin: "Cermin (Cerita Mini)",
+      puisi: "Puisi",
+      cerbung: "Cerbung",
+      novel: "Novel",
+      serial: "Serial",
+      "resensi-buku": "Resensi Buku",
+      artikel: "Artikel",
+    };
+    return (
+      categoryConfig[category as keyof typeof categoryConfig] ||
+      category.replace("-", " ")
+    );
   };
 
   return (
@@ -368,22 +415,34 @@ export default function AuthorsPage() {
             {data.platformStats.topCategories.length > 0 && (
               <div className="border-t border-blue-100 pt-4">
                 <h3 className="text-sm font-medium text-gray-800 mb-3">
-                  Kategori Populer:
+                  Semua Kategori:
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {data.platformStats.topCategories.map((cat) => (
-                    <Link
-                      key={cat.category}
-                      href={`/kategori/${cat.category}`}
-                      className="flex items-center space-x-1 bg-white/80 hover:bg-blue-100 text-gray-800 hover:text-blue-600 px-3 py-1 rounded-full text-sm font-medium transition-colors"
-                    >
-                      <span>{getCategoryEmoji(cat.category)}</span>
-                      <span className="capitalize">
-                        {cat.category.replace("-", " ")}
-                      </span>
-                      <span className="text-xs">({cat.count})</span>
-                    </Link>
-                  ))}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {data.platformStats.topCategories
+                    .filter((cat) => {
+                      // Filter out unwanted categories
+                      const unwantedCategories = [
+                        "buku",
+                        "novel-berseri",
+                        "novel berseri",
+                      ];
+                      return !unwantedCategories.includes(cat.category);
+                    })
+                    .map((cat) => (
+                      <Link
+                        key={cat.category}
+                        href={`/kategori/${cat.category}`}
+                        className="flex items-center space-x-1 bg-white/80 hover:bg-blue-100 text-gray-800 hover:text-blue-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <span>{getCategoryEmoji(cat.category)}</span>
+                        <span className="truncate">
+                          {getCategoryName(cat.category)}
+                        </span>
+                        <span className="text-xs text-gray-600">
+                          ({cat.count})
+                        </span>
+                      </Link>
+                    ))}
                 </div>
               </div>
             )}
@@ -534,9 +593,10 @@ export default function AuthorsPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-gray-900 truncate">
                             <Link
-                              href={`/penulis/${generateNameSlugSync(
-                                author.full_name
-                              )}`}
+                              href={`/member/${
+                                authorSlugs[author.id] ||
+                                generateNameSlugSync(author.full_name)
+                              }`}
                               className="hover:text-blue-600 transition-colors"
                             >
                               {author.full_name}
@@ -615,9 +675,10 @@ export default function AuthorsPage() {
                       {/* View Profile Button */}
                       <div className="mt-4">
                         <Link
-                          href={`/penulis/${generateNameSlugSync(
-                            author.full_name
-                          )}`}
+                          href={`/member/${
+                            authorSlugs[author.id] ||
+                            generateNameSlugSync(author.full_name)
+                          }`}
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"
                         >
                           <UserGroupIcon className="w-4 h-4" />
@@ -751,7 +812,7 @@ export default function AuthorsPage() {
                       emoji: "🏛️",
                     },
                     {
-                      key: "cermin",
+                      key: "cermin (cerita mini)",
                       name: "Cermin (Cerita Mini)",
                       emoji: "🔍",
                     },
@@ -759,8 +820,8 @@ export default function AuthorsPage() {
                     { key: "cerbung", name: "Cerbung", emoji: "📚" },
                     { key: "novel", name: "Novel", emoji: "📖" },
                     { key: "serial", name: "Serial", emoji: "📚" },
-                    { key: "resensi-buku", name: "Resensi Buku", emoji: "📝" },
-                    { key: "artikel", name: "Artikel", emoji: "📄" },
+                    { key: "resensi buku", name: "Resensi Buku", emoji: "📖" },
+                    { key: "artikel", name: "Artikel", emoji: "📰" },
                   ].map((category) => (
                     <Link
                       key={category.key}

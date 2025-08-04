@@ -8,9 +8,11 @@ import { EyeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 
 import {
   supabase,
+  generateNameSlug,
+  generateNameSlugSync,
+  getAvatarUrl,
   articleHelpers,
   commentHelpers,
-  getAvatarUrl,
 } from "@/lib/supabase";
 import ArticleContent from "@/components/article/ArticleContent";
 import ArticleMetadata from "@/components/article/ArticleMetadata";
@@ -169,20 +171,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     });
   };
 
-  // Helper function to generate name-based URL slug with sequential numbering for duplicates
-  const generateNameSlug = (name: string, userId: string) => {
-    const baseSlug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "") // Remove special characters
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .replace(/-+/g, "-") // Replace multiple hyphens with single
-      .trim();
-
-    // For now, return base slug. In a real implementation, you would need to check for duplicates
-    // This is a simplified version for the article page
-    return baseSlug;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
       {/* ViewTracker component to ensure views increment on every visit */}
@@ -269,13 +257,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       </div>
                       <div>
                         <Link
-                          href={`/penulis/${generateNameSlug(
-                            updatedArticle.profiles.full_name,
-                            updatedArticle.profiles.id
+                          href={`/member/${generateNameSlugSync(
+                            updatedArticle.profiles.full_name
                           )}`}
-                          className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                          className="font-medium text-blue-600 hover:text-blue-700"
                         >
-                          Lihat Profil Lengkap
+                          {updatedArticle.profiles.full_name}
                         </Link>
                         <p className="text-sm text-gray-600">
                           Dipublikasikan{" "}

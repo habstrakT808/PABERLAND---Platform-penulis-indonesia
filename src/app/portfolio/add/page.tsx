@@ -26,12 +26,18 @@ import SignedImage from "@/components/common/SignedImage";
 import { supabase } from "@/lib/supabase";
 
 const categories = [
+  { value: "info/berita", label: "📰 Info/Berita" },
   { value: "cerpen", label: "📖 Cerpen" },
-  { value: "puisi", label: "🎭 Puisi" },
-  { value: "artikel", label: "📰 Artikel" },
+  { value: "dongeng", label: "🧚 Dongeng" },
   { value: "cerita-rakyat", label: "🏛️ Cerita Rakyat" },
-  { value: "novel-berseri", label: "📚 Novel Berseri" },
-  { value: "lainnya", label: "✨ Lainnya" },
+  { value: "cermin (cerita mini)", label: "🔍 Cermin (Cerita Mini)" },
+  { value: "puisi", label: "🎭 Puisi" },
+  { value: "cerbung", label: "📚 Cerbung" },
+  { value: "novel", label: "📖 Novel" },
+  { value: "serial", label: "📚 Serial" },
+  { value: "resensi buku", label: "📖 Resensi Buku" },
+  { value: "artikel", label: "📰 Artikel" },
+  { value: "buku", label: "📚 Buku" },
 ];
 
 const statusOptions = [
@@ -119,30 +125,8 @@ function AddPortfolioWorkContent() {
     setIsLoading(true);
 
     try {
-      // Test bucket first
-      console.log("handleCoverImageChange: Testing bucket access...");
-      const bucketExists = await checkBucketExists("images");
-      console.log("handleCoverImageChange: Bucket exists:", bucketExists);
-
-      if (!bucketExists) {
-        toast.error("Bucket 'images' tidak ditemukan di Supabase!");
-        setIsLoading(false);
-        return;
-      }
-
-      const uploadTest = await testBucketUpload("images");
-      console.log("handleCoverImageChange: Upload test result:", uploadTest);
-
-      if (!uploadTest) {
-        toast.error(
-          "Tidak dapat upload ke bucket 'images'. Cek policy Supabase!"
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      // Proceed with actual upload
-      console.log("handleCoverImageChange: Starting actual upload...");
+      // Proceed with actual upload directly
+      console.log("handleCoverImageChange: Starting upload...");
       const filePath = await uploadImageToStorage(file, "portfolio-covers");
 
       if (filePath) {
@@ -153,7 +137,7 @@ function AddPortfolioWorkContent() {
           filePath
         );
       } else {
-        toast.error("Gagal upload cover image");
+        toast.error("Gagal upload cover image. Pastikan bucket 'images' sudah dibuat di Supabase Storage.");
         console.error("handleCoverImageChange: Upload failed");
       }
     } catch (error) {
@@ -206,9 +190,9 @@ function AddPortfolioWorkContent() {
             .replace(/-+/g, "-")
             .trim();
 
-          router.push(`/penulis/${nameSlug}/portfolio`);
+          router.push(`/member/${nameSlug}/portfolio`);
         } else {
-          router.push(`/penulis/${user?.id}/portfolio`);
+          router.push(`/member/${user?.id}/portfolio`);
         }
       } else {
         toast.error("Gagal menambahkan karya: " + result.error);
@@ -291,15 +275,19 @@ function AddPortfolioWorkContent() {
                 <label className="block text-sm font-medium text-gray-800 mb-2">
                   Kategori *
                 </label>
-                <input
-                  type="text"
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  placeholder="Masukkan kategori karya..."
-                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                   required
-                />
+                >
+                  {categories.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

@@ -123,16 +123,23 @@ function AdminUsersContent() {
       )
     )
       return;
+    
+    console.log('🔄 Starting delete user process for:', userName, 'ID:', userId);
     setActionLoading(userId);
+    
     try {
       const result = await adminHelpers.deleteUser(userId, currentUser.id);
+      console.log('Delete user result:', result);
+      
       if (result.success) {
         toast.success(`User "${userName}" berhasil dihapus.`);
         fetchUsers();
       } else {
+        console.error('Delete user failed:', result.error);
         toast.error(result.error || "Gagal menghapus user");
       }
     } catch (error) {
+      console.error('Exception during delete user:', error);
       toast.error("Terjadi kesalahan saat menghapus user");
     } finally {
       setActionLoading(null);

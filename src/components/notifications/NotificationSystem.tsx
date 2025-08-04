@@ -1,7 +1,7 @@
 // src/components/notifications/NotificationSystem.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase, getAvatarUrl } from "@/lib/supabase";
 import {
@@ -40,6 +40,7 @@ export default function NotificationSystem() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +48,26 @@ export default function NotificationSystem() {
       subscribeToNotifications();
     }
   }, [user]);
+
+  // Handle click outside to close notification dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -287,7 +308,7 @@ export default function NotificationSystem() {
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={notificationRef}>
       {/* Notification Bell */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -308,116 +329,123 @@ export default function NotificationSystem() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center md:absolute md:inset-auto md:right-0 md:mt-2 md:w-80 md:bg-white md:rounded-xl md:shadow-2xl md:border md:border-blue-200">
-          <div className="w-full max-w-sm mx-4 bg-white rounded-xl shadow-2xl border border-blue-200 md:mx-0 md:max-w-none">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-blue-100">
-              <h3 className="text-lg font-bold text-gray-900">Notifikasi</h3>
-              <div className="flex items-center space-x-2">
-                {unreadCount > 0 && (
+        <>
+          {/* Backdrop for mobile */}
+          <div
+            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-0 md:absolute md:inset-auto md:right-0 md:top-full md:mt-1 md:w-80 md:bg-white md:rounded-xl md:shadow-2xl md:border md:border-blue-200">
+            <div className="w-full max-w-sm mx-4 bg-white rounded-xl shadow-2xl border border-blue-200 md:mx-0 md:max-w-none">
+              {/* Header */}
+              <div className="flex items-center justify-between p-3 border-b border-blue-100">
+                <h3 className="text-lg font-bold text-gray-900">Notifikasi</h3>
+                <div className="flex items-center space-x-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Tandai Semua
+                    </button>
+                  )}
                   <button
-                    onClick={markAllAsRead}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 hover:bg-blue-50 rounded-lg transition-colors"
                   >
-                    Tandai Semua
+                    <XMarkIcon className="w-5 h-5 text-gray-500" />
                   </button>
-                )}
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <XMarkIcon className="w-5 h-5 text-gray-500" />
-                </button>
+                </div>
               </div>
-            </div>
 
-            {/* Notifications List */}
-            <div className="max-h-96 overflow-y-auto">
-              {loading ? (
-                <div className="p-4">
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="flex items-center space-x-3 animate-pulse"
-                      >
-                        <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
-                        <div className="flex-1">
-                          <div className="h-4 bg-blue-100 rounded w-3/4"></div>
-                          <div className="h-3 bg-blue-100 rounded w-1/2 mt-1"></div>
+              {/* Notifications List */}
+              <div className="max-h-96 overflow-y-auto">
+                {loading ? (
+                  <div className="p-4">
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center space-x-3 animate-pulse"
+                        >
+                          <div className="w-10 h-10 bg-blue-100 rounded-full"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-blue-100 rounded w-3/4"></div>
+                            <div className="h-3 bg-blue-100 rounded w-1/2 mt-1"></div>
+                          </div>
                         </div>
-                      </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-500">Belum ada notifikasi</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-blue-100">
+                    {notifications.map((notification) => (
+                      <Link
+                        key={notification.id}
+                        href={getNotificationLink(notification)}
+                        onClick={() => {
+                          if (!notification.read) {
+                            markAsRead(notification.id);
+                          }
+                          setIsOpen(false);
+                        }}
+                        className={`block p-4 hover:bg-blue-50 transition-colors ${
+                          !notification.read ? "bg-blue-50" : ""
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          {/* Actor Avatar */}
+                          <div className="flex-shrink-0">
+                            {notification.actor_profile.avatar_url ? (
+                              <Image
+                                src={
+                                  getAvatarUrl(
+                                    notification.actor_profile.avatar_url
+                                  ) || ""
+                                }
+                                alt={notification.actor_profile.full_name}
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                {notification.actor_profile.full_name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Notification Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <p className="text-sm text-gray-900">
+                                {getNotificationText(notification)}
+                              </p>
+                              <div className="flex items-center space-x-2 ml-2">
+                                {getNotificationIcon(notification.type)}
+                                {!notification.read && (
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {formatTime(notification.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
                     ))}
                   </div>
-                </div>
-              ) : notifications.length === 0 ? (
-                <div className="p-8 text-center">
-                  <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">Belum ada notifikasi</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-blue-100">
-                  {notifications.map((notification) => (
-                    <Link
-                      key={notification.id}
-                      href={getNotificationLink(notification)}
-                      onClick={() => {
-                        if (!notification.read) {
-                          markAsRead(notification.id);
-                        }
-                        setIsOpen(false);
-                      }}
-                      className={`block p-4 hover:bg-blue-50 transition-colors ${
-                        !notification.read ? "bg-blue-50" : ""
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        {/* Actor Avatar */}
-                        <div className="flex-shrink-0">
-                          {notification.actor_profile.avatar_url ? (
-                            <Image
-                              src={
-                                getAvatarUrl(
-                                  notification.actor_profile.avatar_url
-                                ) || ""
-                              }
-                              alt={notification.actor_profile.full_name}
-                              width={40}
-                              height={40}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                              {notification.actor_profile.full_name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Notification Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <p className="text-sm text-gray-900">
-                              {getNotificationText(notification)}
-                            </p>
-                            <div className="flex items-center space-x-2 ml-2">
-                              {getNotificationIcon(notification.type)}
-                              {!notification.read && (
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {formatTime(notification.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
