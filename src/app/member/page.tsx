@@ -595,7 +595,9 @@ export default function AuthorsPage() {
                             <Link
                               href={`/member/${
                                 authorSlugs[author.id] ||
-                                generateNameSlugSync(author.full_name)
+                                author.full_name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-")
                               }`}
                               className="hover:text-blue-600 transition-colors"
                             >
@@ -677,7 +679,7 @@ export default function AuthorsPage() {
                         <Link
                           href={`/member/${
                             authorSlugs[author.id] ||
-                            generateNameSlugSync(author.full_name)
+                            author.full_name.toLowerCase().replace(/\s+/g, "-")
                           }`}
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2"
                         >

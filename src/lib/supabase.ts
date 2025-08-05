@@ -2242,7 +2242,7 @@ export const generateNameSlug = async (name: string, userId: string) => {
   const { data: usersWithSameName, error } = await supabase
     .from("profiles")
     .select("id, created_at")
-    .ilike("full_name", `%${nameSlug}%`)
+    .ilike("full_name", nameSlug)
     .order("created_at", { ascending: true });
   
   if (error || !usersWithSameName) {
