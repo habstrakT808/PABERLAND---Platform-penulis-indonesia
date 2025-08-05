@@ -330,19 +330,118 @@ async getAdminStats(): Promise<AdminStats> {
   // Admin actions
   async deleteArticle(articleId: string, adminId: string, reason?: string) {
     try {
-      const { error } = await supabase
+      console.log('🔄 Attempting to delete article:', articleId);
+      
+      // First, verify the article exists
+      const { data: existingArticle, error: checkError } = await supabase
+        .from('articles')
+        .select('id, title, author_id')
+        .eq('id', articleId)
+        .single();
+
+      if (checkError || !existingArticle) {
+        console.error('❌ Article not found:', checkError);
+        return { success: false, error: 'Article not found' };
+      }
+
+      console.log('✅ Article found:', existingArticle.title);
+
+      // Delete related data first to avoid foreign key constraints
+      console.log('🔄 Deleting related data...');
+
+      // Delete article likes
+      const { error: likesError } = await supabase
+        .from('article_likes')
+        .delete()
+        .eq('article_id', articleId);
+
+      if (likesError) {
+        console.warn('⚠️ Error deleting article likes:', likesError);
+      } else {
+        console.log('✅ Article likes deleted');
+      }
+
+      // Delete comments
+      const { error: commentsError } = await supabase
+        .from('comments')
+        .delete()
+        .eq('article_id', articleId);
+
+      if (commentsError) {
+        console.warn('⚠️ Error deleting comments:', commentsError);
+      } else {
+        console.log('✅ Comments deleted');
+      }
+
+      // Delete from featured_content if exists
+      const { error: featuredError } = await supabase
+        .from('featured_content')
+        .delete()
+        .eq('content_type', 'article')
+        .eq('content_id', articleId);
+
+      if (featuredError) {
+        console.warn('⚠️ Error deleting from featured_content:', featuredError);
+      } else {
+        console.log('✅ Featured content entry deleted');
+      }
+
+      // Delete content reports if exists
+      const { error: reportsError } = await supabase
+        .from('content_reports')
+        .delete()
+        .eq('content_type', 'article')
+        .eq('content_id', articleId);
+
+      if (reportsError) {
+        console.warn('⚠️ Error deleting content reports:', reportsError);
+      } else {
+        console.log('✅ Content reports deleted');
+      }
+
+      // Now delete the article itself
+      console.log('🔄 Deleting article...');
+      const { data: deletedData, error: deleteError } = await supabase
         .from('articles')
         .delete()
-        .eq('id', articleId);
+        .eq('id', articleId)
+        .select(); // Return deleted rows to verify
 
-      if (error) throw error;
+      if (deleteError) {
+        console.error('❌ Error deleting article from database:', deleteError);
+        throw deleteError;
+      }
 
-      // Log admin activity
-      await this.logAdminActivity(adminId, 'delete_article', 'article', articleId, { reason });
+      // Verify deletion was successful
+      if (!deletedData || deletedData.length === 0) {
+        console.error('❌ No rows were deleted - article may still be protected');
+        return { success: false, error: 'Article could not be deleted - may be protected by RLS policy' };
+      }
+
+      console.log('✅ Article deleted successfully from database:', deletedData.length, 'row(s) affected');
+
+      // Double-check by trying to fetch the article again
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('id', articleId)
+        .single();
+
+      if (verifyData) {
+        console.error('❌ Article still exists after deletion attempt!');
+        return { success: false, error: 'Article deletion failed - still exists in database' };
+      }
+
+      if (verifyError && verifyError.code !== 'PGRST116') {
+        console.error('❌ Error verifying deletion:', verifyError);
+        return { success: false, error: 'Could not verify deletion' };
+      }
+
+      console.log('✅ Deletion verified - article no longer exists in database');
 
       return { success: true };
     } catch (error) {
-      console.error('Error deleting article:', error);
+      console.error('❌ Error in deleteArticle:', error);
       return { success: false, error: 'Failed to delete article' };
     }
   },
@@ -355,7 +454,11 @@ async getAdminStats(): Promise<AdminStats> {
 
       if (error) throw error;
 
-      await this.logAdminActivity(adminId, 'promote_to_admin', 'user', userId);
+      // Log admin activity (non-blocking)
+      this.logAdminActivity(adminId, 'promote_to_admin', 'user', userId)
+        .catch(logError => {
+          console.warn('⚠️ Failed to log admin activity, but promotion was successful:', logError);
+        });
 
       return { success: true };
     } catch (error) {
@@ -378,7 +481,11 @@ async getAdminStats(): Promise<AdminStats> {
 
       if (error) throw error;
 
-      await this.logAdminActivity(adminId, 'resolve_report', 'report', reportId, { status, notes });
+      // Log admin activity (non-blocking)
+      this.logAdminActivity(adminId, 'resolve_report', 'report', reportId, { status, notes })
+        .catch(logError => {
+          console.warn('⚠️ Failed to log admin activity, but report resolution was successful:', logError);
+        });
 
       return { success: true };
     } catch (error) {
@@ -409,12 +516,15 @@ async getAdminStats(): Promise<AdminStats> {
         if (error) throw error;
       }
 
-      await this.logAdminActivity(
-        adminId, 
-        featured ? 'feature_content' : 'unfeature_content', 
-        contentType, 
+      // Log admin activity (non-blocking)
+      this.logAdminActivity(
+        adminId,
+        featured ? 'feature_content' : 'unfeature_content',
+        contentType,
         contentId
-      );
+      ).catch(logError => {
+        console.warn('⚠️ Failed to log admin activity, but featured content toggle was successful:', logError);
+      });
 
       return { success: true };
     } catch (error) {
@@ -463,12 +573,24 @@ async getAdminStats(): Promise<AdminStats> {
     };
   },
 
-  // Log admin activity - Fixed to use direct insert instead of RPC
+  // Log admin activity - Made completely optional to not break main operations
   async logAdminActivity(adminId: string, action: string, targetType: string, targetId: string, details?: any) {
+    // Make logging completely optional and silent
     try {
-      console.log('🔄 Logging admin activity:', { adminId, action, targetType, targetId, details });
+      console.log('🔄 Attempting to log admin activity:', { adminId, action, targetType, targetId });
       
-      // Try direct insert first
+      // Check if admin_activity_logs table exists first
+      const { data: tableCheck, error: tableError } = await supabase
+        .from('admin_activity_logs')
+        .select('id')
+        .limit(1);
+
+      if (tableError) {
+        console.warn('⚠️ admin_activity_logs table not accessible, skipping logging:', tableError.message);
+        return;
+      }
+
+      // Try direct insert
       const { data, error } = await supabase
         .from('admin_activity_logs')
         .insert({
@@ -483,7 +605,7 @@ async getAdminStats(): Promise<AdminStats> {
         .single();
 
       if (error) {
-        console.warn('⚠️ Direct insert failed, trying RPC fallback:', error);
+        console.warn('⚠️ Direct insert failed, trying RPC fallback:', error.message);
         
         // Fallback to RPC if direct insert fails
         const { error: rpcError } = await supabase.rpc('log_admin_activity', {
@@ -495,17 +617,17 @@ async getAdminStats(): Promise<AdminStats> {
         });
         
         if (rpcError) {
-          console.error('❌ Both direct insert and RPC failed:', rpcError);
-          // Don't throw error - logging failure shouldn't break the main operation
+          console.warn('⚠️ Both direct insert and RPC failed, logging skipped:', rpcError.message);
+          // Silently fail - logging is not critical
         } else {
           console.log('✅ Admin activity logged via RPC fallback');
         }
       } else {
-        console.log('✅ Admin activity logged via direct insert:', data);
+        console.log('✅ Admin activity logged via direct insert');
       }
     } catch (error) {
-      console.error('❌ Error logging admin activity:', error);
-      // Don't throw error - logging failure shouldn't break the main operation
+      console.warn('⚠️ Admin activity logging failed, but this is not critical:', error instanceof Error ? error.message : 'Unknown error');
+      // Silently fail - logging should never break the main operation
     }
   },
 

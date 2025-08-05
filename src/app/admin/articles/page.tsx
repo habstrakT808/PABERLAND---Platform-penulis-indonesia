@@ -156,19 +156,40 @@ function AdminArticlesContent() {
 
     setActionLoading(articleId);
     try {
+      console.log("🔄 Starting article deletion process...");
+
       const result = await adminHelpers.deleteArticle(
         articleId,
         currentUser.id,
         "Dihapus oleh admin"
       );
 
+      console.log("📋 Delete result:", result);
+
       if (result.success) {
+        console.log("✅ Article deletion successful, updating UI...");
+
+        // Immediately remove the article from local state for instant UI feedback
+        setArticles((prevArticles) =>
+          prevArticles.filter((article) => article.id !== articleId)
+        );
+
+        // Show success message
         toast.success(`Konten "${articleTitle}" berhasil dihapus!`);
-        fetchArticles(true);
+
+        // Wait for database transaction to complete, then refresh
+        console.log("⏳ Waiting for database transaction to complete...");
+        setTimeout(async () => {
+          console.log("🔄 Refreshing article list...");
+          await fetchArticles(true);
+          console.log("✅ UI refresh completed");
+        }, 2000); // Wait 2 seconds for DB transaction to complete
       } else {
+        console.error("❌ Article deletion failed:", result.error);
         toast.error(result.error || "Gagal menghapus konten");
       }
     } catch (error) {
+      console.error("❌ Exception during article deletion:", error);
       toast.error("Terjadi kesalahan sistem");
     } finally {
       setActionLoading(null);
