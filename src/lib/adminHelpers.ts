@@ -463,18 +463,49 @@ async getAdminStats(): Promise<AdminStats> {
     };
   },
 
-  // Log admin activity
+  // Log admin activity - Fixed to use direct insert instead of RPC
   async logAdminActivity(adminId: string, action: string, targetType: string, targetId: string, details?: any) {
     try {
-      await supabase.rpc('log_admin_activity', {
-        p_admin_id: adminId,
-        p_action: action,
-        p_target_type: targetType,
-        p_target_id: targetId,
-        p_details: details || null
-      });
+      console.log('🔄 Logging admin activity:', { adminId, action, targetType, targetId, details });
+      
+      // Try direct insert first
+      const { data, error } = await supabase
+        .from('admin_activity_logs')
+        .insert({
+          admin_id: adminId,
+          action: action,
+          target_type: targetType,
+          target_id: targetId,
+          details: details || null,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('⚠️ Direct insert failed, trying RPC fallback:', error);
+        
+        // Fallback to RPC if direct insert fails
+        const { error: rpcError } = await supabase.rpc('log_admin_activity', {
+          p_admin_id: adminId,
+          p_action: action,
+          p_target_type: targetType,
+          p_target_id: targetId,
+          p_details: details || null
+        });
+        
+        if (rpcError) {
+          console.error('❌ Both direct insert and RPC failed:', rpcError);
+          // Don't throw error - logging failure shouldn't break the main operation
+        } else {
+          console.log('✅ Admin activity logged via RPC fallback');
+        }
+      } else {
+        console.log('✅ Admin activity logged via direct insert:', data);
+      }
     } catch (error) {
-      console.error('Error logging admin activity:', error);
+      console.error('❌ Error logging admin activity:', error);
+      // Don't throw error - logging failure shouldn't break the main operation
     }
   },
 
