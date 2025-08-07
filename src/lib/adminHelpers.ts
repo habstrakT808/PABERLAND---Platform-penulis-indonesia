@@ -682,5 +682,24 @@ async getAdminStats(): Promise<AdminStats> {
         error: (error instanceof Error ? error.message : 'Failed to delete user') 
       };
     }
+  },
+
+  // Get global admin/regular user counts
+  async getUserRoleCounts() {
+    // Count admin
+    const { count: adminCount, error: adminError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_admin', true);
+    // Count regular
+    const { count: regularCount, error: regularError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_admin', false);
+    if (adminError || regularError) {
+      console.error('Error fetching user role counts:', adminError, regularError);
+      return { admin: 0, regular: 0 };
+    }
+    return { admin: adminCount || 0, regular: regularCount || 0 };
   }
 };

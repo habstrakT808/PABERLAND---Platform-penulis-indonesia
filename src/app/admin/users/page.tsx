@@ -43,6 +43,7 @@ function AdminUsersContent() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [filter, setFilter] = useState<"all" | "admin" | "regular">("all");
 
   // UI States
@@ -52,9 +53,19 @@ function AdminUsersContent() {
 
   const itemsPerPage = 10;
 
+  const [globalRoleCounts, setGlobalRoleCounts] = useState({
+    admin: 0,
+    regular: 0,
+  });
+
   useEffect(() => {
     fetchUsers();
   }, [currentPage, search, filter]);
+
+  useEffect(() => {
+    // Fetch global admin/regular counts sekali saat mount
+    adminHelpers.getUserRoleCounts().then(setGlobalRoleCounts);
+  }, []);
 
   const fetchUsers = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) {
@@ -86,7 +97,7 @@ function AdminUsersContent() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchUsers();
+    setSearch(searchInput);
   };
 
   const handleFilterChange = (newFilter: "all" | "admin" | "regular") => {
@@ -123,23 +134,28 @@ function AdminUsersContent() {
       )
     )
       return;
-    
-    console.log('🔄 Starting delete user process for:', userName, 'ID:', userId);
+
+    console.log(
+      "🔄 Starting delete user process for:",
+      userName,
+      "ID:",
+      userId
+    );
     setActionLoading(userId);
-    
+
     try {
       const result = await adminHelpers.deleteUser(userId, currentUser.id);
-      console.log('Delete user result:', result);
-      
+      console.log("Delete user result:", result);
+
       if (result.success) {
         toast.success(`User "${userName}" berhasil dihapus.`);
         fetchUsers();
       } else {
-        console.error('Delete user failed:', result.error);
+        console.error("Delete user failed:", result.error);
         toast.error(result.error || "Gagal menghapus user");
       }
     } catch (error) {
-      console.error('Exception during delete user:', error);
+      console.error("Exception during delete user:", error);
       toast.error("Terjadi kesalahan saat menghapus user");
     } finally {
       setActionLoading(null);
@@ -159,14 +175,10 @@ function AdminUsersContent() {
   };
 
   const getFilterCounts = () => {
-    // This would ideally come from the API, but for now we'll calculate from current data
-    const adminCount = users.filter((u) => u.is_admin).length;
-    const regularCount = users.filter((u) => !u.is_admin).length;
-
     return {
       all: totalCount,
-      admin: adminCount,
-      regular: regularCount,
+      admin: globalRoleCounts.admin,
+      regular: globalRoleCounts.regular,
     };
   };
 
@@ -234,8 +246,8 @@ function AdminUsersContent() {
               </div>
               <input
                 type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Cari nama atau nomor HP..."
                 className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />

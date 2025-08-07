@@ -16,19 +16,19 @@ export const metadata: Metadata = {
   authors: [{ name: "PaberLand Team" }],
   icons: {
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-64x64.png", sizes: "64x64", type: "image/png" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/favicon-128x128.png", sizes: "128x128", type: "image/png" },
-      { url: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/favicon-256x256.png", sizes: "256x256", type: "image/png" },
-      { url: "/logo_header.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon-16x16.png?v=2", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png?v=2", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png?v=2", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-64x64.png?v=2", sizes: "64x64", type: "image/png" },
+      { url: "/favicon-96x96.png?v=2", sizes: "96x96", type: "image/png" },
+      { url: "/favicon-128x128.png?v=2", sizes: "128x128", type: "image/png" },
+      { url: "/favicon-192x192.png?v=2", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-256x256.png?v=2", sizes: "256x256", type: "image/png" },
+      { url: "/logo_header.png?v=2", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/logo_header.png", sizes: "180x180", type: "image/png" }],
-    shortcut: "/favicon-256x256.png",
-    other: [{ url: "/favicon.ico", type: "image/x-icon" }],
+    apple: [{ url: "/logo_header.png?v=2", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon-256x256.png?v=2",
+    other: [{ url: "/favicon.ico?v=2", type: "image/x-icon" }],
   },
   openGraph: {
     title: "PaberLand - Komunitas Penulis Bacaan Anak Indonesia",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     locale: "id_ID",
     images: [
       {
-        url: "/logo_header.png",
+        url: "/logo_header.png?v=2",
         width: 1200,
         height: 630,
         alt: "PaberLand Logo",
@@ -57,63 +57,63 @@ export default function RootLayout({
       <head>
         <link
           rel="icon"
-          href="/favicon-16x16.png"
+          href="/favicon-16x16.png?v=2"
           type="image/png"
           sizes="16x16"
         />
         <link
           rel="icon"
-          href="/favicon-32x32.png"
+          href="/favicon-32x32.png?v=2"
           type="image/png"
           sizes="32x32"
         />
         <link
           rel="icon"
-          href="/favicon-48x48.png"
+          href="/favicon-48x48.png?v=2"
           type="image/png"
           sizes="48x48"
         />
         <link
           rel="icon"
-          href="/favicon-64x64.png"
+          href="/favicon-64x64.png?v=2"
           type="image/png"
           sizes="64x64"
         />
         <link
           rel="icon"
-          href="/favicon-96x96.png"
+          href="/favicon-96x96.png?v=2"
           type="image/png"
           sizes="96x96"
         />
         <link
           rel="icon"
-          href="/favicon-128x128.png"
+          href="/favicon-128x128.png?v=2"
           type="image/png"
           sizes="128x128"
         />
         <link
           rel="icon"
-          href="/favicon-192x192.png"
+          href="/favicon-192x192.png?v=2"
           type="image/png"
           sizes="192x192"
         />
         <link
           rel="icon"
-          href="/favicon-256x256.png"
+          href="/favicon-256x256.png?v=2"
           type="image/png"
           sizes="256x256"
         />
         <link
           rel="icon"
-          href="/logo_header.png"
+          href="/logo_header.png?v=2"
           type="image/png"
           sizes="512x512"
         />
-        <link rel="apple-touch-icon" href="/logo_header.png" sizes="180x180" />
-        <link rel="shortcut icon" href="/favicon-256x256.png" />
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="msapplication-TileImage" content="/favicon-256x256.png" />
+        <link rel="apple-touch-icon" href="/logo_header.png?v=2" sizes="180x180" />
+        <link rel="shortcut icon" href="/favicon-256x256.png?v=2" />
+        <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon" />
+        <link rel="manifest" href="/manifest.json?v=2" />
+        <meta name="msapplication-TileImage" content="/favicon-256x256.png?v=2" />
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white dark:bg-gray-900`}

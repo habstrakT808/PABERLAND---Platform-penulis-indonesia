@@ -31,6 +31,7 @@ const categories = [
   { value: "puisi", label: "🎭 Puisi" },
   { value: "cerbung", label: "📚 Cerbung" },
   { value: "novel", label: "📖 Novel" },
+  { value: "buku", label: "📚 Buku" },
   { value: "serial", label: "📚 Serial" },
   { value: "resensi buku", label: "📖 Resensi Buku" },
   { value: "artikel", label: "📰 Artikel" },
