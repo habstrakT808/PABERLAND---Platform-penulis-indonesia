@@ -132,7 +132,7 @@ function AdminArticlesContent() {
       const featured = new Set<string>();
       setFeaturedArticles(featured);
     } catch (error) {
-              console.error("Error fetching konten pilihan:", error);
+      console.error("Error fetching konten pilihan:", error);
     }
   };
 
@@ -567,7 +567,9 @@ function AdminArticlesContent() {
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                               >
                                 <StarIcon className="w-4 h-4 inline mr-2" />
-                                {isFeatured ? "Hapus Pilihan" : "Jadikan Pilihan"}
+                                {isFeatured
+                                  ? "Hapus Pilihan"
+                                  : "Jadikan Pilihan"}
                               </button>
 
                               <div className="border-t border-blue-100 my-1"></div>

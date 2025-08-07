@@ -62,15 +62,6 @@ const categoryConfig = {
     textColor: "text-yellow-600",
     emoji: "🏛️",
   },
-  lainnya: {
-    name: "Lainnya",
-    description: "Karya kreatif dan eksperimental",
-    icon: EllipsisHorizontalIcon,
-    color: "from-gray-500 to-gray-600",
-    bgColor: "bg-gray-50",
-    textColor: "text-gray-600",
-    emoji: "✨",
-  },
   "info-berita": {
     name: "Info/Berita",
     description: "Informasi dan berita terkini seputar literasi dan budaya",
@@ -307,16 +298,22 @@ export default function CategoryPage() {
       // Apply sorting
       switch (sortBy) {
         case "newest":
-          articlesQuery = articlesQuery.order("created_at", { ascending: false });
+          articlesQuery = articlesQuery.order("created_at", {
+            ascending: false,
+          });
           break;
         case "oldest":
-          articlesQuery = articlesQuery.order("created_at", { ascending: true });
+          articlesQuery = articlesQuery.order("created_at", {
+            ascending: true,
+          });
           break;
         case "popular":
           articlesQuery = articlesQuery.order("views", { ascending: false });
           break;
         case "most_liked":
-          articlesQuery = articlesQuery.order("likes_count", { ascending: false });
+          articlesQuery = articlesQuery.order("likes_count", {
+            ascending: false,
+          });
           break;
       }
 
@@ -856,9 +853,21 @@ export default function CategoryPage() {
                   📂 Kategori Lainnya
                 </h3>
                 <div className="space-y-2">
-                  {Object.entries(categoryConfig)
-                    .filter(([key]) => key !== category)
-                    .map(([key, otherConfig]) => (
+                  {[
+                    { key: "info-berita", config: categoryConfig["info-berita"] },
+                    { key: "cerpen", config: categoryConfig.cerpen },
+                    { key: "dongeng", config: categoryConfig.dongeng },
+                    { key: "cerita-rakyat", config: categoryConfig["cerita-rakyat"] },
+                    { key: "cermin", config: categoryConfig.cermin },
+                    { key: "puisi", config: categoryConfig.puisi },
+                    { key: "cerbung", config: categoryConfig.cerbung },
+                    { key: "novel", config: categoryConfig.novel },
+                    { key: "serial", config: categoryConfig.serial },
+                    { key: "resensi-buku", config: categoryConfig["resensi-buku"] },
+                    { key: "artikel", config: categoryConfig.artikel },
+                  ]
+                    .filter(({ key }) => key !== category)
+                    .map(({ key, config }) => (
                       <Link
                         key={key}
                         href={`/kategori/${key}`}
@@ -866,10 +875,10 @@ export default function CategoryPage() {
                       >
                         <div className="flex items-center">
                           <span className="text-lg mr-3">
-                            {otherConfig.emoji}
+                            {config.emoji}
                           </span>
                           <span className="text-gray-700 font-medium group-hover:text-blue-600">
-                            {otherConfig.name}
+                            {config.name}
                           </span>
                         </div>
                         <svg
