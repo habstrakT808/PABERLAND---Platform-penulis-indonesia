@@ -44,7 +44,7 @@ export default function AdminFeaturedPage() {
         undefined,
         "published"
       );
-      // Featured diurutkan paling atas
+      // Konten pilihan diurutkan paling atas
       const sorted = [...result.articles].sort(
         (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
       );
@@ -71,12 +71,12 @@ export default function AdminFeaturedPage() {
       if (result.success) {
         toast.success(
           `Konten \"${article.title}\" berhasil ${
-            article.featured ? "diunfeature" : "di-feature"
+            article.featured ? "dihapus dari pilihan" : "dijadikan pilihan"
           }!`
         );
         fetchArticles();
       } else {
-        toast.error(result.error || "Gagal mengubah status featured");
+        toast.error(result.error || "Gagal mengubah status pilihan");
       }
     } catch (error) {
       toast.error("Terjadi kesalahan sistem");
@@ -90,7 +90,7 @@ export default function AdminFeaturedPage() {
       <AdminLayout>
         <div className="max-w-4xl mx-auto py-10 px-4">
           <h1 className="text-3xl font-bold mb-6 text-black">
-            🌟 Pilih Konten Featured
+            🌟 Pilih Konten Pilihan
           </h1>
           <p className="mb-8 text-black">
             Pilih konten yang akan ditampilkan di beranda pada bagian{" "}
@@ -133,7 +133,7 @@ export default function AdminFeaturedPage() {
                       </span>
                       {article.featured && (
                         <span className="inline-block px-2 py-1 text-xs rounded bg-yellow-200 text-yellow-800">
-                          🌟 Featured
+                          🌟 Pilihan
                         </span>
                       )}
                     </div>
@@ -149,8 +149,8 @@ export default function AdminFeaturedPage() {
                       {actionLoading === article.id
                         ? "Menyimpan..."
                         : article.featured
-                        ? "Hapus Featured"
-                        : "Jadikan Featured"}
+                        ? "Hapus Pilihan"
+                        : "Jadikan Pilihan"}
                     </button>
                   </div>
                 ))}

@@ -85,7 +85,7 @@ export default function Tentang() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
+    <div className="min-h-screen" style={{ backgroundColor: "#d8ebeb" }}>
       {/* Floating Decorative Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-200/30 rounded-full blur-xl animate-float" />
@@ -97,9 +97,12 @@ export default function Tentang() {
       {/* Hero Section Fullscreen */}
       <section className="relative h-screen flex flex-col justify-center items-center overflow-hidden pt-70 md:pt-0">
         {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100" />
-        <div className="absolute inset-0 bg-white/60" />
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/40 via-pink-200/40 to-blue-200/40" />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: "#d8ebeb" }}
+        />
+        <div className="absolute inset-0 bg-white/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/20 via-pink-200/20 to-blue-200/20" />
 
         {/* Large Decorative Circles */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-pink-300/20 to-yellow-200/10 rounded-full blur-3xl animate-pulse-slow" />

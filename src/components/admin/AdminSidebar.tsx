@@ -41,7 +41,7 @@ const navigation = [
     badge: "pending",
   },
   {
-    name: "Konten Featured",
+            name: "Konten Pilihan",
     href: "/admin/featured",
     icon: StarIcon,
   },

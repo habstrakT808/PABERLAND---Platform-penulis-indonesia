@@ -148,13 +148,13 @@ export default function PortfolioPage() {
       setPortfolioWorks(works);
       setStats(portfolioStats);
 
-      // Debug: Check portfolio works and their cover images
+      // Debug: Check portofolio works and their cover images
       await debugPortfolioWorks(authorId);
 
       // Clean invalid cover images
       await cleanInvalidCoverImages(authorId);
     } catch (error) {
-      console.error("Error fetching portfolio data:", error);
+      console.error("Error fetching portofolio data:", error);
     } finally {
       setLoading(false);
     }
@@ -212,7 +212,7 @@ export default function PortfolioPage() {
             {authorProfile.full_name}
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">Portfolio</span>
+          <span className="text-gray-900 font-medium">Portofolio</span>
         </nav>
 
         {/* Header */}
@@ -220,7 +220,7 @@ export default function PortfolioPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                📚 Portfolio Karya {authorProfile.full_name}
+                📚 Portofolio Karya {authorProfile.full_name}
               </h1>
               <p className="text-gray-700">
                 Koleksi karya terbaik dari member PaberLand
@@ -268,17 +268,17 @@ export default function PortfolioPage() {
           </div>
         </div>
 
-        {/* Portfolio Works */}
+        {/* Portofolio Works */}
         {portfolioWorks.length === 0 ? (
           <div className="bg-white/95 rounded-xl shadow-sm p-12 text-center border border-blue-100">
             <div className="text-6xl mb-4">📚</div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Belum Ada Karya Portfolio
+              Belum Ada Karya Portofolio
             </h3>
             <p className="text-gray-700 mb-6">
               {isOwnPortfolio
-                ? "Anda belum menambahkan karya portfolio apapun."
-                : `${authorProfile.full_name} belum menambahkan karya portfolio apapun.`}
+                ? "Anda belum menambahkan karya portofolio apapun."
+                : `${authorProfile.full_name} belum menambahkan karya portofolio apapun.`}
             </p>
             {isOwnPortfolio && (
               <Link

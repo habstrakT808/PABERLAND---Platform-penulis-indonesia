@@ -292,7 +292,7 @@ function EditPortfolioWorkContent() {
                   Kembali
                 </button>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Edit Karya Portfolio
+                  Edit Karya Portofolio
                 </h1>
               </div>
             </div>

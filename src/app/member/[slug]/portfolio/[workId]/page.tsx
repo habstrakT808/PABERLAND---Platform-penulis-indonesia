@@ -117,12 +117,12 @@ export default function PortfolioWorkDetailPage() {
 
       setAuthor(authorProfile);
 
-      // Then, get the portfolio work
+      // Then, get the portofolio work
       const result = await portfolioHelpers.getPortfolioWorkById(workId);
       if (result.success && result.data) {
         setWork(result.data);
       } else {
-        toast.error("Karya portfolio tidak ditemukan");
+        toast.error("Karya portofolio tidak ditemukan");
         router.push(`/member/${slug}/portfolio`);
       }
     } catch (error) {
@@ -189,7 +189,7 @@ export default function PortfolioWorkDetailPage() {
             href={`/member/${slug}/portfolio`}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Kembali ke Portfolio
+            Kembali ke Portofolio
           </Link>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function PortfolioWorkDetailPage() {
             href={`/member/${slug}/portfolio`}
             className="hover:text-blue-600"
           >
-            Portfolio
+            Portofolio
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">{work.title}</span>
@@ -460,7 +460,7 @@ export default function PortfolioWorkDetailPage() {
                   href={`/member/${slug}/portfolio`}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  Lihat Portfolio Lengkap →
+                  Lihat Portofolio Lengkap →
                 </Link>
               </div>
             </div>

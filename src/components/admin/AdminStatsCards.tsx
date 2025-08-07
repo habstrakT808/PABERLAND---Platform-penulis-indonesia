@@ -73,7 +73,7 @@ export default function AdminStatsCards({
       change: "24 jam terakhir",
     },
     {
-      title: "Konten Featured",
+              title: "Konten Pilihan",
       value: stats.featuredContent,
       icon: StarIcon,
       color: "bg-blue-50 text-blue-600",

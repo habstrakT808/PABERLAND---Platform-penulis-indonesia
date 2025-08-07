@@ -246,7 +246,7 @@ function AdminAnalyticsContent() {
               <div>
                 <p className="font-medium text-gray-900">Content Quality</p>
                 <p className="text-sm text-gray-600">
-                  {stats.featuredContent} konten featured
+                  {stats.featuredContent} konten pilihan
                 </p>
               </div>
               <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
@@ -314,7 +314,7 @@ function AdminAnalyticsContent() {
                 </span>
               </p>
               <p>
-                Featured:{" "}
+                Pilihan:{" "}
                 <span className="font-medium text-yellow-600">
                   {stats.featuredContent}
                 </span>

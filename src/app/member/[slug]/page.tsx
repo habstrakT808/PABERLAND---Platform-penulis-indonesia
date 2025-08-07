@@ -92,7 +92,7 @@ export default function AuthorProfilePage() {
       try {
         // Get user ID by slug
         const userId = await getUserIdBySlug(slug);
-        
+
         if (!userId) {
           console.error("Author not found for slug:", slug);
           router.push("/member");
@@ -115,7 +115,8 @@ export default function AuthorProfilePage() {
         // Fetch author's articles
         const { data: articles, error: articlesError } = await supabase
           .from("articles")
-          .select(`
+          .select(
+            `
             id,
             title,
             excerpt,
@@ -127,7 +128,8 @@ export default function AuthorProfilePage() {
             comments_count,
             created_at,
             published
-          `)
+          `
+          )
           .eq("author_id", profile.id)
           .eq("published", true)
           .order("created_at", { ascending: false });
@@ -141,18 +143,37 @@ export default function AuthorProfilePage() {
             stats: {
               totalArticles: articles?.length || 0,
               publishedArticles: articles?.length || 0,
-              totalViews: articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0,
-              totalLikes: articles?.reduce((sum, article) => sum + (article.likes_count || 0), 0) || 0,
-              totalComments: articles?.reduce((sum, article) => sum + (article.comments_count || 0), 0) || 0,
-              avgViewsPerArticle: articles?.length ? Math.round((articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0) / articles.length) : 0,
+              totalViews:
+                articles?.reduce(
+                  (sum, article) => sum + (article.views || 0),
+                  0
+                ) || 0,
+              totalLikes:
+                articles?.reduce(
+                  (sum, article) => sum + (article.likes_count || 0),
+                  0
+                ) || 0,
+              totalComments:
+                articles?.reduce(
+                  (sum, article) => sum + (article.comments_count || 0),
+                  0
+                ) || 0,
+              avgViewsPerArticle: articles?.length
+                ? Math.round(
+                    (articles?.reduce(
+                      (sum, article) => sum + (article.views || 0),
+                      0
+                    ) || 0) / articles.length
+                  )
+                : 0,
               categoriesCount: 0,
               categories: [],
-              monthlyStats: []
-            }
+              monthlyStats: [],
+            },
           });
         }
 
-        // Fetch author's portfolio
+        // Fetch author's portofolio
         const { data: portfolioWorks, error: portfolioError } = await supabase
           .from("portfolio_works")
           .select("*")
@@ -160,9 +181,8 @@ export default function AuthorProfilePage() {
           .order("created_at", { ascending: false });
 
         if (portfolioError) {
-          console.error("Error fetching portfolio:", portfolioError);
+          console.error("Error fetching portofolio:", portfolioError);
         }
-
       } catch (error) {
         console.error("Error fetching author data:", error);
         toast.error("Gagal memuat profil penulis");
@@ -642,7 +662,7 @@ export default function AuthorProfilePage() {
                 className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 <BookOpenIcon className="w-4 h-4" />
-                <span>Data Karya</span>
+                <span>Portofolio</span>
               </Link>
 
               <button

@@ -127,12 +127,12 @@ function AdminArticlesContent() {
 
   const fetchFeaturedArticles = async () => {
     try {
-      // This would be a specific API call to get featured articles
+      // This would be a specific API call to get konten pilihan
       // For now, we'll simulate it
       const featured = new Set<string>();
       setFeaturedArticles(featured);
     } catch (error) {
-      console.error("Error fetching featured articles:", error);
+              console.error("Error fetching konten pilihan:", error);
     }
   };
 
@@ -224,11 +224,11 @@ function AdminArticlesContent() {
 
         toast.success(
           `Konten "${articleTitle}" berhasil ${
-            featured ? "diunfeature" : "di-feature"
+            featured ? "dihapus dari pilihan" : "dijadikan pilihan"
           }!`
         );
       } else {
-        toast.error(result.error || "Gagal mengubah status featured");
+        toast.error(result.error || "Gagal mengubah status pilihan");
       }
     } catch (error) {
       toast.error("Terjadi kesalahan sistem");
@@ -451,7 +451,7 @@ function AdminArticlesContent() {
                           {isFeatured && (
                             <StarSolid
                               className="w-5 h-5 text-yellow-500"
-                              title="Featured Konten"
+                              title="Konten Pilihan"
                             />
                           )}
 
@@ -567,7 +567,7 @@ function AdminArticlesContent() {
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                               >
                                 <StarIcon className="w-4 h-4 inline mr-2" />
-                                {isFeatured ? "Unfeature" : "Feature"} Konten
+                                {isFeatured ? "Hapus Pilihan" : "Jadikan Pilihan"}
                               </button>
 
                               <div className="border-t border-blue-100 my-1"></div>

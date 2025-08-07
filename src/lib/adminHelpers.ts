@@ -84,7 +84,7 @@ async getAdminStats(): Promise<AdminStats> {
       // Pending reports (if table exists)
       supabase.from('content_reports').select('*', { count: 'exact', head: true })
         .eq('status', 'pending'),
-      // Featured content (if table exists)
+      // Konten pilihan (if table exists)
       supabase.from('featured_content').select('*', { count: 'exact', head: true })
         .eq('active', true)
     ]);
@@ -230,7 +230,7 @@ async getAdminStats(): Promise<AdminStats> {
       return { articles: [], totalCount: 0, totalPages: 0 };
     }
 
-    // Ambil daftar featured_content
+            // Ambil daftar konten pilihan
     const { data: featuredData, error: featuredError } = await supabase
       .from('featured_content')
       .select('content_id')
@@ -238,7 +238,7 @@ async getAdminStats(): Promise<AdminStats> {
       .eq('active', true);
     const featuredIds = (featuredData || []).map((f: any) => f.content_id);
 
-    // Tandai artikel featured
+            // Tandai artikel pilihan
     const articles = (data || []).map((article: any) => ({
       ...article,
       featured: featuredIds.includes(article.id),
@@ -373,7 +373,7 @@ async getAdminStats(): Promise<AdminStats> {
         console.log('✅ Comments deleted');
       }
 
-      // Delete from featured_content if exists
+              // Delete from konten pilihan if exists
       const { error: featuredError } = await supabase
         .from('featured_content')
         .delete()
@@ -381,9 +381,9 @@ async getAdminStats(): Promise<AdminStats> {
         .eq('content_id', articleId);
 
       if (featuredError) {
-        console.warn('⚠️ Error deleting from featured_content:', featuredError);
+        console.warn('⚠️ Error deleting from konten pilihan:', featuredError);
       } else {
-        console.log('✅ Featured content entry deleted');
+        console.log('✅ Konten pilihan entry deleted');
       }
 
       // Delete content reports if exists
@@ -523,13 +523,13 @@ async getAdminStats(): Promise<AdminStats> {
         contentType,
         contentId
       ).catch(logError => {
-        console.warn('⚠️ Failed to log admin activity, but featured content toggle was successful:', logError);
+        console.warn('⚠️ Failed to log admin activity, but konten pilihan toggle was successful:', logError);
       });
 
       return { success: true };
     } catch (error) {
-      console.error('Error toggling featured content:', error);
-      return { success: false, error: 'Failed to update featured status' };
+      console.error('Error toggling konten pilihan:', error);
+              return { success: false, error: 'Failed to update konten pilihan status' };
     }
   },
 

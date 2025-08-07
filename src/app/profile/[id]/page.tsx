@@ -603,7 +603,7 @@ export default function PublicProfilePage() {
                   className="flex items-center space-x-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition-colors"
                 >
                   <BookOpenIcon className="w-4 h-4" />
-                  <span>Karya</span>
+                  <span>Portofolio</span>
                 </Link>
                 <button
                   onClick={handleShare}

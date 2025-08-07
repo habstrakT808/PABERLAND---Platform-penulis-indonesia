@@ -229,7 +229,7 @@ function AdminDashboardContent() {
               <div className="space-y-1 text-sm text-blue-700">
                 <p>• {stats.newUsersToday} user baru mendaftar</p>
                 <p>• {stats.newArticlesToday} konten baru dipublikasikan</p>
-                <p>• {stats.featuredContent} konten sedang di-featured</p>
+                <p>• {stats.featuredContent} konten pilihan</p>
               </div>
             </div>
 

@@ -320,7 +320,7 @@ export default function HomePage() {
         .order("created_at", { ascending: false });
 
       if (articlesError) {
-        console.error("Error fetching featured articles:", articlesError);
+        console.error("Error fetching konten pilihan:", articlesError);
         return;
       }
 
@@ -331,7 +331,7 @@ export default function HomePage() {
 
       setFeaturedArticles(sortedArticles || []);
     } catch (error) {
-      console.error("Error in fetchFeaturedArticles:", error);
+      console.error("Error in fetchKontenPilihan:", error);
     } finally {
       setLoadingFeatured(false);
     }
@@ -698,7 +698,7 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Featured Articles Section */}
+          {/* Konten Pilihan Section */}
           <section
             className={`py-16 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl mx-2 md:mx-0 hover-lift ${
               isMobile && isLoadingContent
