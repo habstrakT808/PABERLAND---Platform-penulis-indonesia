@@ -1,7 +1,7 @@
 // src/app/admin/users/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { adminHelpers } from "@/lib/adminHelpers";
 import { supabase, getAvatarUrl } from "@/lib/supabase";
@@ -43,13 +43,15 @@ function AdminUsersContent() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // For debounced search
   const [filter, setFilter] = useState<"all" | "admin" | "regular">("all");
 
   // UI States
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserMenu, setShowUserMenu] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const itemsPerPage = 10;
 
@@ -58,14 +60,45 @@ function AdminUsersContent() {
     regular: 0,
   });
 
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(search);
+      setSearching(false);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, search, filter]);
+  }, [currentPage, searchQuery, filter]);
 
   useEffect(() => {
     // Fetch global admin/regular counts sekali saat mount
     adminHelpers.getUserRoleCounts().then(setGlobalRoleCounts);
   }, []);
+
+  // Ensure focus stays on search input when component updates
+  useEffect(() => {
+    const handleFocusOut = () => {
+      // If focus is lost and there's text in search, restore focus
+      if (search && searchInputRef.current && document.activeElement !== searchInputRef.current) {
+        setTimeout(() => {
+          if (searchInputRef.current) {
+            searchInputRef.current.focus();
+            const length = searchInputRef.current.value.length;
+            searchInputRef.current.setSelectionRange(length, length);
+          }
+        }, 50);
+      }
+    };
+
+    document.addEventListener('click', handleFocusOut);
+    return () => {
+      document.removeEventListener('click', handleFocusOut);
+    };
+  }, [search]);
 
   const fetchUsers = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) {
@@ -78,7 +111,7 @@ function AdminUsersContent() {
       const result = await adminHelpers.getUsers(
         currentPage,
         itemsPerPage,
-        search || undefined,
+        searchQuery || undefined,
         filter
       );
 
@@ -91,18 +124,42 @@ function AdminUsersContent() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      // Restore focus to search input after data loads with delay
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          // Ensure cursor is at the end of the text
+          const length = searchInputRef.current.value.length;
+          searchInputRef.current.setSelectionRange(length, length);
+        }
+      }, 100);
     }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    setSearch(searchInput);
+    setSearchQuery(search);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+    setSearching(true);
   };
 
   const handleFilterChange = (newFilter: "all" | "admin" | "regular") => {
     setFilter(newFilter);
     setCurrentPage(1);
+    // Restore focus to search input after filter change
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+        // Ensure cursor is at the end of the text
+        const length = searchInputRef.current.value.length;
+        searchInputRef.current.setSelectionRange(length, length);
+      }
+    }, 100);
   };
 
   const handlePromoteToAdmin = async (userId: string, userName: string) => {
@@ -223,7 +280,18 @@ function AdminUsersContent() {
           </div>
 
           <button
-            onClick={() => fetchUsers(true)}
+            onClick={() => {
+              fetchUsers(true);
+              // Restore focus to search input after refresh
+              setTimeout(() => {
+                if (searchInputRef.current) {
+                  searchInputRef.current.focus();
+                  // Ensure cursor is at the end of the text
+                  const length = searchInputRef.current.value.length;
+                  searchInputRef.current.setSelectionRange(length, length);
+                }
+              }, 100);
+            }}
             disabled={refreshing}
             className="inline-flex items-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-blue-50 transition-colors disabled:opacity-50"
           >
@@ -245,12 +313,18 @@ function AdminUsersContent() {
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
+                ref={searchInputRef}
                 type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                value={search}
+                onChange={handleSearchChange}
                 placeholder="Cari nama atau nomor HP..."
                 className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
+              {searching && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
             </div>
           </form>
 
@@ -424,7 +498,18 @@ function AdminUsersContent() {
         <div className="mt-8 flex justify-center">
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => {
+                setCurrentPage(Math.max(1, currentPage - 1));
+                // Restore focus to search input after pagination
+                setTimeout(() => {
+                  if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                    // Ensure cursor is at the end of the text
+                    const length = searchInputRef.current.value.length;
+                    searchInputRef.current.setSelectionRange(length, length);
+                  }
+                }, 100);
+              }}
               disabled={currentPage === 1}
               className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
@@ -438,7 +523,18 @@ function AdminUsersContent() {
               return (
                 <button
                   key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
+                  onClick={() => {
+                    setCurrentPage(pageNum);
+                    // Restore focus to search input after pagination
+                    setTimeout(() => {
+                      if (searchInputRef.current) {
+                        searchInputRef.current.focus();
+                        // Ensure cursor is at the end of the text
+                        const length = searchInputRef.current.value.length;
+                        searchInputRef.current.setSelectionRange(length, length);
+                      }
+                    }, 100);
+                  }}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                     currentPage === pageNum
                       ? "bg-blue-600 text-white"
@@ -451,9 +547,18 @@ function AdminUsersContent() {
             })}
 
             <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+              onClick={() => {
+                setCurrentPage(Math.min(totalPages, currentPage + 1));
+                // Restore focus to search input after pagination
+                setTimeout(() => {
+                  if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                    // Ensure cursor is at the end of the text
+                    const length = searchInputRef.current.value.length;
+                    searchInputRef.current.setSelectionRange(length, length);
+                  }
+                }, 100);
+              }}
               disabled={currentPage === totalPages}
               className="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
