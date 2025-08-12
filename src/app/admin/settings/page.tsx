@@ -13,8 +13,11 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
+  ArrowDownTrayIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import { adminHelpers } from "@/lib/adminHelpers";
 
 function AdminSettingsContent() {
   const [settings, setSettings] = useState({
@@ -42,7 +45,10 @@ function AdminSettingsContent() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("site");
+  const [backupStatus, setBackupStatus] = useState<any>(null);
+  const [creatingBackup, setCreatingBackup] = useState(false);
 
   const tabs = [
     { id: "site", label: "Site Settings", icon: GlobeAltIcon },
@@ -52,18 +58,111 @@ function AdminSettingsContent() {
     { id: "security", label: "Security", icon: ShieldCheckIcon },
   ];
 
+  // Load settings on component mount
+  useEffect(() => {
+    loadSettings();
+    loadBackupStatus();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      const allSettings = await adminHelpers.getAllSettings();
+      
+      if (allSettings) {
+        setSettings({
+          // Site Settings
+          siteName: allSettings.site_name || "PaberLand",
+          siteDescription: allSettings.site_description || "Platform Komunitas Penulis Indonesia",
+          maintenanceMode: allSettings.maintenance_mode || false,
+
+          // User Settings
+          allowRegistration: allSettings.allow_registration !== false,
+          requireEmailVerification: allSettings.require_email_verification !== false,
+          autoApproveUsers: allSettings.auto_approve_users !== false,
+
+          // Content Settings
+          autoApproveArticles: allSettings.auto_approve_articles !== false,
+          requireModeration: allSettings.require_moderation || false,
+          maxArticleLength: allSettings.max_article_length || 50000,
+          allowAnonymousComments: allSettings.allow_anonymous_comments || false,
+
+          // Notification Settings
+          emailNotifications: allSettings.email_notifications !== false,
+          adminNotifications: allSettings.admin_notifications !== false,
+          reportNotifications: allSettings.report_notifications !== false,
+          weeklyDigest: allSettings.weekly_digest !== false,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      toast.error('Gagal memuat pengaturan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBackupStatus = async () => {
+    try {
+      const status = await adminHelpers.getBackupStatus();
+      setBackupStatus(status);
+    } catch (error) {
+      console.error('Error loading backup status:', error);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Here you would save settings to database
-      // For now, we'll simulate the save
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare settings for database
+      const settingsToUpdate = {
+        site_name: settings.siteName,
+        site_description: settings.siteDescription,
+        maintenance_mode: settings.maintenanceMode,
+        allow_registration: settings.allowRegistration,
+        require_email_verification: settings.requireEmailVerification,
+        auto_approve_users: settings.autoApproveUsers,
+        auto_approve_articles: settings.autoApproveArticles,
+        require_moderation: settings.requireModeration,
+        max_article_length: settings.maxArticleLength,
+        allow_anonymous_comments: settings.allowAnonymousComments,
+        email_notifications: settings.emailNotifications,
+        admin_notifications: settings.adminNotifications,
+        report_notifications: settings.reportNotifications,
+        weekly_digest: settings.weeklyDigest,
+      };
 
-      toast.success("Pengaturan berhasil disimpan!");
+      const result = await adminHelpers.updateMultipleSettings(settingsToUpdate);
+
+      if (result.success) {
+        toast.success("Pengaturan berhasil disimpan!");
+      } else {
+        toast.error(result.error || "Gagal menyimpan pengaturan");
+      }
     } catch (error) {
+      console.error('Error saving settings:', error);
       toast.error("Gagal menyimpan pengaturan");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    setCreatingBackup(true);
+    try {
+      const result = await adminHelpers.createBackup();
+      
+      if (result.success) {
+        toast.success("Backup berhasil dibuat!");
+        await loadBackupStatus(); // Refresh backup status
+      } else {
+        toast.error(result.error || "Gagal membuat backup");
+      }
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      toast.error("Gagal membuat backup");
+    } finally {
+      setCreatingBackup(false);
     }
   };
 
@@ -389,9 +488,52 @@ function AdminSettingsContent() {
         <p className="text-sm text-blue-700 mb-3">
           Database backup otomatis setiap hari pada pukul 02:00 WIB
         </p>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          Download Latest Backup
-        </button>
+        
+        {backupStatus && backupStatus.success && backupStatus.lastBackup && (
+          <div className="mb-4 p-3 bg-white rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">Backup Terakhir:</span>
+              <span className="text-sm text-gray-600">
+                {new Date(backupStatus.lastBackup.created_at).toLocaleDateString('id-ID')}
+              </span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-700">Ukuran:</span>
+              <span className="text-sm text-gray-600">{backupStatus.lastBackup.size}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-700">Status:</span>
+              <span className="text-sm text-green-600 font-medium">
+                {backupStatus.lastBackup.status}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex space-x-3">
+          <button
+            onClick={handleCreateBackup}
+            disabled={creatingBackup}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
+          >
+            {creatingBackup ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Membuat Backup...
+              </>
+            ) : (
+              <>
+                <CloudArrowUpIcon className="w-4 h-4 mr-2" />
+                Buat Backup Sekarang
+              </>
+            )}
+          </button>
+          
+          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+            <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+            Download Backup
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -412,6 +554,29 @@ function AdminSettingsContent() {
         return renderSiteSettings();
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <div className="space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-gray-200 rounded-lg"></div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:col-span-3">
+              <div className="h-96 bg-gray-200 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">

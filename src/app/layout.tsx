@@ -3,7 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import MaintenanceMode from "@/components/common/MaintenanceMode";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -119,21 +121,24 @@ export default function RootLayout({
         className={`${inter.className} min-h-screen bg-white dark:bg-gray-900`}
       >
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1 pt-24">{children}</main>
-            <Footer />
-          </div>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "#363636",
-                color: "#fff",
-              },
-            }}
-          />
+          <SettingsProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1 pt-24">{children}</main>
+              <Footer />
+            </div>
+            <MaintenanceMode />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: "#363636",
+                  color: "#fff",
+                },
+              }}
+            />
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>

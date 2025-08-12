@@ -701,5 +701,148 @@ async getAdminStats(): Promise<AdminStats> {
       return { admin: 0, regular: 0 };
     }
     return { admin: adminCount || 0, regular: regularCount || 0 };
+  },
+
+  // Settings management functions
+  async getAllSettings() {
+    try {
+      const { data, error } = await supabase.rpc('get_all_settings');
+      
+      if (error) {
+        console.error('Error fetching settings:', error);
+        return {};
+      }
+
+      const settings: any = {};
+      (data || []).forEach((setting: any) => {
+        settings[setting.key] = setting.value;
+      });
+
+      return settings;
+    } catch (error) {
+      console.error('Error in getAllSettings:', error);
+      return {};
+    }
+  },
+
+  async getSettingsByCategory(category: string) {
+    try {
+      const { data, error } = await supabase.rpc('get_settings_by_category', {
+        p_category: category
+      });
+      
+      if (error) {
+        console.error('Error fetching settings by category:', error);
+        return {};
+      }
+
+      const settings: any = {};
+      (data || []).forEach((setting: any) => {
+        settings[setting.key] = setting.value;
+      });
+
+      return settings;
+    } catch (error) {
+      console.error('Error in getSettingsByCategory:', error);
+      return {};
+    }
+  },
+
+  async updateSetting(key: string, value: any) {
+    try {
+      const { data, error } = await supabase.rpc('update_setting', {
+        p_key: key,
+        p_value: value
+      });
+      
+      if (error) {
+        console.error('Error updating setting:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateSetting:', error);
+      return { success: false, error: 'Failed to update setting' };
+    }
+  },
+
+  async updateMultipleSettings(settings: Record<string, any>) {
+    try {
+      const updatePromises = Object.entries(settings).map(([key, value]) =>
+        this.updateSetting(key, value)
+      );
+
+      const results = await Promise.all(updatePromises);
+      const failedUpdates = results.filter(result => !result.success);
+
+      if (failedUpdates.length > 0) {
+        console.error('Some settings failed to update:', failedUpdates);
+        return { 
+          success: false, 
+          error: `${failedUpdates.length} settings failed to update`,
+          failedUpdates 
+        };
+      }
+
+      // Clear settings cache after successful update
+      try {
+        const { clearSettingsCache } = await import('./settingsUtils');
+        clearSettingsCache();
+      } catch (cacheError) {
+        console.warn('Failed to clear settings cache:', cacheError);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateMultipleSettings:', error);
+      return { success: false, error: 'Failed to update settings' };
+    }
+  },
+
+  // Backup and recovery functions
+  async createBackup() {
+    try {
+      // This would typically call a database backup service
+      // For now, we'll simulate a backup creation
+      console.log('Creating backup...');
+      
+      // In a real implementation, this would:
+      // 1. Create a database dump
+      // 2. Upload to cloud storage
+      // 3. Return backup metadata
+      
+      const backupInfo = {
+        id: `backup-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        size: '2.5MB',
+        status: 'completed'
+      };
+
+      return { success: true, backup: backupInfo };
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      return { success: false, error: 'Failed to create backup' };
+    }
+  },
+
+  async getBackupStatus() {
+    try {
+      // This would check the status of the latest backup
+      // For now, we'll return a simulated status
+      return {
+        success: true,
+        lastBackup: {
+          id: `backup-${Date.now() - 86400000}`, // 1 day ago
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          size: '2.5MB',
+          status: 'completed'
+        },
+        nextScheduled: new Date(Date.now() + 86400000).toISOString() // 1 day from now
+      };
+    } catch (error) {
+      console.error('Error getting backup status:', error);
+      return { success: false, error: 'Failed to get backup status' };
+    }
   }
 };

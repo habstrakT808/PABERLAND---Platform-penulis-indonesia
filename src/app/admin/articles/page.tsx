@@ -77,12 +77,17 @@ function AdminArticlesContent() {
 
   const categories = [
     { value: "all", label: "Semua Kategori", emoji: "📚" },
+    { value: "info-berita", label: "Info/Berita", emoji: "📰" },
     { value: "cerpen", label: "Cerpen", emoji: "📖" },
-    { value: "puisi", label: "Puisi", emoji: "🎭" },
-    { value: "artikel", label: "Konten", emoji: "📰" },
+    { value: "dongeng", label: "Dongeng", emoji: "🧚" },
     { value: "cerita-rakyat", label: "Cerita Rakyat", emoji: "🏛️" },
-    { value: "novel-berseri", label: "Novel Berseri", emoji: "📚" },
-    { value: "lainnya", label: "Lainnya", emoji: "✨" },
+    { value: "cermin", label: "Cermin (Cerita Mini)", emoji: "🔎" },
+    { value: "puisi", label: "Puisi", emoji: "🎭" },
+    { value: "cerbung", label: "Cerbung", emoji: "📝" },
+    { value: "novel", label: "Novel", emoji: "📚" },
+    { value: "serial", label: "Serial", emoji: "📚" },
+    { value: "resensi-buku", label: "Resensi Buku", emoji: "📖" },
+    { value: "artikel", label: "Artikel", emoji: "📰" },
   ];
 
   useEffect(() => {

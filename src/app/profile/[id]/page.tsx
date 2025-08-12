@@ -94,7 +94,7 @@ export default function PublicProfilePage() {
       // Generate author slug when data is available
       generateAuthorSlug();
     }
-  }, [data?.profile.id]);
+  }, [data?.profile.id, activeTab, currentPage]);
 
   const generateAuthorSlug = async () => {
     if (data?.profile) {
@@ -190,7 +190,9 @@ export default function PublicProfilePage() {
           .from("article_likes")
           .select(
             `
-            articles!inner(
+            article_id,
+            created_at,
+            articles(
               id,
               title,
               excerpt,
@@ -206,11 +208,10 @@ export default function PublicProfilePage() {
           `
           )
           .eq("user_id", profileId)
-          .eq("articles.published", true)
           .order("created_at", { ascending: false })
           .range(
             (currentPage - 1) * articlesPerPage,
-            (currentPage - 1) * articlesPerPage + 3
+            (currentPage - 1) * articlesPerPage + articlesPerPage - 1
           );
 
         if (error) {
@@ -218,9 +219,11 @@ export default function PublicProfilePage() {
           return;
         }
 
-        const formattedLikedArticles = (likedArticles || []).map(
-          (item: any) => item.articles
-        );
+        const formattedLikedArticles = (likedArticles || [])
+          .map((item: any) => item.articles)
+          .filter((article: any) => article !== null && article.published === true);
+
+        console.log('Fetched liked articles:', formattedLikedArticles);
 
         setData((prev) => ({
           ...prev!,
@@ -407,13 +410,12 @@ export default function PublicProfilePage() {
     activeTab === "articles"
       ? Math.ceil(data.articles.length / articlesPerPage)
       : Math.ceil(data.stats.totalLikedArticles / articlesPerPage);
-  const paginatedArticles =
-    activeTab === "articles"
-      ? currentArticles.slice(
-          (currentPage - 1) * articlesPerPage,
-          currentPage * articlesPerPage
-        )
-      : currentArticles;
+  const paginatedArticles = activeTab === "articles"
+    ? currentArticles.slice(
+        (currentPage - 1) * articlesPerPage,
+        currentPage * articlesPerPage
+      )
+    : currentArticles; // Liked articles already paginated from database
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-pink-50">
