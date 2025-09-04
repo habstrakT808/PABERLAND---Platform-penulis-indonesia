@@ -23,21 +23,31 @@ interface ArticleTableProps {
 }
 
 const categoryLabels: { [key: string]: string } = {
+  "info-berita": "Info/Berita",
   cerpen: "Cerpen",
-  puisi: "Puisi",
-  artikel: "Konten",
+  dongeng: "Dongeng",
   "cerita-rakyat": "Cerita Rakyat",
-  "novel-berseri": "Novel Berseri",
-  lainnya: "Lainnya",
+  cermin: "Cermin (Cerita Mini)",
+  puisi: "Puisi",
+  cerbung: "Cerbung",
+  novel: "Novel",
+  serial: "Serial",
+  "resensi-buku": "Resensi Buku",
+  artikel: "Artikel",
 };
 
 const categoryColors: { [key: string]: string } = {
+  "info-berita": "bg-cyan-100 text-cyan-800",
   cerpen: "bg-blue-100 text-blue-800",
-  puisi: "bg-purple-100 text-purple-800",
-  artikel: "bg-green-100 text-green-800",
+  dongeng: "bg-lime-100 text-lime-800",
   "cerita-rakyat": "bg-yellow-100 text-yellow-800",
-  "novel-berseri": "bg-red-100 text-red-800",
-  lainnya: "bg-gray-100 text-gray-800",
+  cermin: "bg-pink-100 text-pink-800",
+  puisi: "bg-purple-100 text-purple-800",
+  cerbung: "bg-indigo-100 text-indigo-800",
+  novel: "bg-emerald-100 text-emerald-800",
+  serial: "bg-rose-100 text-rose-800",
+  "resensi-buku": "bg-amber-100 text-amber-800",
+  artikel: "bg-green-100 text-green-800",
 };
 
 export default function ArticleTable({
