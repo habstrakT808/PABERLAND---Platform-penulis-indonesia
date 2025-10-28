@@ -218,14 +218,14 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({
             }}
           >
             <a
-              href="https://paberland.vercel.app"
+              href={process.env.NEXT_PUBLIC_SITE_URL || "https://paberland.id"}
               style={{
                 color: "#3b82f6",
                 textDecoration: "none",
                 fontWeight: "600",
               }}
             >
-              https://paberland.vercel.app
+              {process.env.NEXT_PUBLIC_SITE_URL || "https://paberland.id"}
             </a>
           </p>
         </div>

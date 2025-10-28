@@ -1,0 +1,1 @@
+"use strict";exports.id=4619,exports.ids=[4619],exports.modules={14619:(a,b,c)=>{c.d(b,{clearSettingsCache:()=>h,sD:()=>g});var d=c(50345);let e=null,f=0;async function g(){let a=Date.now();if(e&&a-f<3e5)return e;try{return e=await d.H.getAllSettings(),f=a,e}catch(a){return console.error("Error fetching settings:",a),e||{}}}function h(){e=null,f=0}}};

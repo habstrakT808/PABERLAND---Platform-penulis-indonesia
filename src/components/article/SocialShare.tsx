@@ -20,19 +20,22 @@ export default function SocialShare({ title, url, excerpt }: SocialShareProps) {
   // Always use production domain for sharing
   const getShareUrl = () => {
     try {
-      const prod = "https://paberland.vercel.app";
+      const envBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+      const runtimeBase = isClient ? window.location.origin : "";
+      const base = envBase || runtimeBase || "";
       if (
         url.startsWith("http://localhost") ||
         url.startsWith("https://localhost")
       ) {
         // Replace localhost with production domain
         const u = new URL(url);
-        return prod + u.pathname + u.search + u.hash;
+        return base + u.pathname + u.search + u.hash;
       }
       // If already production, return as is
-      if (url.startsWith(prod)) return url;
+      if (envBase && url.startsWith(envBase)) return url;
+      if (runtimeBase && url.startsWith(runtimeBase)) return url;
       // If relative, prepend production domain
-      if (url.startsWith("/")) return prod + url;
+      if (url.startsWith("/")) return base + url;
       // Fallback
       return url;
     } catch {

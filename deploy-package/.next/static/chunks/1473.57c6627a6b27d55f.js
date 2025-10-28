@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[1473],{1473:(e,t,n)=>{n.d(t,{clearSettingsCache:()=>u,sD:()=>s});var r=n(1353);let c=null,l=0;async function s(){let e=Date.now();if(c&&e-l<3e5)return c;try{return c=await r.H.getAllSettings(),l=e,c}catch(e){return console.error("Error fetching settings:",e),c||{}}}function u(){c=null,l=0}}}]);

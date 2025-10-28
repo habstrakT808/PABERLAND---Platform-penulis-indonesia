@@ -10,7 +10,11 @@ import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// Use a single base URL for absolute metadata links
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: "PaberLand - Komunitas Penulis Bacaan Anak Indonesia",
   description:
     "Platform komunitas penulis bacaan anak Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
@@ -38,14 +42,22 @@ export const metadata: Metadata = {
       "Platform komunitas penulis bacaan anak Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
     type: "website",
     locale: "id_ID",
+    url: BASE_URL,
     images: [
       {
-        url: "/logo_header.png?v=2",
+        url: `${BASE_URL}/logo_header.png?v=2`,
         width: 1200,
         height: 630,
         alt: "PaberLand Logo",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PaberLand - Komunitas Penulis Bacaan Anak Indonesia",
+    description:
+      "Platform komunitas penulis bacaan anak Indonesia untuk berbagi karya sastra, cerpen, puisi, dan artikel.",
+    images: [`${BASE_URL}/logo_header.png?v=2`],
   },
 };
 
