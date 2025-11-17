@@ -1,14 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { unstable_noStore as noStore } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { EyeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 
 import {
-  supabase,
-  generateNameSlug,
   generateNameSlugSync,
   getAvatarUrl,
   articleHelpers,
@@ -91,13 +88,14 @@ export async function generateMetadata({
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  // Disable caching to ensure views increment on every visit
-  noStore();
-
+  // Removed noStore() to enable Next.js default caching for better performance
+  // Views will be updated by client-side ViewTracker component
+  // Next.js will cache this page and revalidate as needed
+  
   // Await params for Next.js 15 compatibility
   const resolvedParams = await params;
 
-  // Fetch article data
+  // Fetch article data - single query, no duplicates
   const article = await articleHelpers.getArticle(resolvedParams.slug);
 
   if (!article || !article.published) {
@@ -105,63 +103,37 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   // REMOVED: Server-side increment - now handled by client-side ViewTracker
-  // This prevents double incrementing
-
-  // Fetch fresh article data to get current views
-  const freshArticle = await articleHelpers.getArticle(resolvedParams.slug);
-  const articleWithUpdatedViews = freshArticle || article;
-
-  // Get current views from database
-  let finalViews = articleWithUpdatedViews.views;
-  try {
-    const { data: viewsData, error: viewsError } = await supabase
-      .from("articles")
-      .select("views")
-      .eq("id", article.id)
-      .single();
-
-    if (!viewsError && viewsData) {
-      finalViews = viewsData.views || 0;
-      console.log(`🔍 Server: Current views from DB: ${finalViews}`);
-    } else if (viewsError) {
-      console.error("Error fetching views directly:", viewsError);
-    }
-  } catch (error) {
-    console.error("Error fetching views directly:", error);
-  }
+  // REMOVED: Duplicate getArticle() call - unnecessary
+  // REMOVED: Redundant views query - views already included in getArticle()
 
   // Fetch related data and real-time comment count
   const [relatedArticles, authorArticles, realTimeCommentCount] =
     await Promise.all([
       articleHelpers.getRelatedArticles(
-        articleWithUpdatedViews.id,
-        articleWithUpdatedViews.category,
+        article.id,
+        article.category,
         4
       ),
       articleHelpers.getAuthorArticles(
-        articleWithUpdatedViews.author_id,
-        articleWithUpdatedViews.id,
+        article.author_id,
+        article.id,
         3
       ),
-      commentHelpers.getCommentCount(articleWithUpdatedViews.id),
+      commentHelpers.getCommentCount(article.id),
     ]);
 
   const readingTime = articleHelpers.calculateReadingTime(
-    articleWithUpdatedViews.content
+    article.content
   );
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const articleUrl = `${baseUrl}/article/${articleWithUpdatedViews.slug}`;
+  const articleUrl = `${baseUrl}/article/${article.slug}`;
 
-  // Use real-time comment count instead of stored count
+  // Use article data with real-time comment count
+  // Views will be updated by client-side ViewTracker component
   const updatedArticle = {
-    ...articleWithUpdatedViews,
-    views: finalViews, // Use the current views count
+    ...article,
     comments_count: realTimeCommentCount,
   };
-
-  console.log(
-    `📊 Server: Article "${updatedArticle.title}" - Current Views: ${updatedArticle.views}`
-  );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
