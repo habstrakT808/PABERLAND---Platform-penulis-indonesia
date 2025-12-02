@@ -12,10 +12,16 @@ Daftar lengkap semua dokumentasi maintenance dan perbaikan server.
   - **Solusi**: Optimasi query database, enable caching, restart aplikasi
   - **Status**: ✅ Resolved
 
+#### Desember
+- **[17 Desember 2025](./2025-12-17-fix-cpu-usage-spike-with-caching.md)** - Perbaikan CPU Usage Spike dengan Implementasi Caching
+  - **Masalah**: CPU usage 100% kembali terjadi setelah 1 bulan, query berulang
+  - **Solusi**: Implementasi `unstable_cache` dengan revalidation 60 detik
+  - **Status**: ✅ Resolved
+
 ## 📊 Statistik
 
-- **Total Maintenance**: 1
-- **Resolved**: 1
+- **Total Maintenance**: 2
+- **Resolved**: 2
 - **In Progress**: 0
 - **Failed**: 0
 
