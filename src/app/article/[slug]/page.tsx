@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { unstable_cache } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
@@ -28,26 +27,12 @@ interface ArticlePageProps {
   }>;
 }
 
-// Helper function untuk get cached article
-async function getCachedArticle(slug: string) {
-  return unstable_cache(
-    async () => {
-      return await articleHelpers.getArticle(slug);
-    },
-    [`article-${slug}`],
-    {
-      revalidate: 60, // Cache selama 60 detik
-      tags: [`article-${slug}`],
-    }
-  )();
-}
-
 // Generate metadata for SEO - sama seperti sebelumnya
 export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const article = await getCachedArticle(resolvedParams.slug);
+  const article = await articleHelpers.getArticle(resolvedParams.slug);
 
   if (!article) {
     return {
@@ -103,15 +88,15 @@ export async function generateMetadata({
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  // Using unstable_cache with 60 second revalidation for better performance
+  // Using Next.js default caching for better performance
   // Views will be updated by client-side ViewTracker component
-  // This prevents excessive database queries while keeping content fresh
+  // Next.js will cache this page automatically
   
   // Await params for Next.js 15 compatibility
   const resolvedParams = await params;
 
-  // Fetch article data using cached function - prevents duplicate queries
-  const article = await getCachedArticle(resolvedParams.slug);
+  // Fetch article data - Next.js will cache this automatically
+  const article = await articleHelpers.getArticle(resolvedParams.slug);
 
   if (!article || !article.published) {
     notFound();
