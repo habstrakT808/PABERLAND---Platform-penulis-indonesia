@@ -28,17 +28,19 @@ interface ArticlePageProps {
   }>;
 }
 
-// Cached function untuk getArticle dengan revalidation 60 detik
-const getCachedArticle = unstable_cache(
-  async (slug: string) => {
-    return await articleHelpers.getArticle(slug);
-  },
-  ["article"],
-  {
-    revalidate: 60, // Cache selama 60 detik
-    tags: ["article"],
-  }
-);
+// Helper function untuk get cached article
+async function getCachedArticle(slug: string) {
+  return unstable_cache(
+    async () => {
+      return await articleHelpers.getArticle(slug);
+    },
+    [`article-${slug}`],
+    {
+      revalidate: 60, // Cache selama 60 detik
+      tags: [`article-${slug}`],
+    }
+  )();
+}
 
 // Generate metadata for SEO - sama seperti sebelumnya
 export async function generateMetadata({
