@@ -46,15 +46,12 @@ export async function GET(request: NextRequest) {
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
       if (exchangeError) {
         console.error('❌ Error exchanging code:', exchangeError)
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin
         return NextResponse.redirect(
           `${siteUrl}/auth/login?error=callback_error&message=${encodeURIComponent(exchangeError.message)}`
         )
       }
       if (data.session && data.user) {
         console.log('✅ Email verification successful for:', data.user.email)
-        // Use environment variable for production URL, fallback to request origin
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin
         if (data.user.email_confirmed_at) {
           return NextResponse.redirect(
             `${siteUrl}/?message=email_verified&welcome=true`
@@ -63,14 +60,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${siteUrl}/`)
       } else {
         console.error('❌ No session data returned')
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin
         return NextResponse.redirect(
           `${siteUrl}/auth/login?error=no_session`
         )
       }
     } catch (error) {
       console.error('❌ Unexpected error in auth callback:', error)
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin
       return NextResponse.redirect(
         `${siteUrl}/auth/login?error=server_error&message=${encodeURIComponent(String(error))}`
       )
@@ -78,7 +73,6 @@ export async function GET(request: NextRequest) {
   }
 
   console.log("❌ No code parameter found")
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin
   return NextResponse.redirect(
     `${siteUrl}/auth/login?error=no_code`
   )
