@@ -85,12 +85,12 @@ export default function LoginForm() {
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     setSocialLoading(provider);
     try {
-      // Use environment variable for production, fallback to current origin
-      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+      // Use current origin - Next.js will handle the redirect correctly
+      // The callback handler will use environment variable for final redirect
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${redirectUrl}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) {
