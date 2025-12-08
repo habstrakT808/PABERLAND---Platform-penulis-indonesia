@@ -85,10 +85,12 @@ export default function LoginForm() {
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     setSocialLoading(provider);
     try {
+      // Use environment variable for production, fallback to current origin
+      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${redirectUrl}/auth/callback`,
         },
       });
       if (error) {
