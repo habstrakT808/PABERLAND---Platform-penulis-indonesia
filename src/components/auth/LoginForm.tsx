@@ -20,6 +20,8 @@ export default function LoginForm() {
 
   useEffect(() => {
     // Handle URL parameters for messages
+    if (typeof window === "undefined") return;
+    
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get("error");
     const message = urlParams.get("message");
