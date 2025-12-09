@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { EyeIcon, ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
+import { cache } from "react";
 
 import {
   generateNameSlugSync,
@@ -27,12 +28,17 @@ interface ArticlePageProps {
   }>;
 }
 
+// Cache article fetch to prevent duplicate queries between generateMetadata and ArticlePage
+const getCachedArticle = cache(async (slug: string) => {
+  return await articleHelpers.getArticle(slug);
+});
+
 // Generate metadata for SEO - sama seperti sebelumnya
 export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const article = await articleHelpers.getArticle(resolvedParams.slug);
+  const article = await getCachedArticle(resolvedParams.slug);
 
   if (!article) {
     return {
@@ -88,15 +94,15 @@ export async function generateMetadata({
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  // Using Next.js default caching for better performance
+  // Using React cache() to prevent duplicate queries between generateMetadata and ArticlePage
+  // This ensures only one query per request, reducing CPU usage
   // Views will be updated by client-side ViewTracker component
-  // Next.js will cache this page automatically
   
   // Await params for Next.js 15 compatibility
   const resolvedParams = await params;
 
-  // Fetch article data - Next.js will cache this automatically
-  const article = await articleHelpers.getArticle(resolvedParams.slug);
+  // Fetch article data - using cached function to avoid duplicate query
+  const article = await getCachedArticle(resolvedParams.slug);
 
   if (!article || !article.published) {
     notFound();
