@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanKategoriUI as KategoriUI
+control KategoriController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> KategoriUI : 1: Klik kategori di beranda atau navigasi
+activate KategoriUI
+KategoriUI -> Controller : 1.1: muatArtikelKategori(kategori)
+activate Controller
+Controller -> Artikel : 1.1.1: ambilArtikelPerKategori(kategori)
+activate Artikel
+
+alt [Kategori memiliki artikel]
+    Artikel --> Controller : 1.1.2: Daftar artikel dalam kategori
+    Controller --> KategoriUI : 1.1.3: Data artikel
+    KategoriUI --> User : 1.1.4: Tampilkan halaman kategori\ndengan daftar artikel
+else [Kategori tidak memiliki artikel]
+    Artikel --> Controller : 1.1.2a: Tidak ada artikel
+    Controller --> KategoriUI : 1.1.3a: Tidak ada data
+    KategoriUI --> User : 1.1.4a: Pesan "Belum ada artikel dalam kategori ini"
+end
+
+deactivate Artikel
+deactivate Controller
+deactivate KategoriUI
+
+@enduml

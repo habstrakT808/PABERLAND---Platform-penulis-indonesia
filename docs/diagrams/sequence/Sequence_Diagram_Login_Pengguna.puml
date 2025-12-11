@@ -1,0 +1,40 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanLoginUI as LoginUI
+control LoginController as Controller
+entity AuthProvider as Auth
+
+== Main Flow ==
+
+User -> LoginUI : 1: Buka halaman login atau klik "Masuk"
+activate LoginUI
+LoginUI --> User : 1.1: Form email/password dan opsi Google
+
+User -> LoginUI : 2: Masukkan email dan password
+User -> LoginUI : 3: Klik tombol "Masuk"
+LoginUI -> Controller : 3.1: login(email, password)
+activate Controller
+Controller -> Auth : 3.1.1: cocokkanKredensial(email, password)
+activate Auth
+
+alt [Email dan password sesuai]
+    Auth --> Controller : 3.1.2: Kredensial valid
+    Controller --> LoginUI : 3.1.3: Login berhasil
+    LoginUI --> User : 3.1.4: Redirect ke halaman beranda atau admin
+else [Email atau password tidak sesuai]
+    Auth --> Controller : 3.1.2a: Error "Email atau password salah"
+    Controller --> LoginUI : 3.1.3a: Error response
+    LoginUI --> User : 3.1.4a: Pesan "Email atau password yang anda masukkan salah"
+end
+
+deactivate Auth
+deactivate Controller
+deactivate LoginUI
+
+@enduml

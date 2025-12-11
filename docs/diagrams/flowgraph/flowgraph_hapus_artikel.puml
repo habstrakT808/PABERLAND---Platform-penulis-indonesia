@@ -1,0 +1,27 @@
+@startuml Flowgraph Hapus Artikel
+skinparam activity {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontSize 12
+    RoundCorner 15
+}
+skinparam activityDiamond {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontSize 12
+}
+
+start
+:1;
+:2;
+if (3) then (yes)
+    :4;
+    :5;
+    stop
+else (no)
+    :6;
+    :7;
+endif
+:8;
+stop
+@enduml

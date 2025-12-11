@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanDetailArtikelUI as ArtikelUI
+control ArtikelController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> ArtikelUI : 1: Klik artikel dari beranda, kategori, atau hasil pencarian
+activate ArtikelUI
+ArtikelUI -> Controller : 1.1: muatDetailArtikel(slug)
+activate Controller
+Controller -> Artikel : 1.1.1: ambilArtikel(slug)
+activate Artikel
+
+alt [Artikel ditemukan]
+    Artikel --> Controller : 1.1.2: Data artikel lengkap
+    Controller --> ArtikelUI : 1.1.3: Data artikel
+    ArtikelUI --> User : 1.1.4: Tampilkan halaman detail artikel\n(judul, cover image, konten, penulis, like, komentar)
+else [Artikel tidak ditemukan]
+    Artikel --> Controller : 1.1.2a: Artikel tidak ditemukan
+    Controller --> ArtikelUI : 1.1.3a: Error
+    ArtikelUI --> User : 1.1.4a: Halaman 404
+end
+
+deactivate Artikel
+deactivate Controller
+deactivate ArtikelUI
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanBerandaUI as BerandaUI
+control BerandaController as Controller
+entity KontenProvider as Konten
+
+== Main Flow ==
+
+User -> BerandaUI : 1: Buka halaman beranda
+activate BerandaUI
+BerandaUI -> Controller : 1.1: muatKontenBeranda()
+activate Controller
+Controller -> Konten : 1.1.1: ambilKontenPilihan()
+activate Konten
+
+alt [Ada konten pilihan]
+    Konten --> Controller : 1.1.2: Daftar konten pilihan
+    Controller -> Konten : 1.1.3: ambilArtikelTerbaru()
+    Konten --> Controller : 1.1.4: Daftar artikel terbaru
+    Controller -> Konten : 1.1.5: ambilDaftarKategori()
+    Konten --> Controller : 1.1.6: Daftar kategori
+    Controller --> BerandaUI : 1.1.7: Data konten
+    BerandaUI --> User : 1.1.8: Tampilkan halaman beranda\n(konten pilihan, artikel terbaru, kategori)
+else [Tidak ada konten pilihan]
+    Konten --> Controller : 1.1.2a: Tidak ada konten pilihan
+    Controller -> Konten : 1.1.3a: ambilArtikelTerbaru()
+    Konten --> Controller : 1.1.4a: Daftar artikel terbaru
+    Controller --> BerandaUI : 1.1.5a: Data konten
+    BerandaUI --> User : 1.1.6a: Tampilkan artikel terbaru
+end
+
+deactivate Konten
+deactivate Controller
+deactivate BerandaUI
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Moderator as User
+boundary HalamanKelolaFeaturedUI as FeaturedUI
+control FeaturedController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> FeaturedUI : 1: Buka halaman kelola konten featured
+activate FeaturedUI
+FeaturedUI -> Controller : 1.1: muatDaftarFeatured()
+activate Controller
+Controller -> Artikel : 1.1.1: ambilDaftarFeatured()
+activate Artikel
+Artikel --> Controller : 1.1.2: Daftar konten featured saat ini
+Controller --> FeaturedUI : 1.1.3: Data konten featured
+FeaturedUI --> User : 1.1.4: Tampilkan daftar konten featured saat ini\ndan form untuk menambah featured
+
+User -> FeaturedUI : 2: Pilih artikel dari daftar
+User -> FeaturedUI : 3: Klik tombol Tambah ke Featured
+FeaturedUI -> Controller : 3.1: tambahFeatured(artikelId)
+Controller -> Artikel : 3.1.1: cekStatusFeatured(artikelId)
+Artikel --> Controller : 3.1.2: Status artikel
+
+alt [Artikel belum di-featured]
+    Controller -> Artikel : 3.1.3: setFeatured(artikelId)
+    Artikel --> Controller : 3.1.4: Featured berhasil
+    Controller --> FeaturedUI : 3.1.5: Featured berhasil ditambahkan
+    FeaturedUI --> User : 3.1.6: Notifikasi sukses
+else [Artikel sudah di-featured]
+    Artikel --> Controller : 3.1.2a: Artikel sudah di-featured
+    Controller --> FeaturedUI : 3.1.3a: Error
+    FeaturedUI --> User : 3.1.4a: Pesan "Artikel ini sudah di-featured"
+end
+
+deactivate Artikel
+deactivate Controller
+deactivate FeaturedUI
+
+@enduml

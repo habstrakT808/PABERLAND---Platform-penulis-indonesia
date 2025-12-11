@@ -1,0 +1,64 @@
+@startuml Flowgraph Login Pengguna
+skinparam activity {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontSize 12
+    RoundCorner 15
+}
+skinparam activityDiamond {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    FontSize 12
+}
+
+start
+:1;
+:2;
+if (3) then (yes)
+    :4;
+    :5;
+    stop
+else (no)
+    :6;
+    :7;
+    :8;
+    :9;
+    if (10) then (yes)
+        if (11) then (yes)
+            :12;
+            :17;
+            :18;
+            :26;
+        else (no)
+            if (13) then (yes)
+                :14;
+                :17;
+                :18;
+                :26;
+            else (no)
+                :15;
+                :16;
+                :17;
+                :18;
+                :26;
+            endif
+        endif
+    else (no)
+        :19;
+        if (20) then (yes)
+            :21;
+            :22;
+            :23;
+            :26;
+        else (no)
+            :26;
+        endif
+    endif
+    :24;
+    :25;
+    :26;
+    :27;
+    :28;
+endif
+stop
+@enduml

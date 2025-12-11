@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanKelolaArtikelUI as KelolaUI
+control ArtikelController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> KelolaUI : 1: Buka halaman kelola artikel
+activate KelolaUI
+KelolaUI -> Controller : 1.1: muatArtikelSaya()
+activate Controller
+Controller -> Artikel : 1.1.1: ambilArtikelSaya()
+activate Artikel
+
+alt [Penulis memiliki artikel]
+    Artikel --> Controller : 1.1.2: Daftar artikel milik penulis
+    Controller --> KelolaUI : 1.1.3: Data artikel
+    KelolaUI --> User : 1.1.4: Tampilkan daftar artikel\n(filter All, Draft, Published)\ntombol "Tulis Baru"\naksi per artikel (Lihat, Edit, Hapus)
+else [Penulis belum memiliki artikel]
+    Artikel --> Controller : 1.1.2a: Tidak ada artikel
+    Controller --> KelolaUI : 1.1.3a: Tidak ada data
+    KelolaUI --> User : 1.1.4a: Pesan "Belum ada artikel"\ndisertai tombol "Tulis Artikel Pertama"
+end
+
+deactivate Artikel
+deactivate Controller
+deactivate KelolaUI
+
+@enduml

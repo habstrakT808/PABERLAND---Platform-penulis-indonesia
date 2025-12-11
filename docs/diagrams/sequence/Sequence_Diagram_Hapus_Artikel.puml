@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanKelolaArtikelUI as KelolaUI
+boundary ModalKonfirmasiUI as ModalUI
+control ArtikelController as Controller
+
+== Main Flow ==
+
+User -> KelolaUI : 1: Buka halaman kelola artikel atau halaman detail artikel miliknya
+activate KelolaUI
+KelolaUI --> User : 1.1: Tampilkan artikel beserta tombol Hapus
+
+User -> KelolaUI : 2: Klik tombol Hapus
+KelolaUI -> ModalUI : 2.1: tampilkan()
+activate ModalUI
+ModalUI --> User : 2.1.1: Modal konfirmasi dengan peringatan
+
+alt [Pengguna mengonfirmasi]
+    User -> ModalUI : 3: Konfirmasi penghapusan
+    ModalUI -> Controller : 3.1: hapusArtikel(artikelId)
+    activate Controller
+    Controller --> ModalUI : 3.1.1: Artikel berhasil dihapus
+    ModalUI --> KelolaUI : 3.1.2: Penghapusan berhasil
+    KelolaUI --> User : 3.1.3: Notifikasi berhasil
+    KelolaUI -> KelolaUI : 3.1.4: Redirect ke halaman kelola artikel
+    deactivate Controller
+else [Pengguna membatalkan]
+    User -> ModalUI : 3a: Batalkan penghapusan
+    ModalUI --> KelolaUI : 3a.1: Tutup modal
+    KelolaUI --> User : 3a.2: Tidak ada perubahan
+end
+
+deactivate ModalUI
+deactivate KelolaUI
+
+@enduml

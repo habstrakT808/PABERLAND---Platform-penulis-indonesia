@@ -1,0 +1,157 @@
+@startchen
+
+skinparam linetype ortho
+skinparam roundcorner 10
+skinparam shadowing false
+
+' ============================================
+' ENTITAS UTAMA
+' ============================================
+
+entity PROFILES {
+  id : UUID <<key>>
+  full_name : TEXT
+  phone : TEXT
+  role : TEXT
+  is_admin : BOOLEAN
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity ARTICLES {
+  id : UUID <<key>>
+  title : TEXT
+  content : TEXT
+  category : TEXT
+  published : BOOLEAN
+  slug : TEXT <<unique>>
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity COMMENTS {
+  id : UUID <<key>>
+  content : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+entity PORTFOLIO_WORKS {
+  id : UUID <<key>>
+  title : TEXT
+  category : TEXT
+  status : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+' ============================================
+' ENTITAS JUNCTION
+' ============================================
+
+entity ARTICLE_LIKES {
+  id : UUID <<key>>
+  created_at : TIMESTAMP
+}
+
+entity FOLLOWS {
+  id : UUID <<key>>
+  created_at : TIMESTAMP
+}
+
+entity NOTIFICATIONS {
+  id : UUID <<key>>
+  type : TEXT
+  read : BOOLEAN
+  created_at : TIMESTAMP
+}
+
+entity CONTENT_REPORTS {
+  id : UUID <<key>>
+  content_type : TEXT
+  reason : TEXT
+  status : TEXT
+  created_at : TIMESTAMP
+}
+
+entity FEATURED_CONTENT {
+  id : UUID <<key>>
+  content_type : TEXT
+  priority : INTEGER
+  active : BOOLEAN
+  featured_at : TIMESTAMP
+}
+
+entity ADMIN_ACTIVITY_LOGS {
+  id : UUID <<key>>
+  action : TEXT
+  created_at : TIMESTAMP
+}
+
+entity SETTINGS {
+  id : UUID <<key>>
+  key : TEXT <<unique>>
+  value : JSONB
+  category : TEXT
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+' ============================================
+' RELASI (Chen Notation)
+' ============================================
+
+relationship "menulis" as R1
+relationship "mengomentari" as R2
+relationship "memiliki_portfolio" as R3
+relationship "menerima_notif" as R4
+relationship "melaporkan" as R5
+relationship "melakukan_log" as R6
+relationship "memiliki_comment" as R7
+relationship "mendapat_like" as R8
+relationship "ditandai_featured" as R9
+relationship "melike" as R10
+relationship "mengikuti" as R11
+relationship "parent_comment" as R12
+
+' ============================================
+' HUBUNGAN ENTITAS - RELASI
+' ============================================
+
+PROFILES -- R1
+R1 -- ARTICLES
+
+PROFILES -- R2
+R2 -- COMMENTS
+
+PROFILES -- R3
+R3 -- PORTFOLIO_WORKS
+
+PROFILES -- R4
+R4 -- NOTIFICATIONS
+
+PROFILES -- R5
+R5 -- CONTENT_REPORTS
+
+PROFILES -- R6
+R6 -- ADMIN_ACTIVITY_LOGS
+
+ARTICLES -- R7
+R7 -- COMMENTS
+
+ARTICLES -- R8
+R8 -- ARTICLE_LIKES
+
+ARTICLES -- R9
+R9 -- FEATURED_CONTENT
+
+PROFILES -- R10
+R10 -- ARTICLE_LIKES
+
+PROFILES -- R11
+R11 -- FOLLOWS
+
+COMMENTS -- R12
+R12 -- COMMENTS
+
+@endchen

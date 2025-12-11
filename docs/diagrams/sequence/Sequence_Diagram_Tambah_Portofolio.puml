@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanTambahPortofolioUI as PortofolioUI
+control PortofolioController as Controller
+
+== Main Flow ==
+
+User -> PortofolioUI : 1: Buka halaman profil sendiri dan klik tombol Tambah Portofolio atau buka halaman tambah portofolio
+activate PortofolioUI
+PortofolioUI --> User : 1.1: Tampilkan form tambah portofolio
+
+User -> PortofolioUI : 2: Isi form portofolio
+User -> PortofolioUI : 3: Unggah cover image (opsional)
+PortofolioUI --> User : 3.1: Tampilkan preview gambar
+User -> PortofolioUI : 4: Isi link eksternal (opsional)
+User -> PortofolioUI : 5: Klik tombol Simpan Portofolio
+PortofolioUI -> Controller : 5.1: simpanPortofolio(data)
+activate Controller
+
+alt [Validasi berhasil]
+    Controller --> PortofolioUI : 5.1.1: Portofolio berhasil disimpan
+    PortofolioUI --> User : 5.1.2: Notifikasi sukses
+else [Validasi gagal]
+    Controller --> PortofolioUI : 5.1.1a: Error validasi
+    PortofolioUI --> User : 5.1.2a: Pesan error
+end
+
+deactivate Controller
+deactivate PortofolioUI
+
+@enduml

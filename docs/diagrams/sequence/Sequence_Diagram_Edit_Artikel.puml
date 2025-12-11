@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanEditArtikelUI as EditUI
+control ArtikelController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> EditUI : 1: Buka halaman kelola artikel atau halaman edit artikel
+activate EditUI
+EditUI -> Controller : 1.1: muatDataArtikel(artikelId)
+activate Controller
+Controller -> Artikel : 1.1.1: ambilArtikel(artikelId)
+activate Artikel
+Artikel --> Controller : 1.1.2: Data artikel
+Controller --> EditUI : 1.1.3: Data artikel
+EditUI --> User : 1.1.4: Tampilkan form edit artikel dengan data terisi
+
+User -> EditUI : 2: Ubah konten artikel
+User -> EditUI : 3: Klik tombol Simpan Perubahan
+EditUI -> Controller : 3.1: updateArtikel(artikelId, data)
+Controller -> Artikel : 3.1.1: perbaruiArtikel(artikelId, data)
+Artikel --> Controller : 3.1.2: Artikel diperbarui
+
+alt [Update berhasil]
+    Controller --> EditUI : 3.1.3: Update berhasil
+    EditUI --> User : 3.1.4: Notifikasi sukses
+    EditUI -> EditUI : 3.1.5: Redirect ke halaman detail artikel
+else [Validasi gagal]
+    Controller --> EditUI : 3.1.3a: Error validasi
+    EditUI --> User : 3.1.4a: Pesan error
+end
+
+deactivate Artikel
+deactivate Controller
+deactivate EditUI
+
+@enduml

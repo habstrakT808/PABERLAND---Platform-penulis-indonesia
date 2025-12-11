@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Moderator as User
+boundary HalamanLaporanUI as LaporanUI
+control LaporanController as Controller
+entity LaporanProvider as Laporan
+
+== Main Flow ==
+
+User -> LaporanUI : 1: Buka halaman laporan konten
+activate LaporanUI
+LaporanUI -> Controller : 1.1: muatDaftarLaporan()
+activate Controller
+Controller -> Laporan : 1.1.1: ambilLaporan()
+activate Laporan
+Laporan --> Controller : 1.1.2: Daftar laporan
+Controller --> LaporanUI : 1.1.3: Data laporan
+LaporanUI --> User : 1.1.4: Tampilkan daftar laporan\n(filter All, Pending, Resolved, Rejected)
+
+User -> LaporanUI : 2: Pilih salah satu laporan untuk ditinjau
+LaporanUI -> Controller : 2.1: muatDetailLaporan(laporanId)
+Controller -> Laporan : 2.1.1: ambilDetailLaporan(laporanId)
+Laporan --> Controller : 2.1.2: Detail laporan lengkap
+Controller --> LaporanUI : 2.1.3: Data detail laporan
+LaporanUI --> User : 2.1.4: Tampilkan detail laporan lengkap\nbeserta tombol aksi Terima dan Tolak
+
+User -> LaporanUI : 3: Tinjau artikel yang dilaporkan
+
+alt [Moderator menekan tombol Terima Laporan]
+    User -> LaporanUI : 4: Klik tombol Terima Laporan
+    LaporanUI -> Controller : 4.1: terimaLaporan(laporanId)
+    Controller --> LaporanUI : 4.1.1: Laporan diterima
+    LaporanUI --> User : 4.1.2: Notifikasi sukses
+else [Moderator menekan tombol Tolak Laporan]
+    User -> LaporanUI : 4a: Klik tombol Tolak Laporan
+    LaporanUI -> Controller : 4a.1: tolakLaporan(laporanId)
+    Controller --> LaporanUI : 4a.1.1: Laporan ditolak
+    LaporanUI --> User : 4a.1.2: Notifikasi sukses
+else [Artikel sudah dihapus]
+    Laporan --> Controller : 2.1.2a: Artikel tidak ditemukan
+    Controller --> LaporanUI : 2.1.3a: Error
+    LaporanUI --> User : 2.1.4a: Pesan "Artikel tidak ditemukan"
+end
+
+deactivate Laporan
+deactivate Controller
+deactivate LaporanUI
+
+@enduml

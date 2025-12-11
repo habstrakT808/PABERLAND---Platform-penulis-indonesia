@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 import TinyMCEEditor from "@/components/editor/DynamicTinyMCEEditor";
 import { Article } from "@/lib/supabase";
+import ArticleContent from "@/components/article/ArticleContent";
 
 // Category limits config
 const categoryLimits: Record<
@@ -91,6 +92,7 @@ export default function WriteArticleForm({
         published: editArticle.published || false,
         scheduledAt: editArticle.scheduled_at || "",
       });
+      setDraftArticleId(editArticle.id);
     }
   }, [editArticle]);
 
@@ -101,6 +103,13 @@ export default function WriteArticleForm({
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
   // Add state for part count (for cerbung/novel/serial)
   const [partCount, setPartCount] = useState(1);
+  // Auto-save states
+  const [draftArticleId, setDraftArticleId] = useState<string | null>(
+    editArticle?.id || null
+  );
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -111,6 +120,7 @@ export default function WriteArticleForm({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setHasUnsavedChanges(true);
   };
 
   const handleContentChange = (content: string) => {
@@ -118,6 +128,7 @@ export default function WriteArticleForm({
       ...formData,
       content: content,
     });
+    setHasUnsavedChanges(true);
 
     // Count words
     const textContent = content.replace(/<[^>]*>/g, "");
@@ -158,6 +169,19 @@ export default function WriteArticleForm({
       .trim();
   };
 
+  // Function to count words from HTML content
+  const countWordsFromHTML = (html: string): number => {
+    if (!html) return 0;
+    // Remove HTML tags
+    const textContent = html.replace(/<[^>]*>/g, "");
+    // Split by whitespace and filter empty strings
+    const words = textContent
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+    return words.length;
+  };
+
   // Ubah handleSubmit agar menerima parameter published
   const handleSubmit = async (
     e: React.FormEvent | null,
@@ -173,6 +197,18 @@ export default function WriteArticleForm({
     if (!user) {
       toast.error("Anda harus login terlebih dahulu!");
       return;
+    }
+
+    // Validasi minimal 100 kata untuk publikasi
+    if (published) {
+      const contentWordCount = countWordsFromHTML(formData.content);
+      if (contentWordCount < 100) {
+        toast.error(
+          `Konten artikel harus minimal 100 kata untuk dapat dipublikasikan. Saat ini: ${contentWordCount} kata.`,
+          { duration: 5000 }
+        );
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -199,6 +235,7 @@ export default function WriteArticleForm({
         );
 
         if (result.success) {
+          setHasUnsavedChanges(false);
           if (published) {
             toast.success("🎉 Konten berhasil diperbarui dan dipublikasikan!");
             router.push(`/article/${result.data.slug}`);
@@ -251,6 +288,8 @@ export default function WriteArticleForm({
           return;
         }
 
+        setDraftArticleId(data.id);
+        setHasUnsavedChanges(false);
         if (published) {
           toast.success("🎉 Konten berhasil dipublikasikan!");
           router.push(`/article/${data.slug}`);
@@ -271,6 +310,152 @@ export default function WriteArticleForm({
   const onFormSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     handleSubmit(e, formData.published);
   };
+
+  // Use ref to track if auto-save is in progress to prevent multiple simultaneous saves
+  const isAutoSavingRef = useRef(false);
+
+  // Auto-save draft function
+  const autoSaveDraft = useCallback(async (silent: boolean = true) => {
+    // Skip auto-save if already saving or no changes or no content
+    if (isAutoSavingRef.current || !hasUnsavedChanges || !formData.title || !formData.content) {
+      return;
+    }
+
+    if (!user) {
+      return;
+    }
+
+    isAutoSavingRef.current = true;
+    setIsAutoSaving(true);
+
+    try {
+      const now = new Date().toISOString();
+
+      if (draftArticleId) {
+        // Update existing draft
+        const result = await articleManagement.updateArticle(
+          draftArticleId,
+          user.id,
+          {
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt || formData.content.slice(0, 200) + "...",
+            category: formData.category,
+            cover_image: formData.coverImage || null,
+            published: false, // Always save as draft
+            scheduled_at: formData.scheduledAt || null,
+            slug: generateSlug(formData.title),
+            updated_at: now,
+          }
+        );
+
+        if (result.success) {
+          setLastSaved(new Date());
+          setHasUnsavedChanges(false);
+          if (!silent) {
+            toast.success("💾 Draft tersimpan!", { duration: 2000 });
+          }
+        }
+      } else {
+        // Create new draft
+        let slug = generateSlug(formData.title);
+        // Check for unique slug
+        let uniqueSlug = slug;
+        let counter = 1;
+        while (true) {
+          const { data: existing } = await supabase
+            .from("articles")
+            .select("id")
+            .eq("slug", uniqueSlug)
+            .single();
+          if (!existing) break;
+          uniqueSlug = `${slug}-${counter++}`;
+        }
+        slug = uniqueSlug;
+
+        const articleData = {
+          title: formData.title,
+          content: formData.content,
+          excerpt: formData.excerpt || formData.content.slice(0, 200) + "...",
+          category: formData.category,
+          cover_image: formData.coverImage || null,
+          author_id: user.id,
+          published: false, // Always save as draft
+          scheduled_at: formData.scheduledAt || null,
+          slug: slug,
+          created_at: now,
+          updated_at: now,
+        };
+
+        const { data, error } = await supabase
+          .from("articles")
+          .insert([articleData])
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Error auto-saving draft:", error);
+          if (!silent) {
+            toast.error("Gagal menyimpan draft: " + error.message);
+          }
+          return;
+        }
+
+        if (data) {
+          setDraftArticleId(data.id);
+          setLastSaved(new Date());
+          setHasUnsavedChanges(false);
+          if (!silent) {
+            toast.success("💾 Draft tersimpan!", { duration: 2000 });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in auto-save:", error);
+      if (!silent) {
+        toast.error("Gagal menyimpan draft");
+      }
+    } finally {
+      isAutoSavingRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [formData, hasUnsavedChanges, user, draftArticleId]);
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!user || !hasUnsavedChanges || isLoading) {
+      return;
+    }
+
+    // Only auto-save if there's meaningful content
+    if (!formData.title.trim() && !formData.content.trim()) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      autoSaveDraft(true);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [hasUnsavedChanges, user, isLoading, autoSaveDraft, formData.title, formData.content]);
+
+  // Auto-save on idle (3 seconds after user stops typing)
+  useEffect(() => {
+    if (!user || !hasUnsavedChanges || isLoading) {
+      return;
+    }
+
+    // Only auto-save if there's meaningful content
+    if (!formData.title.trim() && !formData.content.trim()) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      autoSaveDraft(true);
+    }, 3000); // 3 seconds idle
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.title, formData.content, formData.category, formData.excerpt, hasUnsavedChanges, user, isLoading, autoSaveDraft]);
 
   // Ubah handleSaveDraft dan handlePublish
   const handleSaveDraft = () => {
@@ -322,12 +507,45 @@ export default function WriteArticleForm({
             </button>
 
             {/* Word Count Display */}
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm">
               <div className="flex items-center space-x-1">
                 <DocumentTextIcon className="w-4 h-4" />
-                <span>{wordCount} kata</span>
+                <span className={wordCount < 100 ? "text-red-600 font-semibold" : "text-gray-600"}>
+                  {wordCount} kata
+                </span>
+                {wordCount < 100 && (
+                  <span className="text-red-600 text-xs">
+                    (Minimal 100 kata untuk publikasi)
+                  </span>
+                )}
               </div>
-              {wordCount > 0 && <div>⏱️ {getReadingTime()} menit baca</div>}
+              {wordCount > 0 && <div className="text-gray-600">⏱️ {getReadingTime()} menit baca</div>}
+            </div>
+
+            {/* Auto-save Status Indicator */}
+            <div className="flex items-center space-x-2 text-xs">
+              {isAutoSaving ? (
+                <span className="text-blue-600 flex items-center space-x-1">
+                  <span className="animate-spin">⏳</span>
+                  <span>Menyimpan...</span>
+                </span>
+              ) : lastSaved ? (
+                <span className="text-green-600 flex items-center space-x-1">
+                  <span>💾</span>
+                  <span>
+                    Tersimpan{" "}
+                    {lastSaved.toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </span>
+              ) : hasUnsavedChanges ? (
+                <span className="text-orange-600 flex items-center space-x-1">
+                  <span>⚠️</span>
+                  <span>Belum tersimpan</span>
+                </span>
+              ) : null}
             </div>
           </div>
 
@@ -381,12 +599,88 @@ export default function WriteArticleForm({
               </label>
 
               {previewMode ? (
-                <div className="border border-blue-200 rounded-lg p-6 bg-white min-h-[500px]">
-                  <div
-                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: formData.content }}
-                  />
-                </div>
+                <>
+                  {/* Fullscreen Preview Overlay */}
+                  <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+                    {/* Preview Header Bar */}
+                    <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <h2 className="text-lg font-semibold text-gray-900">
+                              Preview Artikel
+                            </h2>
+                            <span className="text-sm text-gray-500">
+                              {formData.title || "Tanpa Judul"}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewMode(false)}
+                            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                            <span>Keluar Preview</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview Content */}
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                      <div className="bg-white rounded-lg">
+                        {/* Preview Header - Mirip dengan artikel yang dipublikasikan */}
+                        {formData.title && (
+                          <header className="mb-8 pb-6 border-b border-blue-100">
+                            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                              {formData.title}
+                            </h1>
+                            {formData.excerpt && (
+                              <p className="text-lg text-gray-600 italic">
+                                {formData.excerpt}
+                              </p>
+                            )}
+                            {formData.coverImage && (
+                              <div className="mt-6 relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden">
+                                <SignedImage
+                                  src={formData.coverImage}
+                                  alt={formData.title}
+                                  className="object-cover w-full h-full"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                              </div>
+                            )}
+                          </header>
+                        )}
+                        
+                        {/* Preview Content - Menggunakan komponen ArticleContent yang sama */}
+                        <div className="prose prose-lg max-w-none">
+                          <ArticleContent
+                            content={formData.content || "<p>Mulai menulis konten Anda...</p>"}
+                            className=""
+                          />
+                        </div>
+                        
+                        {/* Preview Footer */}
+                        {formData.category && (
+                          <footer className="mt-12 pt-8 border-t border-blue-100">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                {categories.find(cat => cat.value === formData.category)?.label || formData.category}
+                              </span>
+                              {wordCount > 0 && (
+                                <span>⏱️ {getReadingTime()} menit baca</span>
+                              )}
+                              {wordCount > 0 && (
+                                <span>📝 {wordCount} kata</span>
+                              )}
+                            </div>
+                          </footer>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <TinyMCEEditor
                   value={formData.content}
@@ -406,7 +700,10 @@ export default function WriteArticleForm({
                   🖼️ Drag & drop gambar langsung ke editor, atau gunakan Ctrl+V
                   untuk paste
                 </p>
-                <p>💾 Auto-save aktif setiap 30 detik - tulisan Anda aman!</p>
+                <p>
+                  💾 Auto-save aktif setiap 30 detik atau setelah 3 detik idle
+                  - tulisan Anda aman!
+                </p>
                 <p>
                   📊 Klik "📊 Stats" di toolbar untuk melihat statistik tulisan
                 </p>
@@ -424,8 +721,18 @@ export default function WriteArticleForm({
               <div className="space-y-2 text-xs text-blue-700">
                 <div className="flex justify-between">
                   <span>Kata:</span>
-                  <span className="font-semibold">{wordCount}</span>
+                  <span className={`font-semibold ${wordCount < 100 ? "text-red-600" : ""}`}>
+                    {wordCount}
+                    {wordCount < 100 && (
+                      <span className="ml-1 text-red-600">/ 100 (minimal)</span>
+                    )}
+                  </span>
                 </div>
+                {wordCount < 100 && (
+                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">
+                    ⚠️ Konten harus minimal 100 kata untuk dapat dipublikasikan
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Waktu baca:</span>
                   <span className="font-semibold">

@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanEditorUI as EditorUI
+control ArtikelController as Controller
+entity ArtikelProvider as Artikel
+
+== Main Flow ==
+
+User -> EditorUI : 1: Klik tombol Tulis Konten Baru atau buka halaman tulis artikel
+activate EditorUI
+EditorUI --> User : 1.1: Tampilkan halaman editor dengan form kosong
+
+User -> EditorUI : 2: Isi judul artikel
+User -> EditorUI : 3: Pilih kategori
+User -> EditorUI : 4: Tulis konten artikel
+User -> EditorUI : 5: Unggah cover image (opsional)
+EditorUI --> User : 5.1: Tampilkan preview gambar
+
+User -> EditorUI : 6: Klik tombol Simpan sebagai Draft atau Publikasikan
+EditorUI -> Controller : 6.1: simpanArtikel(data, status)
+activate Controller
+
+alt [Judul, kategori, dan konten terisi]
+    Controller -> Artikel : 6.1.1: simpanArtikelBaru(data, status)
+    activate Artikel
+    Artikel --> Controller : 6.1.2: Artikel berhasil disimpan
+    Controller --> EditorUI : 6.1.3: Artikel berhasil disimpan
+    EditorUI --> User : 6.1.4: Notifikasi sukses
+    deactivate Artikel
+else [Judul, kategori, atau konten kosong]
+    Controller --> EditorUI : 6.1.1a: Error validasi
+    EditorUI --> User : 6.1.2a: Pesan error
+end
+
+deactivate Controller
+deactivate EditorUI
+
+@enduml

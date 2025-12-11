@@ -1,0 +1,40 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanPencarianUI as PencarianUI
+control PencarianController as Controller
+entity KontenProvider as Konten
+
+== Main Flow ==
+
+User -> PencarianUI : 1: Masukkan keyword di search bar atau buka halaman pencarian
+activate PencarianUI
+PencarianUI --> User : 1.1: Tampilkan halaman pencarian
+
+User -> PencarianUI : 2: Masukkan keyword
+User -> PencarianUI : 3: Klik tombol Cari atau tekan Enter
+PencarianUI -> Controller : 3.1: cariKonten(keyword)
+activate Controller
+Controller -> Konten : 3.1.1: cariArtikelDanMember(keyword)
+activate Konten
+
+alt [Ada hasil]
+    Konten --> Controller : 3.1.2: Hasil pencarian (artikel dan member)
+    Controller --> PencarianUI : 3.1.3: Data hasil pencarian
+    PencarianUI --> User : 3.1.4: Tampilkan hasil pencarian\ndengan filter All, Articles, Members
+else [Tidak ada hasil]
+    Konten --> Controller : 3.1.2a: Tidak ada hasil
+    Controller --> PencarianUI : 3.1.3a: Tidak ada data
+    PencarianUI --> User : 3.1.4a: Pesan "Tidak ada hasil"
+end
+
+deactivate Konten
+deactivate Controller
+deactivate PencarianUI
+
+@enduml

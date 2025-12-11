@@ -1,0 +1,72 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanBerandaUI as BerandaUI
+boundary FormRegistrasiUI as FormUI
+control RegistrasiController as Controller
+entity AuthProvider as Auth
+
+== Main Flow ==
+
+User -> BerandaUI : 1: Klik tombol Daftar/Masuk
+activate BerandaUI
+BerandaUI -> FormUI : 1.1: tampilkan()
+activate FormUI
+FormUI --> User : 1.1.1: Modal form registrasi\n(Email/Password & Google)
+
+alt [Metode = Email/Password]
+    User -> FormUI : 2: Isi form (nama, email, password)
+    User -> FormUI : 3: Klik tombol Daftar
+    FormUI -> Controller : 3.1: daftarAkun(email, password, nama)
+    activate Controller
+    Controller -> Auth : 3.1.1: validasiDaftar(email, password)
+    activate Auth
+    
+    alt [Email belum terdaftar]
+        Auth --> Controller : 3.1.2: Valid
+        Controller --> FormUI : 3.1.3: Akun berhasil dibuat
+        FormUI --> User : 3.1.4: Redirect ke halaman profil
+    else [Email sudah terdaftar]
+        Auth --> Controller : 3.1.2a: Error "Email sudah terdaftar"
+        Controller --> FormUI : 3.1.3a: Error response
+        FormUI --> User : 3.1.4a: Pesan "Email sudah terdaftar"\ndan tawarkan login
+    end
+    
+    deactivate Auth
+    deactivate Controller
+    
+else [Metode = Google]
+    User -> FormUI : 4: Klik "Masuk dengan Google"
+    FormUI -> Controller : 4.1: daftarDenganGoogle()
+    activate Controller
+    Controller -> Auth : 4.1.1: redirectKeGoogle()
+    activate Auth
+    Auth --> User : 4.1.2: Redirect ke halaman Google
+    
+    User -> Auth : 5: Konfirmasi autentikasi Google
+    Auth --> Controller : 5.1: Autentikasi berhasil
+    Controller --> FormUI : 5.2: Akun berhasil dibuat
+    FormUI --> User : 5.3: Redirect ke halaman profil
+    deactivate Auth
+    deactivate Controller
+end
+
+deactivate FormUI
+deactivate BerandaUI
+
+== Alternative Flows ==
+
+alt [Password tidak memenuhi kriteria]
+    FormUI --> User : 6b.1: Pesan error
+end
+
+alt [Konfirmasi password tidak cocok]
+    FormUI --> User : 6c.1: Pesan error
+end
+
+@enduml

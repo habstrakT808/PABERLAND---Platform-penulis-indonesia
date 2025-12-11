@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanDetailArtikelUI as ArtikelUI
+control LikeController as Controller
+
+== Main Flow ==
+
+User -> ArtikelUI : 1: Buka halaman detail artikel
+activate ArtikelUI
+ArtikelUI --> User : 1.1: Tampilkan tombol like beserta jumlah like saat ini
+
+alt [Pengguna belum like]
+    User -> ArtikelUI : 2: Klik tombol "Like"
+    ArtikelUI -> Controller : 2.1: toggleLike(artikelId)
+    activate Controller
+    Controller --> ArtikelUI : 2.1.1: Like berhasil
+    ArtikelUI --> User : 2.1.2: Perbarui jumlah like di UI
+    deactivate Controller
+else [Pengguna sudah pernah like]
+    User -> ArtikelUI : 2a: Klik tombol "Unlike"
+    ArtikelUI -> Controller : 2a.1: toggleLike(artikelId)
+    activate Controller
+    Controller --> ArtikelUI : 2a.1.1: Unlike berhasil
+    ArtikelUI --> User : 2a.1.2: Kurangi jumlah like di UI
+    deactivate Controller
+end
+
+deactivate ArtikelUI
+
+@enduml

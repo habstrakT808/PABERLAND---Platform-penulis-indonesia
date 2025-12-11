@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanProfilMemberUI as ProfilUI
+control ProfilController as Controller
+entity ProfilProvider as Profil
+
+== Main Flow ==
+
+User -> ProfilUI : 1: Buka profil member dari beranda, artikel, atau direktori member
+activate ProfilUI
+ProfilUI -> Controller : 1.1: muatProfilMember(memberId)
+activate Controller
+Controller -> Profil : 1.1.1: ambilProfilMember(memberId)
+activate Profil
+Profil --> Controller : 1.1.2: Data profil member
+Controller -> Profil : 1.1.3: ambilArtikelMember(memberId)
+Profil --> Controller : 1.1.4: Daftar artikel member
+Controller -> Profil : 1.1.5: ambilPortofolioMember(memberId)
+Profil --> Controller : 1.1.6: Daftar portofolio member
+Controller --> ProfilUI : 1.1.7: Data profil lengkap
+ProfilUI --> User : 1.1.8: Tampilkan halaman profil member\n(header profil, statistik, daftar artikel, daftar portofolio)
+
+alt [Pengguna membuka profil sendiri]
+    ProfilUI --> User : 1.1.8a: Tampilkan tombol Edit Profil dan Kelola Artikel
+end
+
+deactivate Profil
+deactivate Controller
+deactivate ProfilUI
+
+@enduml

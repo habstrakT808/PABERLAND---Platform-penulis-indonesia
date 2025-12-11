@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Administrator as User
+boundary HalamanAnalyticsUI as AnalyticsUI
+control AnalyticsController as Controller
+entity AnalyticsProvider as Analytics
+
+== Main Flow ==
+
+User -> AnalyticsUI : 1: Buka halaman analytics
+activate AnalyticsUI
+AnalyticsUI -> Controller : 1.1: muatDataAnalytics()
+activate Controller
+Controller -> Analytics : 1.1.1: ambilStatistik()
+activate Analytics
+Analytics --> Controller : 1.1.2: Data statistik
+Controller -> Analytics : 1.1.3: ambilGrafikPertumbuhan()
+Analytics --> Controller : 1.1.4: Data grafik pertumbuhan
+Controller -> Analytics : 1.1.5: ambilGrafikKategori()
+Analytics --> Controller : 1.1.6: Data grafik kategori
+Controller -> Analytics : 1.1.7: ambilArtikelPopuler()
+Analytics --> Controller : 1.1.8: Data artikel populer
+Controller --> AnalyticsUI : 1.1.9: Data analytics lengkap
+AnalyticsUI --> User : 1.1.10: Tampilkan dashboard analytics\n(kartu statistik, grafik pertumbuhan,\ngrafik kategori, tabel artikel populer,\nfilter periode)
+
+alt [Administrator memilih filter periode custom]
+    User -> AnalyticsUI : 2: Pilih filter periode custom
+    AnalyticsUI --> User : 2.1: Meminta input tanggal mulai dan tanggal akhir
+    User -> AnalyticsUI : 2.2: Masukkan tanggal mulai dan akhir
+    AnalyticsUI -> Controller : 2.2.1: muatDataAnalytics(tanggalMulai, tanggalAkhir)
+    Controller -> Analytics : 2.2.2: ambilStatistikPeriode(tanggalMulai, tanggalAkhir)
+    Analytics --> Controller : 2.2.3: Data statistik periode
+    Controller --> AnalyticsUI : 2.2.4: Data analytics
+    AnalyticsUI --> User : 2.2.5: Tampilkan dashboard analytics dengan filter
+end
+
+deactivate Analytics
+deactivate Controller
+deactivate AnalyticsUI
+
+@enduml

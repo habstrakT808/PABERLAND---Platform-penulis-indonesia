@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanEditorUI as EditorUI
+control ArtikelController as Controller
+
+== Main Flow ==
+
+User -> EditorUI : 1: Klik tombol Publikasikan di editor
+activate EditorUI
+EditorUI -> Controller : 1.1: publikasikanArtikel(artikelId)
+activate Controller
+Controller -> Controller : 1.1.1: validasiArtikel()
+
+alt [Validasi berhasil]
+    Controller --> EditorUI : 1.1.2: Validasi berhasil
+    EditorUI --> User : 1.1.3: Notifikasi sukses publikasi
+    EditorUI -> EditorUI : 1.1.4: Redirect ke halaman detail artikel
+else [Validasi gagal]
+    Controller --> EditorUI : 1.1.2a: Error validasi
+    EditorUI --> User : 1.1.3a: Pesan error
+end
+
+deactivate Controller
+deactivate EditorUI
+
+@enduml

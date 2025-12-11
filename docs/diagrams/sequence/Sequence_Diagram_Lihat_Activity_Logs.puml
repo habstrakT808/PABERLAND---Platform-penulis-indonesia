@@ -1,0 +1,50 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Administrator as User
+boundary HalamanActivityLogsUI as LogsUI
+control LogsController as Controller
+entity LogsProvider as Logs
+
+== Main Flow ==
+
+User -> LogsUI : 1: Buka halaman activity logs
+activate LogsUI
+LogsUI -> Controller : 1.1: muatActivityLogs()
+activate Controller
+Controller -> Logs : 1.1.1: ambilActivityLogs()
+activate Logs
+
+alt [Ada activity logs]
+    Logs --> Controller : 1.1.2: Daftar activity logs
+    Controller --> LogsUI : 1.1.3: Data logs
+    LogsUI --> User : 1.1.4: Tampilkan tabel logs\n(kolom timestamp, actor, action, target)\nfilter dan search
+    
+    User -> LogsUI : 2: Lakukan filter atau pencarian log
+    LogsUI -> Controller : 2.1: filterLogs(kriteria)
+    Controller -> Logs : 2.1.1: cariLogs(kriteria)
+    Logs --> Controller : 2.1.2: Logs terfilter
+    Controller --> LogsUI : 2.1.3: Data logs terfilter
+    LogsUI --> User : 2.1.4: Memfilter tabel
+    
+    User -> LogsUI : 3: Pilih salah satu log untuk melihat detail
+    LogsUI -> Controller : 3.1: muatDetailLog(logId)
+    Controller -> Logs : 3.1.1: ambilDetailLog(logId)
+    Logs --> Controller : 3.1.2: Detail log lengkap
+    Controller --> LogsUI : 3.1.3: Data detail log
+    LogsUI --> User : 3.1.4: Tampilkan detail lengkap log
+else [Tidak ada activity logs]
+    Logs --> Controller : 1.1.2a: Tidak ada logs
+    Controller --> LogsUI : 1.1.3a: Tidak ada data
+    LogsUI --> User : 1.1.4a: Pesan "Tidak ada activity logs"
+end
+
+deactivate Logs
+deactivate Controller
+deactivate LogsUI
+
+@enduml

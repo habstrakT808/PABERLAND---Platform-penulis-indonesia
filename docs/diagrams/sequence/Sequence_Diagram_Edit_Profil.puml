@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Penulis as User
+boundary HalamanEditProfilUI as EditUI
+control ProfilController as Controller
+entity ProfilProvider as Profil
+
+== Main Flow ==
+
+User -> EditUI : 1: Buka profil sendiri dan klik tombol Edit Profil
+activate EditUI
+EditUI -> Controller : 1.1: muatDataProfil()
+activate Controller
+Controller -> Profil : 1.1.1: ambilDataProfil()
+activate Profil
+Profil --> Controller : 1.1.2: Data profil saat ini
+Controller --> EditUI : 1.1.3: Data profil
+EditUI --> User : 1.1.4: Tampilkan form edit profil dengan data saat ini
+
+User -> EditUI : 2: Ubah data profil
+User -> EditUI : 3: Unggah avatar baru (opsional)
+EditUI --> User : 3.1: Tampilkan preview gambar
+User -> EditUI : 4: Klik Simpan Perubahan
+EditUI -> Controller : 4.1: updateProfil(data)
+Controller -> Profil : 4.1.1: perbaruiProfil(data)
+Profil --> Controller : 4.1.2: Profil berhasil diperbarui
+
+alt [Update berhasil]
+    Controller --> EditUI : 4.1.3: Update berhasil
+    EditUI --> User : 4.1.4: Notifikasi sukses
+else [Validasi gagal]
+    Controller --> EditUI : 4.1.3a: Error validasi
+    EditUI --> User : 4.1.4a: Pesan error
+end
+
+deactivate Profil
+deactivate Controller
+deactivate EditUI
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor Pengguna as User
+boundary HalamanDirektoriMemberUI as DirektoriUI
+control DirektoriController as Controller
+entity MemberProvider as Member
+
+== Main Flow ==
+
+User -> DirektoriUI : 1: Buka halaman direktori member atau klik menu Member di navigasi
+activate DirektoriUI
+DirektoriUI -> Controller : 1.1: muatDaftarMember()
+activate Controller
+Controller -> Member : 1.1.1: ambilSemuaMember()
+activate Member
+
+alt [Ada member]
+    Member --> Controller : 1.1.2: Daftar semua member
+    Controller --> DirektoriUI : 1.1.3: Data member
+    DirektoriUI --> User : 1.1.4: Tampilkan grid member\n(avatar, nama, bio singkat, badge role, statistik)\ntombol Lihat Profil\nfilter (All, Active Writers, New Members)\nsearch bar
+    
+    User -> DirektoriUI : 2: Memfilter atau mencari member
+    DirektoriUI -> Controller : 2.1: filterMember(kriteria)
+    Controller -> Member : 2.1.1: cariMember(kriteria)
+    Member --> Controller : 2.1.2: Member terfilter
+    Controller --> DirektoriUI : 2.1.3: Data member terfilter
+    DirektoriUI --> User : 2.1.4: Memfilter grid
+else [Tidak ada member]
+    Member --> Controller : 1.1.2a: Tidak ada member
+    Controller --> DirektoriUI : 1.1.3a: Tidak ada data
+    DirektoriUI --> User : 1.1.4a: Pesan "Belum ada member"
+end
+
+deactivate Member
+deactivate Controller
+deactivate DirektoriUI
+
+@enduml
