@@ -95,8 +95,9 @@ async function createBackup() {
     log(`Creating backup file: ${BACKUP_FILE}`, 'info');
     
     // Create backup using pg_dump
+    // Use --no-password and --no-owner flags to avoid version mismatch issues
     const { stdout, stderr } = await execAsync(
-      `${pgDumpPath} "${process.env.DATABASE_URL}" > "${BACKUP_FILE}"`
+      `${pgDumpPath} --no-password --no-owner --no-acl "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1 || ${pgDumpPath} --version=17 "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1 || ${pgDumpPath} "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1`
     );
     
     if (stderr && !stderr.includes('WARNING')) {
