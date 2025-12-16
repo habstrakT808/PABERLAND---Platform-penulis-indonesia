@@ -73,12 +73,13 @@ async function createBackup() {
       throw new Error('DATABASE_URL environment variable is not set');
     }
     
-    // Check if pg_dump is available - use direct file check first
+    // Check if pg_dump is available - prioritize pg_dump 17 to avoid version mismatch
     let pgDumpPath = null;
     const possiblePaths = [
-      '/usr/lib/postgresql/16/bin/pg_dump',
+      '/usr/lib/postgresql/17/bin/pg_dump',  // Prioritize version 17
+      '/usr/bin/pg_dump17',                  // Alternative name
       '/usr/bin/pg_dump',
-      '/usr/lib/postgresql/17/bin/pg_dump',
+      '/usr/lib/postgresql/16/bin/pg_dump',
       '/usr/local/bin/pg_dump'
     ];
     
