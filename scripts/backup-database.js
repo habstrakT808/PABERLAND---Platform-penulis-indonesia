@@ -74,17 +74,29 @@ async function createBackup() {
     }
     
     // Check if pg_dump is available
+    let pgDumpPath = 'pg_dump';
     try {
-      await execAsync('which pg_dump');
+      const { stdout } = await execAsync('which pg_dump');
+      pgDumpPath = stdout.trim();
     } catch (error) {
-      throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
+      // Try to find pg_dump in common locations
+      try {
+        const { stdout } = await execAsync('find /usr -name pg_dump 2>/dev/null | head -1');
+        if (stdout.trim()) {
+          pgDumpPath = stdout.trim();
+        } else {
+          throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
+        }
+      } catch (findError) {
+        throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
+      }
     }
     
     log(`Creating backup file: ${BACKUP_FILE}`, 'info');
     
     // Create backup using pg_dump
     const { stdout, stderr } = await execAsync(
-      `pg_dump "${process.env.DATABASE_URL}" > "${BACKUP_FILE}"`
+      `${pgDumpPath} "${process.env.DATABASE_URL}" > "${BACKUP_FILE}"`
     );
     
     if (stderr && !stderr.includes('WARNING')) {
