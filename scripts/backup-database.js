@@ -11,6 +11,26 @@ const { promisify } = require('util');
 
 const execAsync = promisify(exec);
 
+// Load environment variables from .env file
+const envPath = path.join(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine && !trimmedLine.startsWith('#')) {
+      const [key, ...valueParts] = trimmedLine.split('=');
+      if (key && valueParts.length > 0) {
+        const value = valueParts.join('=').trim();
+        // Remove quotes if present
+        const cleanValue = value.replace(/^["']|["']$/g, '');
+        if (!process.env[key.trim()]) {
+          process.env[key.trim()] = cleanValue;
+        }
+      }
+    }
+  });
+}
+
 // Configuration
 const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, '../backups');
 const RETENTION_DAYS = 30;
