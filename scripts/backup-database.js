@@ -95,9 +95,20 @@ async function createBackup() {
     log(`Creating backup file: ${BACKUP_FILE}`, 'info');
     
     // Create backup using pg_dump
-    // Use --no-password and --no-owner flags to avoid version mismatch issues
+    // Parse DATABASE_URL to extract connection details
+    // Server is PostgreSQL 17.4, but pg_dump is 16.11 - use connection parameters instead of URL
+    const dbUrl = process.env.DATABASE_URL;
+    const urlMatch = dbUrl.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+    
+    if (!urlMatch) {
+      throw new Error('Invalid DATABASE_URL format');
+    }
+    
+    const [, user, password, host, port, database] = urlMatch;
+    
+    // Use connection parameters to avoid version mismatch error
     const { stdout, stderr } = await execAsync(
-      `${pgDumpPath} --no-password --no-owner --no-acl "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1 || ${pgDumpPath} --version=17 "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1 || ${pgDumpPath} "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>&1`
+      `PGPASSWORD="${password}" ${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" > "${BACKUP_FILE}" 2>&1`
     );
     
     if (stderr && !stderr.includes('WARNING')) {
