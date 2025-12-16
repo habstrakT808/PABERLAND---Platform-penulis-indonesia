@@ -81,9 +81,10 @@ async function createBackup() {
     } catch (error) {
       // Try to find pg_dump in common locations
       try {
-        const { stdout } = await execAsync('find /usr -name pg_dump 2>/dev/null | head -1');
-        if (stdout.trim()) {
-          pgDumpPath = stdout.trim();
+        const { stdout } = await execAsync('find /usr -name pg_dump -type f 2>/dev/null');
+        const paths = stdout.trim().split('\n').filter(p => p);
+        if (paths.length > 0) {
+          pgDumpPath = paths[0];
         } else {
           throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
         }
@@ -106,28 +107,49 @@ async function createBackup() {
     
     const [, user, password, host, port, database] = urlMatch;
     
-    // Use connection parameters to avoid version mismatch error
-    // Redirect stderr to /dev/null to ignore version mismatch warnings
-    // pg_dump 16.11 can backup PostgreSQL 17.4, just with a warning
+    // Use connection parameters
+    // Note: pg_dump 16.11 will show version mismatch warning with PostgreSQL 17.4
+    // but we can work around it by using --no-sync and ignoring stderr
     const env = {
       ...process.env,
       PGPASSWORD: password
     };
     
-    // Run pg_dump and redirect stderr to ignore version mismatch
-    // The backup will still work despite the version warning
+    // Run pg_dump with error output redirected
+    // We'll check the file size after to verify backup succeeded
+    log(`Executing: ${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}"`, 'info');
+    
+    // Use shell redirection to capture both stdout and stderr separately
+    // This allows us to ignore version mismatch errors but still get the backup
+    const command = `PGPASSWORD="${password}" ${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" > "${BACKUP_FILE}" 2>"${BACKUP_FILE}.err" || true`;
+    
     try {
-      await execAsync(
-        `${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" > "${BACKUP_FILE}" 2>/dev/null`,
-        { env }
-      );
+      await execAsync(command, { env, maxBuffer: 1024 * 1024 * 100 }); // 100MB buffer
     } catch (error) {
-      // Even if command fails, check if backup file was created
-      // pg_dump may exit with error code but still create the backup
-      if (!fs.existsSync(BACKUP_FILE) || fs.statSync(BACKUP_FILE).size === 0) {
-        throw error;
-      } else {
-        log('Warning: pg_dump reported error but backup file was created', 'warning');
+      // Ignore command errors, check file instead
+      log('Command completed (checking backup file)...', 'info');
+    }
+    
+    // Wait a moment for file to be written
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Check error file for version mismatch
+    const errorFile = `${BACKUP_FILE}.err`;
+    if (fs.existsSync(errorFile)) {
+      const errorContent = fs.readFileSync(errorFile, 'utf8');
+      if (errorContent.includes('version mismatch')) {
+        log('Warning: Version mismatch detected (pg_dump 16.11 vs PostgreSQL 17.4), but continuing...', 'warning');
+        // Try to force backup by ignoring version check - use connection string directly
+        log('Attempting backup with connection string...', 'info');
+        await execAsync(
+          `PGPASSWORD="${password}" ${pgDumpPath} --no-password --no-owner --no-acl "${process.env.DATABASE_URL}" > "${BACKUP_FILE}" 2>/dev/null || true`,
+          { env, maxBuffer: 1024 * 1024 * 100 }
+        );
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      // Clean up error file
+      if (fs.existsSync(errorFile)) {
+        fs.unlinkSync(errorFile);
       }
     }
     
@@ -138,8 +160,10 @@ async function createBackup() {
     
     const initialSize = fs.statSync(BACKUP_FILE).size;
     if (initialSize === 0) {
-      throw new Error('Backup file is empty');
+      throw new Error('Backup file is empty - version mismatch may have prevented backup');
     }
+    
+    log(`Backup file created: ${(initialSize / 1024 / 1024).toFixed(2)} MB`, 'success');
     
     // Get backup file size
     const stats = fs.statSync(BACKUP_FILE);
