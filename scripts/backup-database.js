@@ -75,21 +75,55 @@ async function createBackup() {
     
     // Check if pg_dump is available
     let pgDumpPath = 'pg_dump';
+    const possiblePaths = [
+      '/usr/bin/pg_dump',
+      '/usr/lib/postgresql/16/bin/pg_dump',
+      '/usr/lib/postgresql/17/bin/pg_dump',
+      '/usr/local/bin/pg_dump'
+    ];
+    
+    // Try which first
     try {
-      const { stdout } = await execAsync('which pg_dump');
-      pgDumpPath = stdout.trim();
+      const { stdout } = await execAsync('which pg_dump 2>/dev/null');
+      if (stdout.trim()) {
+        pgDumpPath = stdout.trim();
+        // Verify it works
+        await execAsync(`${pgDumpPath} --version 2>/dev/null`);
+        log(`Found pg_dump at: ${pgDumpPath}`, 'info');
+      } else {
+        throw new Error('which failed');
+      }
     } catch (error) {
-      // Try to find pg_dump in common locations
-      try {
-        const { stdout } = await execAsync('find /usr -name pg_dump -type f 2>/dev/null');
-        const paths = stdout.trim().split('\n').filter(p => p);
-        if (paths.length > 0) {
-          pgDumpPath = paths[0];
-        } else {
+      // Try common paths
+      let found = false;
+      for (const testPath of possiblePaths) {
+        try {
+          if (fs.existsSync(testPath)) {
+            await execAsync(`${testPath} --version 2>/dev/null`);
+            pgDumpPath = testPath;
+            found = true;
+            log(`Found pg_dump at: ${pgDumpPath}`, 'info');
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      if (!found) {
+        // Last resort: try find
+        try {
+          const { stdout } = await execAsync('find /usr -name pg_dump -type f 2>/dev/null | head -1');
+          if (stdout.trim()) {
+            pgDumpPath = stdout.trim();
+            await execAsync(`${pgDumpPath} --version 2>/dev/null`);
+            log(`Found pg_dump at: ${pgDumpPath}`, 'info');
+          } else {
+            throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
+          }
+        } catch (findError) {
           throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
         }
-      } catch (findError) {
-        throw new Error('pg_dump is not installed. Please install PostgreSQL client tools.');
       }
     }
     
