@@ -10,7 +10,9 @@
     "db:migrate": "supabase db push",
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
-    "db:status": "supabase status"
+    "db:status": "supabase status",
+    "backup": "node scripts/backup-database.js",
+    "backup:cleanup": "node -e \"require('./scripts/backup-database.js').cleanupOldBackups().then(() => process.exit(0)).catch(() => process.exit(1))\""
   },
   "dependencies": {
     "@headlessui/react": "^2.2.5",
