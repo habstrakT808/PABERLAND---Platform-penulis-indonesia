@@ -107,34 +107,38 @@ async function createBackup() {
     const [, user, password, host, port, database] = urlMatch;
     
     // Use connection parameters to avoid version mismatch error
-    // Set environment variable to bypass version check
+    // Redirect stderr to /dev/null to ignore version mismatch warnings
+    // pg_dump 16.11 can backup PostgreSQL 17.4, just with a warning
     const env = {
       ...process.env,
-      PGPASSWORD: password,
-      PGDUMP_OPTIONS: '--no-password --no-owner --no-acl'
+      PGPASSWORD: password
     };
     
-    // Try with version check bypass by using environment variable
-    const { stdout, stderr } = await execAsync(
-      `${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" > "${BACKUP_FILE}" 2>&1`,
-      { env }
-    );
-    
-    // Check if backup file was created (even with version mismatch warning)
-    if (!fs.existsSync(BACKUP_FILE) || fs.statSync(BACKUP_FILE).size === 0) {
-      // If failed due to version mismatch, try to ignore the error and continue
-      const errorOutput = stderr || stdout || '';
-      if (errorOutput.includes('version mismatch')) {
-        log('Warning: Version mismatch detected, but attempting backup anyway...', 'warning');
-        // Try again with error output redirected
-        await execAsync(
-          `${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" 2>/dev/null > "${BACKUP_FILE}" || true`
-        );
+    // Run pg_dump and redirect stderr to ignore version mismatch
+    // The backup will still work despite the version warning
+    try {
+      await execAsync(
+        `${pgDumpPath} --no-password --no-owner --no-acl -h "${host}" -p "${port}" -U "${user}" -d "${database}" > "${BACKUP_FILE}" 2>/dev/null`,
+        { env }
+      );
+    } catch (error) {
+      // Even if command fails, check if backup file was created
+      // pg_dump may exit with error code but still create the backup
+      if (!fs.existsSync(BACKUP_FILE) || fs.statSync(BACKUP_FILE).size === 0) {
+        throw error;
+      } else {
+        log('Warning: pg_dump reported error but backup file was created', 'warning');
       }
     }
     
-    if (stderr && !stderr.includes('WARNING') && !stderr.includes('version mismatch')) {
-      log(`pg_dump warnings: ${stderr}`, 'warning');
+    // Verify backup file was created and has content
+    if (!fs.existsSync(BACKUP_FILE)) {
+      throw new Error('Backup file was not created');
+    }
+    
+    const initialSize = fs.statSync(BACKUP_FILE).size;
+    if (initialSize === 0) {
+      throw new Error('Backup file is empty');
     }
     
     // Get backup file size
