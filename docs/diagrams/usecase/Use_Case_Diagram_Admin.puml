@@ -1,0 +1,49 @@
+@startuml Use Case Diagram - Administrator
+!theme plain
+left to right direction
+skinparam usecase {
+    BackgroundColor #E8F4F8
+    BorderColor #2C3E50
+    FontSize 12
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #2C3E50
+    FontSize 12
+}
+
+title Use Case Diagram - Administrator\nPlatform Komunitas Penulis Literasi Anak PaberLand
+
+actor "Administrator" as Admin
+
+usecase "Tinjau Laporan Konten" as UC16
+usecase "Tambah Konten Featured" as UC17
+usecase "Kelola Pengguna" as UC18
+usecase "Lihat Analytics" as UC19
+usecase "Lihat Activity Logs" as UC20
+
+' Associations
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+Admin --> UC20
+
+note right of Admin
+  **Administrator**
+  Pengguna dengan peran tertinggi yang
+  memiliki akses penuh untuk mengelola
+  platform, pengguna, dan konfigurasi
+  sistem.
+  
+  **Catatan:**
+  Administrator memiliki akses ke semua
+  use case yang dapat dilakukan oleh
+  Pembaca (Pengunjung Umum) dan Penulis
+  (Member PaberLand), ditambah use case
+  spesifik administrator yang ditampilkan
+  di diagram ini.
+end note
+
+@enduml
+

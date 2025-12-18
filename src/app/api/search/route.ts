@@ -62,6 +62,9 @@ export async function GET(request: NextRequest) {
 
     // Search Articles
     if (type === 'all' || type === 'articles') {
+      // Escape query untuk mencegah SQL injection dan optimize search
+      const searchQuery = query.trim().replace(/%/g, '\\%').replace(/_/g, '\\_');
+      
       let articlesQuery = supabase
         .from('articles')
         .select(`
@@ -82,7 +85,9 @@ export async function GET(request: NextRequest) {
           )
         `, { count: 'exact', head: false })
         .eq('published', true)
-        .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%`)
+        // Hanya search di title dan excerpt untuk performa lebih baik
+        // Content dihilangkan karena menyebabkan timeout pada query besar
+        .or(`title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`)
         .order('created_at', { ascending: false });
 
       if (category && category !== 'all') {
@@ -97,7 +102,54 @@ export async function GET(request: NextRequest) {
       const { data: articles, error: articlesError, count: articlesCount } = await articlesQuery;
 
       if (articlesError) {
-        console.error('Error searching articles:', articlesError);
+        // Jika timeout, coba query yang lebih sederhana tanpa count
+        if (articlesError.code === '57014' || articlesError.message?.includes('timeout')) {
+          console.warn('Search query timeout, retrying without count...');
+          
+          // Retry tanpa count untuk menghindari timeout
+          let retryQuery = supabase
+            .from('articles')
+            .select(`
+              id,
+              title,
+              excerpt,
+              cover_image,
+              category,
+              slug,
+              views,
+              likes_count,
+              comments_count,
+              created_at,
+              profiles:author_id (
+                id,
+                full_name,
+                avatar_url
+              )
+            `, { count: null, head: false })
+            .eq('published', true)
+            .or(`title.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`)
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+          if (category && category !== 'all') {
+            retryQuery = retryQuery.eq('category', category);
+          }
+
+          const { data: retryArticles, error: retryError } = await retryQuery;
+          
+          if (retryError) {
+            console.error('Error searching articles (retry):', retryError);
+          } else {
+            results.articles = retryArticles?.map((article: any) => ({
+              ...article,
+              profiles: Array.isArray(article.profiles) ? article.profiles[0] : article.profiles
+            })) || [];
+            // Gunakan estimasi jika count gagal
+            results.totalArticles = results.articles.length > 0 ? (page * limit) + 1 : 0;
+          }
+        } else {
+          console.error('Error searching articles:', articlesError);
+        }
       } else {
         results.articles = articles?.map((article: any) => ({
           ...article,
@@ -109,6 +161,9 @@ export async function GET(request: NextRequest) {
 
     // Search Authors
     if (type === 'all' || type === 'authors') {
+      // Escape query untuk konsistensi
+      const searchQuery = query.trim().replace(/%/g, '\\%').replace(/_/g, '\\_');
+      
       const { data: authors, error: authorsError, count: authorsCount } = await supabase
         .from('profiles')
         .select(`
@@ -118,7 +173,7 @@ export async function GET(request: NextRequest) {
           avatar_url,
           created_at
         `, { count: 'exact', head: false })
-        .or(`full_name.ilike.%${query}%,bio.ilike.%${query}%`)
+        .or(`full_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`)
         .order('full_name', { ascending: true })
         .range(0, 99); // Ambil maksimal 100 penulis, frontend batasi 6 per page
 

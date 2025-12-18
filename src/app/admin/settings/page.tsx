@@ -104,7 +104,8 @@ function AdminSettingsContent() {
 
   const loadBackupStatus = async () => {
     try {
-      const status = await adminHelpers.getBackupStatus();
+      const response = await fetch('/api/admin/backup');
+      const status = await response.json();
       setBackupStatus(status);
     } catch (error) {
       console.error('Error loading backup status:', error);
@@ -150,7 +151,10 @@ function AdminSettingsContent() {
   const handleCreateBackup = async () => {
     setCreatingBackup(true);
     try {
-      const result = await adminHelpers.createBackup();
+      const response = await fetch('/api/admin/backup', {
+        method: 'POST'
+      });
+      const result = await response.json();
       
       if (result.success) {
         toast.success("Backup berhasil dibuat!");

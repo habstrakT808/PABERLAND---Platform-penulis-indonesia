@@ -72,23 +72,43 @@ export default function SettingsTestPage() {
         timestamp: new Date().toISOString()
       };
 
-      // Test 7: Backup functions
+      // Test 7: Backup functions (via API)
       console.log("🧪 Test 7: Testing backup functions...");
-      const backupStatus = await adminHelpers.getBackupStatus();
-      results.backupStatus = {
-        success: backupStatus.success,
-        data: backupStatus,
-        timestamp: new Date().toISOString()
-      };
+      try {
+        const backupStatusResponse = await fetch('/api/admin/backup');
+        const backupStatus = await backupStatusResponse.json();
+        results.backupStatus = {
+          success: backupStatus.success,
+          data: backupStatus,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        results.backupStatus = {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        };
+      }
 
-      // Test 8: Create backup
+      // Test 8: Create backup (via API)
       console.log("🧪 Test 8: Creating backup...");
-      const createBackup = await adminHelpers.createBackup();
-      results.createBackup = {
-        success: createBackup.success,
-        data: createBackup,
-        timestamp: new Date().toISOString()
-      };
+      try {
+        const createBackupResponse = await fetch('/api/admin/backup', {
+          method: 'POST'
+        });
+        const createBackup = await createBackupResponse.json();
+        results.createBackup = {
+          success: createBackup.success,
+          data: createBackup,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        results.createBackup = {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        };
+      }
 
       // Restore original settings
       console.log("🧪 Restoring original settings...");

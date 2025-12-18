@@ -866,11 +866,19 @@ Model kualitas ini terdiri dari delapan karakteristik utama. Namun, berdasarkan 
   ---------------------------- ----------------------------- -----------------------------------------------------------------------------------------------------------
      Functional Suitability       Functional Correctness              Memastikan fitur posting, komentar, dan login berjalan benar sesuai kebutuhan fungsional.
 
-     Performance Efficiency           Time Behaviour          Mengukur waktu respon aplikasi saat memuat artikel atau mengirim data menggunakan metrik Core Web Vitals.
+     Performance Efficiency           Time Behaviour          Mengukur waktu respon halaman web dengan target waktu respon < 8 detik pada kondisi normal menggunakan metrik Core Web Vitals dan pengujian pada berbagai kondisi koneksi.
 
-           Usability            Learnability & Operability          Menilai seberapa mudah pengguna baru memahami alur penulisan dan interaksi di dalam platform.
+            Security            Confidentiality & Integrity             Memastikan data pengguna terlindungi dan hak akses dikelola dengan benar melalui implementasi Row Level Security (RLS) dan sistem otorisasi berbasis peran; password disimpan dengan enkripsi yang aman.
 
-            Security            Confidentiality & Integrity             Memastikan data pengguna terlindungi dan hak akses dikelola dengan benar melalui RLS.
+           Usability            Learnability & Operability          Menilai seberapa mudah platform digunakan dan dipahami oleh pengguna tanpa memerlukan pelatihan khusus, dengan fokus pada kemudahan pengguna baru memahami alur penulisan dan interaksi di dalam platform.
+
+        Maintainability         Modularity & Reusability             Memastikan kode menggunakan TypeScript dan mengikuti standar coding yang konsisten untuk memudahkan pemahaman dan modifikasi kode di masa depan.
+
+          Portability            Adaptability                        Menilai kemampuan UI untuk beradaptasi dengan berbagai ukuran layar (mobile, tablet, desktop) melalui desain responsif yang menggunakan CSS media queries.
+
+         Compatibility           Co-existence                        Memastikan platform berjalan dengan baik pada browser modern (Chrome, Edge, Safari, Firefox) melalui pengujian kompatibilitas pada berbagai browser.
+
+        Recoverability           Recoverability                      Memastikan backup database dilakukan secara berkala (otomatis setiap hari dengan retensi 30 hari) untuk mencegah kehilangan data dan memungkinkan pemulihan data jika terjadi masalah.
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   : []{#_Toc215958581 .anchor}Tabel 2.2 Karakteristik Kualitas ISO/IEC 25010 yang Digunakan

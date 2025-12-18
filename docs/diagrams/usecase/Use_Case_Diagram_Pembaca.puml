@@ -1,0 +1,50 @@
+@startuml Use Case Diagram - Pembaca (Pengunjung Umum)
+!theme plain
+left to right direction
+skinparam usecase {
+    BackgroundColor #E8F4F8
+    BorderColor #2C3E50
+    FontSize 12
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #2C3E50
+    FontSize 12
+}
+
+title Use Case Diagram - Pembaca (Pengunjung Umum)\nPlatform Komunitas Penulis Literasi Anak PaberLand
+
+actor "Pembaca\n(Pengunjung Umum)" as Pembaca
+
+usecase "Daftar Akun Baru" as UC01
+usecase "Login Pengguna" as UC02
+usecase "Reset Password" as UC03
+usecase "Lihat Beranda" as UC04
+usecase "Jelajahi Kategori" as UC05
+usecase "Baca Artikel" as UC06
+usecase "Cari Konten" as UC07
+usecase "Lihat Direktori Member" as UC08
+usecase "Lihat Profil Member" as UC09
+usecase "Lihat Halaman Tentang" as UC10
+
+' Associations
+Pembaca --> UC01
+Pembaca --> UC02
+Pembaca --> UC03
+Pembaca --> UC04
+Pembaca --> UC05
+Pembaca --> UC06
+Pembaca --> UC07
+Pembaca --> UC08
+Pembaca --> UC09
+Pembaca --> UC10
+
+note right of Pembaca
+  **Pembaca (Pengunjung Umum)**
+  Pengguna yang belum melakukan autentikasi
+  atau pengguna yang hanya ingin membaca
+  konten tanpa membuat akun.
+end note
+
+@enduml
+

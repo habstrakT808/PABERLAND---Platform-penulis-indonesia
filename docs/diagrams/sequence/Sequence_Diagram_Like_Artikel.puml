@@ -8,6 +8,7 @@ skinparam maxmessagesize 60
 actor Pengguna as User
 boundary HalamanDetailArtikelUI as ArtikelUI
 control LikeController as Controller
+entity LikeProvider as Like
 
 == Main Flow ==
 
@@ -19,15 +20,23 @@ alt [Pengguna belum like]
     User -> ArtikelUI : 2: Klik tombol "Like"
     ArtikelUI -> Controller : 2.1: toggleLike(artikelId)
     activate Controller
-    Controller --> ArtikelUI : 2.1.1: Like berhasil
-    ArtikelUI --> User : 2.1.2: Perbarui jumlah like di UI
+    Controller -> Like : 2.1.1: tambahLike(artikelId)
+    activate Like
+    Like --> Controller : 2.1.2: Like berhasil ditambahkan
+    Controller --> ArtikelUI : 2.1.3: Like berhasil
+    ArtikelUI --> User : 2.1.4: Perbarui jumlah like di UI
+    deactivate Like
     deactivate Controller
 else [Pengguna sudah pernah like]
     User -> ArtikelUI : 2a: Klik tombol "Unlike"
     ArtikelUI -> Controller : 2a.1: toggleLike(artikelId)
     activate Controller
-    Controller --> ArtikelUI : 2a.1.1: Unlike berhasil
-    ArtikelUI --> User : 2a.1.2: Kurangi jumlah like di UI
+    Controller -> Like : 2a.1.1: hapusLike(artikelId)
+    activate Like
+    Like --> Controller : 2a.1.2: Like berhasil dihapus
+    Controller --> ArtikelUI : 2a.1.3: Unlike berhasil
+    ArtikelUI --> User : 2a.1.4: Kurangi jumlah like di UI
+    deactivate Like
     deactivate Controller
 end
 

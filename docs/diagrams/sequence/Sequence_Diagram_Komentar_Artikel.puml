@@ -8,6 +8,7 @@ skinparam maxmessagesize 60
 actor Pengguna as User
 boundary HalamanDetailArtikelUI as ArtikelUI
 control KomentarController as Controller
+entity KomentarProvider as Komentar
 
 == Main Flow ==
 
@@ -21,8 +22,12 @@ ArtikelUI -> Controller : 3.1: tambahKomentar(artikelId, komentar)
 activate Controller
 
 alt [Komentar tidak kosong]
-    Controller --> ArtikelUI : 3.1.1: Komentar berhasil ditambahkan
-    ArtikelUI --> User : 3.1.2: Tampilkan komentar di halaman artikel
+    Controller -> Komentar : 3.1.1: simpanKomentar(artikelId, komentar)
+    activate Komentar
+    Komentar --> Controller : 3.1.2: Komentar berhasil disimpan
+    Controller --> ArtikelUI : 3.1.3: Komentar berhasil ditambahkan
+    ArtikelUI --> User : 3.1.4: Tampilkan komentar di halaman artikel
+    deactivate Komentar
 else [Komentar kosong]
     Controller --> ArtikelUI : 3.1.1a: Error validasi
     ArtikelUI --> User : 3.1.2a: Pesan validasi

@@ -1,0 +1,61 @@
+@startuml Use Case Diagram - Penulis (Member PaberLand)
+!theme plain
+left to right direction
+skinparam usecase {
+    BackgroundColor #E8F4F8
+    BorderColor #2C3E50
+    FontSize 12
+}
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #2C3E50
+    FontSize 12
+}
+
+title Use Case Diagram - Penulis (Member PaberLand)\nPlatform Komunitas Penulis Literasi Anak PaberLand
+
+actor "Penulis\n(Member PaberLand)" as Penulis
+
+usecase "Logout" as UC26
+usecase "Tulis Artikel Baru" as UC08
+usecase "Publikasikan Artikel" as UC09
+usecase "Edit Artikel" as UC10
+usecase "Hapus Artikel" as UC11
+usecase "Kelola Artikel Saya" as UC12
+usecase "Like Artikel" as UC13
+usecase "Komentar Artikel" as UC14
+usecase "Laporkan Konten" as UC15
+usecase "Tambah Portofolio" as UC21
+usecase "Edit Profil" as UC23
+
+' Associations
+Penulis --> UC26
+Penulis --> UC08
+Penulis --> UC09
+Penulis --> UC10
+Penulis --> UC11
+Penulis --> UC12
+Penulis --> UC13
+Penulis --> UC14
+Penulis --> UC15
+Penulis --> UC21
+Penulis --> UC23
+
+note right of Penulis
+  **Penulis (Member PaberLand)**
+  Pengguna yang sudah terautentikasi
+  dan memiliki akun member PaberLand.
+  Memiliki akses penuh untuk membuat
+  konten, mengelola artikel, dan
+  berinteraksi dengan komunitas.
+  
+  **Catatan:**
+  Penulis memiliki akses ke semua
+  use case yang dapat dilakukan oleh
+  Pembaca (Pengunjung Umum), ditambah
+  use case spesifik penulis yang
+  ditampilkan di diagram ini.
+end note
+
+@enduml
+

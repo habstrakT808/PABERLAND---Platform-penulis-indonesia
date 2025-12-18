@@ -113,57 +113,79 @@ export default function CategoriesPage() {
 
   const fetchCategoryStats = async () => {
     try {
-      const stats: CategoryStats[] = [];
+      const categoryKeys = Object.keys(categoryConfig);
+      
+      // Jalankan semua query secara parallel untuk performa lebih baik
+      const statsPromises = categoryKeys.map(async (categoryKey) => {
+        try {
+          // Get article count and latest article in parallel untuk setiap kategori
+          const [countResult, latestResult] = await Promise.all([
+            // Get article count for this category
+            supabase
+              .from("articles")
+              .select("id", { count: "exact", head: true })
+              .eq("category", categoryKey)
+              .eq("published", true),
+            // Get latest article for this category
+            supabase
+              .from("articles")
+              .select(
+                `
+                title,
+                created_at,
+                profiles!inner(full_name)
+              `
+              )
+              .eq("category", categoryKey)
+              .eq("published", true)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle() // Use maybeSingle instead of single to avoid error if no article
+          ]);
 
-      for (const categoryKey of Object.keys(categoryConfig)) {
-        // Get article count for this category
-        const { count, error: countError } = await supabase
-          .from("articles")
-          .select("*", { count: "exact", head: true })
-          .eq("category", categoryKey)
-          .eq("published", true);
+          const { count, error: countError } = countResult;
+          const { data: latestArticle, error: latestError } = latestResult;
 
-        if (countError) {
-          console.error(`Error fetching count for ${categoryKey}:`, countError);
+          // Only log errors that have meaningful content (not empty objects)
+          // Empty error objects {} are sometimes returned by Supabase but are not actual errors
+          if (countError && (countError.message || countError.code || countError.hint || countError.details)) {
+            console.error(`Error fetching count for ${categoryKey}:`, countError);
+          }
+
+          if (latestError && latestError.code !== "PGRST116") {
+            if (latestError.message || latestError.code || latestError.hint || latestError.details) {
+              console.error(
+                `Error fetching latest article for ${categoryKey}:`,
+                latestError
+              );
+            }
+          }
+
+          return {
+            category: categoryKey,
+            count: count ?? 0,
+            latest_article: latestArticle
+              ? {
+                  title: latestArticle.title,
+                  created_at: latestArticle.created_at,
+                  author_name:
+                    (latestArticle.profiles as any)?.full_name || "Anonymous",
+                }
+              : undefined,
+          };
+        } catch (error) {
+          // Fallback jika ada error yang tidak terduga
+          console.error(`Unexpected error for category ${categoryKey}:`, error);
+          return {
+            category: categoryKey,
+            count: 0,
+            latest_article: undefined,
+          };
         }
+      });
 
-        // Get latest article for this category
-        const { data: latestArticle, error: latestError } = await supabase
-          .from("articles")
-          .select(
-            `
-            title,
-            created_at,
-            profiles!inner(full_name)
-          `
-          )
-          .eq("category", categoryKey)
-          .eq("published", true)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (latestError && latestError.code !== "PGRST116") {
-          console.error(
-            `Error fetching latest article for ${categoryKey}:`,
-            latestError
-          );
-        }
-
-        stats.push({
-          category: categoryKey,
-          count: count || 0,
-          latest_article: latestArticle
-            ? {
-                title: latestArticle.title,
-                created_at: latestArticle.created_at,
-                author_name:
-                  (latestArticle.profiles as any)?.full_name || "Anonymous",
-              }
-            : undefined,
-        });
-      }
-
+      // Wait for all promises to resolve
+      const stats = await Promise.all(statsPromises);
       setCategoryStats(stats);
     } catch (error) {
       console.error("Error fetching category stats:", error);
